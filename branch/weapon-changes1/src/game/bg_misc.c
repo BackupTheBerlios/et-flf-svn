@@ -25,7 +25,8 @@
 #define BG_IsSinglePlayerGame() (gametypeCvar.integer == GT_SINGLE_PLAYER) || (gametypeCvar.integer == GT_COOP)
 
 
-const char* skillNames[SK_NUM_SKILLS] = {
+const char* skillNames[SK_NUM_SKILLS] =
+{
 	"Battle Sense",
 	"Engineering",
 	"First Aid",
@@ -35,7 +36,8 @@ const char* skillNames[SK_NUM_SKILLS] = {
 	"Covert Ops"
 };
 
-const char* skillNamesLine1[SK_NUM_SKILLS] = {
+const char* skillNamesLine1[SK_NUM_SKILLS] =
+{
 	"Battle",
 	"Engineering",
 	"First",
@@ -45,7 +47,8 @@ const char* skillNamesLine1[SK_NUM_SKILLS] = {
 	"Covert"
 };
 
-const char* skillNamesLine2[SK_NUM_SKILLS] = {
+const char* skillNamesLine2[SK_NUM_SKILLS] =
+{
 	"Sense",
 	"",
 	"Aid",
@@ -55,7 +58,8 @@ const char* skillNamesLine2[SK_NUM_SKILLS] = {
 	"Ops"
 };
 
-const char* medalNames[SK_NUM_SKILLS] = {
+const char* medalNames[SK_NUM_SKILLS] =
+{
 	"Distinguished Service Medal",
 	"Steel Star",
 	"Silver Cross",
@@ -65,7 +69,8 @@ const char* medalNames[SK_NUM_SKILLS] = {
 	"Silver Snake"
 };
 
-const int skillLevels[NUM_SKILL_LEVELS] = {
+const int skillLevels[NUM_SKILL_LEVELS] =
+{
 	0,		// reaching level 0
 	20,		// reaching level 1
 	50,		// reaching level 2
@@ -92,6 +97,21 @@ pathCorner_t		pathCorners[MAX_PATH_CORNERS];
 
 // Arnout: the new loadout for WolfXP
 int weapBanksMultiPlayer[MAX_WEAP_BANKS_MP][MAX_WEAPS_IN_BANK_MP] = {
+
+/* ET-FLF weapon banks, coming soon
+	{0,					0,				0,			0,					0,					0,			0,			0,				0,			0,			0,					0	},	// empty bank '0'
+	{WP_KNIFE,			0,				0,			0,					0,					0,			0,			0,				0,			0,			0,					0	},	// bank 1 - knife
+	{WP_BERETTA92F,		WP_USP,			0,			0,					0,					0,			0,			0,				0,			0,			0,					0	},	// bank 2 - sidearm
+	{WP_MAC10,			WP_MP5A2,		WP_MP5S,	WP_UMP45,			WP_REMINGTON870,	WP_SPAS12,	0,			0,				0,			0,			0,					0	},	// bank 3 - secondary (sub, shotgun)
+	{WP_SAKO,			WP_SAKO_SCOPE,	WP_MSG90,	WP_MSG90_SCOPE,		WP_FAMAS,			WP_AK5,		WP_M4A1,	WP_M4A1_SCOPE,	WP_AK105,	WP_HK21,	WP_FLAMETHROWER,	0	},	// bank 4 - primary (sniper, assault, machinegun)
+	{WP_FLASHBANG,		WP_HE,			0,			0,					0,					0,			0,			0,				0,			0,			0,					0	},	// bank 5 - grens
+	{0,					0,				0,			0,					0,					0,			0,			0,				0,			0,			0,					0	},	// bank 6
+	{0,					0,				0,			0,					0,					0,			0,			0,				0,			0,			0,					0	},	// bank 7
+	{0,					0,				0,			0,					0,					0,			0,			0,				0,			0,			0,					0	},	// bank 8
+	{0,					0,				0,			0,					0,					0,			0,			0,				0,			0,			0,					0	},	// bank 9
+*/
+
+
 	{0,						0,						0,						0,							0,						0,							0,					0,			0,			0,			0,				0				},	// empty bank '0'
 	{WP_KNIFE,				0,						0,						0,							0,						0,							0,					0,			0,			0,			0,				0				},
 	{WP_LUGER,				WP_COLT,				WP_AKIMBO_COLT,			WP_AKIMBO_LUGER,			WP_AKIMBO_SILENCEDCOLT,	WP_AKIMBO_SILENCEDLUGER,	0,					0,			0,			0,			0,				0				},
@@ -104,10 +124,19 @@ int weapBanksMultiPlayer[MAX_WEAP_BANKS_MP][MAX_WEAPS_IN_BANK_MP] = {
 	{0,						0,						0,						0,							0,						0,							0,					0,			0,			0,			0,				0				},
 };
 
-// TAT 10/4/2002
 //		Using one unified list for which weapons can received ammo
 //		This is used both by the ammo pack code and by the bot code to determine if reloads are needed
 int reloadableWeapons[] = { 
+	/* ET-FLF weapon banks, coming soon - NOTE:- does the scoped weapons go here?  looks not, but not sure
+	WP_BERETTA92F,		WP_USP,																	// sidearms
+	WP_MAC10,			WP_MP5A2,			WP_MP5S,		WP_UMP45,							// submachine guns
+	WP_REMINGTON870,	WP_SPAS12,																// shotguns
+	WP_SAKO,			WP_SAKO_SCOPE,		WP_MSG90,		WP_MSG90_SCOPE,						// sniper
+	WP_FAMAS,			WP_AK5,				WP_M4A1,		WP_M4A1_SCOPE,		WP_AK105		// assault
+	WP_HK21,			WP_FLAMETHROWER,														// heavy
+	-1
+*/
+	
 	WP_MP40,		WP_AK5,			WP_THOMPSON,		WP_STEN,				WP_GARAND,				WP_PANZERFAUST,	
 	WP_KAR98,		WP_CARBINE,		WP_FG42,			WP_K43,					WP_MOBILE_MG42,			WP_COLT,
 	WP_LUGER,		WP_MORTAR,		WP_AKIMBO_COLT,		WP_AKIMBO_LUGER,		WP_M7,					WP_GPG40,
@@ -126,13 +155,16 @@ int reloadableWeapons[] = {
 // [8] = mod			-	means of death
 
 // potential inclusions in the table:
-// damage			-	
-// splashDamage		-	
-// soundRange		-	distance which ai can hear the weapon
-// ammoWarning		-	amount we give the player a 'low on ammo' warning (just a HUD color change or something)
-// clipWarning		-	amount we give the player a 'low in clip' warning (just a HUD color change or something)
-// maxclip2			-	allow the player to (mod/powerup) upgrade clip size when aplicable (luger has 8 round standard clip and 32 round snail magazine, for ex.)
-// 
+// damage				-	
+// splashDamage			-	
+// soundRange			-	distance which ai can hear the weapon
+// ammoWarning			-	amount we give the player a 'low on ammo' warning (just a HUD color change or something)
+// clipWarning			-	amount we give the player a 'low in clip' warning (just a HUD color change or something)
+// maxclip2				-	allow the player to (mod/powerup) upgrade clip size when aplicable (luger has 8 round standard clip and 32 round snail magazine, for ex.)
+// accuracy1stshot		-	% variance from the X when pulling the trigger for 1st shot
+// accuracytight		-	size of dynamic X hair when calm - show its accuracy (sort of)
+// accuracymaxspread	-	size the dynamic X-hair get
+// accuracytimesettle	-	time for the hair to return to origional size
 // 
 // 
 
@@ -142,6 +174,41 @@ int reloadableWeapons[] = {
 ammotable_t ammoTableMP[WP_NUM_WEAPONS] = {
 	//	MAX				USES	MAX		START	START  RELOAD	FIRE			NEXT	HEAT,	COOL,	MOD,	...
 	//	AMMO			AMT.	CLIP	AMMO	CLIP	TIME	DELAY			SHOT
+	
+	/* ET-FLF weapons - to be added soon
+	{	0,		0,		0,		0,		0,		0,			50,			0,		0,		0,		0					},	// WP_NONE				// 0
+	{	999,	0,		999,	0,		0,		0,			50,			200,	0,		0,		MOD_KNIFE			},	// WP_KNIFE				// 1
+
+	{	45,		1,		15,		45,		15,		1200,		85,			400,	0,		0,		MOD_BERETTA92F		},	// WP_BERETTA92F		// 2	Sidearm - fast, less damage, quicker reload
+	{	45,		1,		15,		45,		15,		1200,		85,			400,	0,		0,		MOD_USP 			},	// WP_USP 				// 3	Sidearm - slower, more damage, slower reload
+
+	{	45, 	1,		15,		45,		15,		1200,		85,			400,	0,		0,		MOD_MAC10			},	// WP_MAC10				// 4	Submachine gun - faster, less damage, silenced, faster reload, v. low accuracy
+	{	45,		1,		15,		45,		15,		1200,		85,			400,	0,		0,		MOD_MP5A2			},	// WP_MP5A2				// 5	Submachine gun - faster, less damage, slower reload, accurate
+	{	45,		1,		15,		45,		15,		1200,		85,			400,	0,		0,		MOD_MP5S			},	// WP_MP5S				// 6	Submachine gun - faster, v. less damage, slower reload, accurate, silenced
+	{	45,		1,		15,		45,		15,		1200,		85,			400,	0,		0,		MOD_UMP45			},	// WP_UMP45				// 7	Submachine gun - slower, more damage, slower reload, inaccurate
+
+	{	45,		1,		15,		45,		15,		1200,		85,			400,	0,		0,		MOD_REMINGTON870	},	// WP_REMINGTON870		// 8	Shotgun - slower, high damage, slower reload, accurate
+	{	45,		1,		15,		45,		15,		1200,		85,			400,	0,		0,		MOD_SPAS12			},	// WP_SPAS12			// 9	Shotgun - semi-auto, fast, less damage, slower reload, v. inaccurate
+	
+	{	90,		1,		30,		30,		30,		2400,		DELAY_LOW,	150,	0,		0,		MOD_SAKO			},	// WP_SAKO				// 10	Sniper Rifle - high damage, v. low accuracy, very slow reload
+	{	90,		1,		30,		30,		30,		2400,		DELAY_LOW,	150,	0,		0,		MOD_SAKO_SCOPE		},	// WP_SAKO_SCOPE		// 11	Sniper Rifle - v. high damage, high accuracy, 1 shot reload (bolt)
+	{	90,		1,		30,		30,		30,		2400,		DELAY_LOW,	150,	0,		0,		MOD_MSG90			},	// WP_MSG90				// 12	Sniper Rifle - high damage, v low accuracy, very slow reload
+	{	90,		1,		30,		30,		30,		2400,		DELAY_LOW,	150,	0,		0,		MOD_MSG90_SCOPE		},	// WP_MSG90_SCOPE		// 13	Sniper Rifle - high accuracy, high damage, semi auto
+	
+	{	90,		1,		30,		30,		30,		2400,		DELAY_LOW,	150,	0,		0,		MOD_FAMAS			},	// WP_FAMAS				// 14	Assault Rifle - v fast, high damage, v low accuracy, med reload
+	{	90,		1,		30,		30,		30,		2400,		DELAY_LOW,	150,	0,		0,		MOD_AK5				},	// WP_AK5				// 15	Assault Rifle - average accuracy, med damage, mid-reload
+	{	90,		1,		30,		30,		30,		2400,		DELAY_LOW,	150,	0,		0,		MOD_M4A1			},	// WP_M4A1				// 16	Assault Rifle - high accuracy, lower damage, mid-reload, scoped
+	{	30,		1,		10,		20,		10,		2500,		0,			400,	0,		0,		MOD_M4A1_SCOPE		},	// WP_M4A1_SCOPE		// 17	Assault Rifle - more accurate, longer reload, none bolt
+	{	90,		1,		30,		30,		30,		2400,		DELAY_LOW,	150,	0,		0,		MOD_AK105			},	// WP_AK105				// 18	Assault Rifle - average accuracy, low damage, mid-reload, faster
+
+	{	90,		1,		30,		30,		30,		2400,		DELAY_LOW,	150,	0,		0,		MOD_HK21			},	// WP_HK21				// 19	Machinegun - lower accuracy, higher damage, slow reload
+	{	200,	1,		200,	0,		200,	1000, 		DELAY_LOW,	50, 	0,		0,		MOD_FLAMETHROWER	},	// WP_FLAMETHROWER		// 20	Flamethrower - high accuracy, slow reload, low range, high damage
+
+	{	1,		0,		10, 	0,		1,		1000,		DELAY_THROW,1600, 	0,		0,		MOD_FLASHBANG		},	// WP_FLASHBANG			// 21	Flashbang - screenwhite out
+	{	1,		0,		10,		0,		1,		1000,		DELAY_THROW,1600,	0,		0,		MOD_HE				},	// WP_HE				// 22	Flashbang - screenwhite out
+	*/
+
+	
 	{	0,				0,		0,		0,		0,		0,		50,				0,		0,		0,		0						},	// WP_NONE					// 0
 	{	999,			0,		999,	0,		0,		0,		50,				200,	0,		0,		MOD_KNIFE				},	// WP_KNIFE					// 1
 	{	45,				1,		15,		45,		15,		1200,	85,				400,	0,		0,		MOD_LUGER				},	// WP_LUGER - Beretta 92F	// 2	Sidearm - fast, less damage, quicker reload
@@ -201,6 +268,40 @@ ammotable_t ammoTableMP[WP_NUM_WEAPONS] = {
 
 //----(SA)	moved in here so both games can get to it
 int weapAlts[] = {
+
+	/* ET-FLF weapons - to be added soon
+	WP_NONE,			// 0 WP_NONE
+	WP_NONE,			// 1 WP_KNIFE
+	
+	WP_NONE,			// 2 WP_BERETTA92F
+	WP_NONE,			// 3 WP_USP
+	
+	WP_NONE,			// 4 WP_MAC10
+	WP_NONE,			// 5 WP_MP5A2
+	WP_NONE,			// 6 WP_MP5S
+	WP_NONE,			// 7 WP_UMP45
+	
+	WP_NONE,			// 8 WP_REMINGTON870
+	WP_NONE,			// 9 WP_SPAS12
+	
+	WP_SAKO_SCOPE,		// 10 WP_SAKO
+	WP_SAKO,			// 11 WP_SAKO_SCOPE
+	WP_MSG90_SCOPE,		// 12 WP_MSG90
+	WP_MSG90,			// 13 WP_MSG90_SCOPE
+	
+	WP_NONE,			// 14 WP_FAMAS
+	WP_NONE,			// 15 WP_AK5
+	WP_M4A1_SCOPE,		// 16 WP_M4A1
+	WP_M4A1,			// 17 WP_M4A1_SCOPE
+	WP_NONE,			// 18 WP_AK105
+	
+	WP_NONE,			// 19 WP_HK21
+	WP_NONE,			// 20 WP_FLAMETHROWER
+	
+	WP_NONE,			// 21 WP_FLASHBANG
+	WP_NONE,			// 22 WP_HE
+   */
+
 	WP_NONE,			// 0 WP_NONE
 	WP_NONE,			// 1 WP_KNIFE
 	WP_SILENCER,		// 2 WP_LUGER
@@ -2809,6 +2910,39 @@ gitem_t	*BG_FindItemForClassName( const char *className ) {
 // Gordon: FIXME: er, we shouldnt really need this, just remove all the weapons we dont actually want :)
 qboolean BG_WeaponInWolfMP( int weapon ) {
 	switch ( weapon ) {
+
+	/* ET-FLF weapons coming soooon
+	case WP_KNIFE:
+
+	case WP_BERETTA92F:
+	case WP_USP:
+
+	case WP_MAC10:
+	case WP_MP5A2:
+	case WP_MP5S:
+	case WP_UMP45:
+
+	case WP_REMINGTON870:
+	case WP_SPAS12:
+
+	case WP_SAKO:
+	case WP_SAKO_SCOPE:
+	case WP_MSG90:
+	case WP_MSG90_SCOPE:
+
+	case WP_FAMAS:
+	case WP_AK5:
+	case WP_M4A1:
+	case WP_M4A1_SCOPE:
+	case WP_AK105:
+
+	case WP_HK21:
+	case WP_FLAMETHROWER:
+
+	case WP_FLASHBANG:
+	case WP_HE:
+	*/
+	
 	case WP_KNIFE:
 	case WP_LUGER:
 	case WP_COLT:
