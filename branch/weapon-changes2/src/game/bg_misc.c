@@ -142,121 +142,147 @@ int reloadableWeapons[] = {
 ammotable_t ammoTableMP[WP_NUM_WEAPONS] = {
 	//	MAX				USES	MAX		START	START  RELOAD	FIRE			NEXT	HEAT,	COOL,	MOD,	...
 	//	AMMO			AMT.	CLIP	AMMO	CLIP	TIME	DELAY			SHOT
-	{	0,				0,		0,		0,		0,		0,		50,				0,		0,		0,		0						},	// WP_NONE					// 0
-	{	999,			0,		999,	0,		0,		0,		50,				200,	0,		0,		MOD_KNIFE				},	// WP_KNIFE					// 1
-	{	45,				1,		15,		45,		15,		1200,	85,				400,	0,		0,		MOD_LUGER				},	// WP_LUGER - Beretta 92F	// 2	Sidearm - fast, less damage, quicker reload
-	{	90,				1,		30,		30,		30,		2400,	DELAY_LOW,		150,	0,		0,		MOD_MP40				},	// WP_MP40					// 3
-	{	105,			1,		35,		35,		35,		500,	DELAY_LOW,		50,		0,		0,		MOD_AK5					},	// WP_AK5					// 4
-	{	45,				1,		15,		0,		4,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_GRENADE_LAUNCHER	},	// WP_GRENADE_LAUNCHER		// 5
-	{	4,				1,		1,		0,		4,		1000,	750,			2000,	0,		0,		MOD_PANZERFAUST			},	// WP_PANZERFAUST			// 6	// DHM - Nerve :: updated delay so prediction is correct
-	{	200,			1,		200,	0,		200,	1000,	DELAY_LOW,		50,		0,		0,		MOD_FLAMETHROWER		},	// WP_FLAMETHROWER			// 7
-	{	24,				1,		8,		24,		8,		1300,	105,			600,	0,		0,		MOD_COLT				},	// WP_COLT					// 8    Sidearm - slower, more damage, slower reload
-	{	90,				1,		30,		30,		30,		2400,	DELAY_LOW,		150,	0,		0,		MOD_THOMPSON			},	// WP_THOMPSON				// 9
-	{	45,				1,		15,		0,		4,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_GRENADE_PINEAPPLE	},	// WP_GRENADE_PINEAPPLE		// 10
+	
+	/* - this is the FLF weapon set, currently commented out, not for long =) */
+	{	0,				0,		0,		0,		0,		0,		50,				0,		0,		0,		0						},	// WP_NONE						0	nothing
+	// knife
+	{	999,			0,		999,	0,		0,		0,		50,				200,	0,		0,		MOD_KNIFE				},	// WP_KNIFE						1	semi good damage
+	// pistols
+	{	45,				1,		15,		45,		15,		1200,	85,				400,	0,		0,		MOD_BERETTA_92F			},	// WP_BERETTA_92F				2	fast, less damage, quicker reload
+	{	24,				1,		8,		24,		8,		1300,	105,			600,	0,		0,		MOD_USP					},	// WP_USP						3	slower, more damage, slower reload
+	// submachine guns
+	{	45,				1,		15,		45,		15,		1200,	85,				400,	0,		0,		MOD_MAC10				},	// WP_MAC10						4	fast, less damage, quicker reload, silenced
+	{	24,				1,		8,		24,		8,		1300,	105,			600,	0,		0,		MOD_MP5A2				},	// WP_MP5A2						5	fast, average damage, longer reload
+	{	45,				1,		15,		45,		15,		1200,	85,				400,	0,		0,		MOD_MP5SD				},	// WP_MP5SD						6	fast, less damage, slower reload, silenced
+	{	24,				1,		8,		24,		8,		1300,	105,			600,	0,		0,		MOD_UMP45				},	// WP_UMP45						7	slow, high damage, v slow reload
+	// assault rifles
+	{	90,				1,		30,		30,		30,		2400,	DELAY_LOW,		150,	0,		0,		MOD_M4A1				},	// WP_M4A1						8	slow, low clip, scoped
+	{	105,			1,		35,		35,		35,		500,	DELAY_LOW,		50,		0,		0,		MOD_AK105				},	// WP_AK105						9	unknown
+	{	45,				1,		15,		0,		4,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_AK5					},	// WP_AK5						10	average accuracy, damage, reload etc
+	{	105,			1,		35,		35,		35,		500,	DELAY_LOW,		50,		0,		0,		MOD_FAMAS				},	// WP_FAMAS						11	very fast, average damage, very inaccurate
+	// heavy - yea, flamethrower, the weapon that illuded flf =)
+	{	200,			1,		200,	0,		200,	1000,	DELAY_LOW,		50,		0,		0,		MOD_FLAMETHROWER		},	// WP_FLAMETHROWER				12	short range, high damage
+	{	90,				1,		30,		30,		30,		2400,	DELAY_LOW,		150,	0,		0,		MOD_HK_21				},	// WP_HK_21						13	quite accurate, slow reload, average damage
+	// shotgun - changed from origional FLF
+	{	200,			1,		200,	0,		200,	1000,	DELAY_LOW,		50,		0,		0,		MOD_BENELLI_M4			},	// WP_BENELLIM4					14	fast reload, fast rof, inaccurate
+	{	90,				1,		30,		30,		30,		2400,	DELAY_LOW,		150,	0,		0,		MOD_REMINGTON_870		},	// WP_REMINGTON870				15	slower reload, average rof, semi accurate, v damage
+	// sniper rifles
+	{	200,			1,		200,	0,		200,	1000,	DELAY_LOW,		50,		0,		0,		MOD_HK_MSG90A1			},	// WP_HK_MSG90A1				16	semi-auto, less damage, less accurate
+	{	90,				1,		30,		30,		30,		2400,	DELAY_LOW,		150,	0,		0,		MOD_SAKO_TRG21			},	// WP_SAKO_TRG21				17	bolt load, v high damage, very accurate, stupidly long reload
+	// grens
+	{	1,				0,		10,		0,		1,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_FLASH_BANG			},	// WP_FLASH_BANG				18	flashbang, dont look, v small damage
+	{	1,				0,		10,		0,		1,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_HE_GRENADE			},	// WP_HE_GRENADE				19	very very damaging, semi large radius
+	
+	{	24,				1,		8,		24,		8,		1500,	DELAY_PISTOL,	400,	0,		0,		MOD_LUGER				},	// WP_LUGER					// 20	// NOTE: also 32 round 'snail' magazine
+	{	45,				1,		15,		0,		4,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_GRENADE_LAUNCHER	},	// WP_GRENADE_LAUNCHER		// 21
+	{	24,				1,		8,		24,		8,		1500,	DELAY_PISTOL,	400,	0,		0,		MOD_COLT				},	// WP_COLT					// 22
+	{	45,				1,		15,		0,		4,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_GRENADE_PINEAPPLE	},	// WP_GRENADE_PINEAPPLE		// 23
 
-	{	96,				1,		32,		32,		32,		3100,	DELAY_LOW,		150,	0,		0,		MOD_STEN				},	// WP_STEN					// 11
-	{	10,				1,		1,		0,		10,		1500,	50,				1000,	0,		0,		MOD_SYRINGE				},	// WP_MEDIC_SYRINGE			// 12
-	{	1,				0,		1,		0,		0,		3000,	50,				1000,	0,		0,		MOD_AMMO,				},	// WP_AMMO					// 13
-	{	1,				0,		1,		0,		1,		3000,	50,				1000,	0,		0,		MOD_ARTY,				},	// WP_ARTY					// 14												
-	{	24,				1,		8,		24,		8,		1500,	DELAY_PISTOL,	400,	0,		0,		MOD_SILENCER			},	// WP_SILENCER				// 15
-	{	1,				0,		10,		0,		0,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_DYNAMITE			},	// WP_DYNAMITE				// 16
-	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// WP_SMOKETRAIL			// 17
-	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// WP_MAPMORTAR				// 18
-	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// VERYBIGEXPLOSION			// 19
-	{	999,			0,		999,	1,		1,		0,		50,				0,		0,		0,		0						},	// WP_MEDKIT				// 20
+	{	10,				1,		1,		0,		10,		1500,	50,				1000,	0,		0,		MOD_SYRINGE				},	// WP_MEDIC_SYRINGE			// 24
+	{	1,				0,		1,		0,		0,		3000,	50,				1000,	0,		0,		MOD_AMMO,				},	// WP_AMMO					// 25
+	{	1,				0,		1,		0,		1,		3000,	50,				1000,	0,		0,		MOD_ARTY,				},	// WP_ARTY					// 26												
+	{	24,				1,		8,		24,		8,		1500,	DELAY_PISTOL,	400,	0,		0,		MOD_SILENCER			},	// WP_SILENCER				// 27
+	{	1,				0,		10,		0,		0,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_DYNAMITE			},	// WP_DYNAMITE				// 28
+	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// WP_SMOKETRAIL			// 29
+	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// WP_MAPMORTAR				// 30
+	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// VERYBIGEXPLOSION			// 31
+	{	999,			0,		999,	1,		1,		0,		50,				0,		0,		0,		0						},	// WP_MEDKIT				// 32
 
-	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// WP_BINOCULARS			// 21
-	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// WP_PLIERS				// 22
-	{	999,			0,		999,	0,		1,		0,		50,				0,		0,		0,		MOD_AIRSTRIKE			},	// WP_SMOKE_MARKER			// 23
-	{	30,				1,		10,		20,		10,		2500,	DELAY_LOW,		400,	0,		0,		MOD_KAR98				},	// WP_KAR98					// 24		K43
-	{	24,				1,		8,		16,		8,		1500,	DELAY_LOW,		400,	0,		0,		MOD_CARBINE				},	// WP_CARBINE				// 25		GARAND
-	{	24,				1,		8,		16,		8,		1500,	DELAY_LOW,		400,	0,		0,		MOD_GARAND				},	// WP_GARAND				// 26		GARAND
-	{	1,				0,		1,		0,		1,		100,	DELAY_LOW,		100,	0,		0,		MOD_LANDMINE			},	// WP_LANDMINE				// 27
-	{	1,				0,		1,		0,		0,		3000,	DELAY_LOW,		2000,	0,		0,		MOD_SATCHEL				},	// WP_SATCHEL				// 28
-	{	1,				0,		1,		0,		0,		3000,	722,			2000,	0,		0,		0,						},	// WP_SATCHEL_DET			// 29
-	{	6,				1,		1,		0,		0,		2000,	DELAY_HIGH,		2000,	0,		0,		MOD_TRIPMINE			},	// WP_TRIPMINE				// 30
+	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// WP_BINOCULARS			// 33
+	{	999,			0,		999,	0,		0,		0,		50,				0,		0,		0,		0						},	// WP_PLIERS				// 34
+	{	999,			0,		999,	0,		1,		0,		50,				0,		0,		0,		MOD_AIRSTRIKE			},	// WP_SMOKE_MARKER			// 35
+	{	1,				0,		1,		0,		1,		100,	DELAY_LOW,		100,	0,		0,		MOD_LANDMINE			},	// WP_LANDMINE				// 36
+	{	1,				0,		1,		0,		0,		3000,	DELAY_LOW,		2000,	0,		0,		MOD_SATCHEL				},	// WP_SATCHEL				// 37
+	{	1,				0,		1,		0,		0,		3000,	722,			2000,	0,		0,		0,						},	// WP_SATCHEL_DET			// 38
+	{	6,				1,		1,		0,		0,		2000,	DELAY_HIGH,		2000,	0,		0,		MOD_TRIPMINE			},	// WP_TRIPMINE				// 39
 
-	{	1,				0,		10,		0,		1,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_SMOKEBOMB			},	// WP_SMOKE_BOMB			// 31
-	{	450,			1,		150,	0,		150,	3000,	DELAY_LOW,		50,		1500,	300,	MOD_MOBILE_MG42			},	// WP_MOBILE_MG42			// 32
-	{	30,				1,		10,		20,		10,		2500,	DELAY_LOW,		400,	0,		0,		MOD_K43					},	// WP_K43					// 33		K43
-	{	60,				1,		20,		40,		20,		2000,	DELAY_LOW,		100,	0,		0,		MOD_FG42				},	// WP_FG42					// 34
-	{	0,				0,		0,		0,		0,		0,	    0,		        0,	    1500,	300,	0					    },	// WP_DUMMY_MG42			// 35
-	{	15,				1,		1,		0,		0,		0,		750,			1600,	0,		0,		MOD_MORTAR				},	// WP_MORTAR				// 36
-	{	999,			0,		1,		0,		0,		1000,	750,			1600,	0,		0,		0						},	// WP_LOCKPICK				// 37 
-	{	48,				1,		8,		48,		8,		2700,	DELAY_PISTOL,	200,	0,		0,		MOD_AKIMBO_COLT			},	// WP_AKIMBO_COLT			// 38
-	{	48,				1,		8,		48,		8,		2700,	DELAY_PISTOL,	200,	0,		0,		MOD_AKIMBO_LUGER		},	// WP_AKIMBO_LUGER			// 39
-	{	4,				1,		1,		4,		1,		3000,	DELAY_LOW,		400,	0,		0,		MOD_GPG40				},	// WP_GPG40					// 40
+	{	1,				0,		10,		0,		1,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_SMOKEBOMB			},	// WP_SMOKE_BOMB			// 40
+	{	0,				0,		0,		0,		0,		0,	    0,		        0,	    1500,	300,	0					    },	// WP_DUMMY_MG42			// 41
+	{	15,				1,		1,		0,		0,		0,		750,			1600,	0,		0,		MOD_MORTAR				},	// WP_MORTAR				// 42
+	{	999,			0,		1,		0,		0,		1000,	750,			1600,	0,		0,		0						},	// WP_LOCKPICK				// 43 
+	{	48,				1,		8,		48,		8,		2700,	DELAY_PISTOL,	200,	0,		0,		MOD_AKIMBO_COLT			},	// WP_AKIMBO_COLT			// 44
+	{	48,				1,		8,		48,		8,		2700,	DELAY_PISTOL,	200,	0,		0,		MOD_AKIMBO_LUGER		},	// WP_AKIMBO_LUGER			// 45
+	{	4,				1,		1,		4,		1,		3000,	DELAY_LOW,		400,	0,		0,		MOD_GPG40				},	// WP_GPG40					// 46
 
-	{	4,				1,		1,		4,		1,		3000,	DELAY_LOW,		400,	0,		0,		MOD_M7					},	// WP_M7					// 41
-	{	24,				1,		8,		24,		8,		1500,	DELAY_PISTOL,	400,	0,		0,		MOD_SILENCED_COLT		},	// WP_SILENCED_COLT			// 42
-	{	24,				1,		8,		16,		8,		1500,	0,				400,	0,		0,		MOD_GARAND_SCOPE		},	// WP_GARAND_SCOPE			// 43		GARAND
-	{	30,				1,		10,		20,		10,		2500,	0,				400,	0,		0,		MOD_K43_SCOPE			},	// WP_K43_SCOPE				// 44		K43
-	{	60,				1,		20,		40,		20,		2000,	DELAY_LOW,		400,	0,		0,		MOD_FG42SCOPE			},	// WP_FG42SCOPE				// 45
-	{	16,				1,		1,		12,		0,		0,		750,			1400,	0,		0,		MOD_MORTAR				},	// WP_MORTAR_SET			// 46
-	{	10,				1,		1,		0,		10,		1500,	50,				1000,	0,		0,		MOD_SYRINGE				},	// WP_MEDIC_ADRENALINE		// 47
-	{	48,				1,		8,		48,		8,		2700,	DELAY_PISTOL,	200,	0,		0,		MOD_AKIMBO_SILENCEDCOLT	},	// WP_AKIMBO_SILENCEDCOLT	// 48
-	{	48,				1,		8,		48,		8,		2700,	DELAY_PISTOL,	200,	0,		0,		MOD_AKIMBO_SILENCEDLUGER},	// WP_AKIMBO_SILENCEDLUGER	// 49
-	{	450,			1,		150,	0,		150,	3000,	DELAY_LOW,		50,		1500,	300,	MOD_MOBILE_MG42			},	// WP_MOBILE_MG42_SET		// 50
+	{	4,				1,		1,		4,		1,		3000,	DELAY_LOW,		400,	0,		0,		MOD_M7					},	// WP_M7					// 47
+	{	24,				1,		8,		24,		8,		1500,	DELAY_PISTOL,	400,	0,		0,		MOD_SILENCED_COLT		},	// WP_SILENCED_COLT			// 48
+	{	16,				1,		1,		12,		0,		0,		750,			1400,	0,		0,		MOD_MORTAR				},	// WP_MORTAR_SET			// 49
+	{	10,				1,		1,		0,		10,		1500,	50,				1000,	0,		0,		MOD_SYRINGE				},	// WP_MEDIC_ADRENALINE		// 50
+	{	48,				1,		8,		48,		8,		2700,	DELAY_PISTOL,	200,	0,		0,		MOD_AKIMBO_SILENCEDCOLT	},	// WP_AKIMBO_SILENCEDCOLT	// 51
+	{	48,				1,		8,		48,		8,		2700,	DELAY_PISTOL,	200,	0,		0,		MOD_AKIMBO_SILENCEDLUGER},	// WP_AKIMBO_SILENCEDLUGER	// 52
+	{	450,			1,		150,	0,		150,	3000,	DELAY_LOW,		50,		1500,	300,	MOD_MOBILE_MG42			},	// WP_MOBILE_MG42_SET		// 53
 };
 
 //----(SA)	moved in here so both games can get to it
 int weapAlts[] = {
 	WP_NONE,			// 0 WP_NONE
-	WP_NONE,			// 1 WP_KNIFE
-	WP_SILENCER,		// 2 WP_LUGER
-	WP_NONE,			// 3 WP_MP40
-	WP_NONE,			// 4 WP_AK5
-	WP_NONE,			// 5 WP_GRENADE_LAUNCHER
-	WP_NONE,			// 6 WP_PANZERFAUST
-	WP_NONE,			// 7 WP_FLAMETHROWER
-
-	WP_SILENCED_COLT,	// 8 WP_COLT
-	WP_NONE,			// 9 WP_THOMPSON
-	WP_NONE,			// 10 WP_GRENADE_PINEAPPLE
-	WP_NONE,			// 11 WP_STEN
-	WP_NONE,			// 12 WP_MEDIC_SYRINGE	// JPW NERVE
-	WP_NONE,			// 13 WP_AMMO		// JPW NERVE
-	WP_NONE,			// 14 WP_ARTY		// JPW NERVE
-
-	WP_LUGER,			// 15 WP_SILENCER	//----(SA)	was sp5
-	WP_NONE,			// 16 WP_DYNAMITE	//----(SA)	modified (not in rotation yet)
-	WP_NONE,			// 17 WP_SMOKETRAIL
-	WP_NONE,			// 18 WP_MAPMORTAR
-	WP_NONE,			// 19 VERYBIGEXPLOSION
-	WP_NONE,			// 20 WP_MEDKIT
-	WP_NONE,			// 21 WP_BINOCULARS
-
-	WP_NONE,			// 22 WP_PLIERS
-	WP_NONE,			// 23 WP_SMOKE_MARKER
-	WP_GPG40,			// 24 WP_KAR98
-	WP_M7,				// 25 WP_CARBINE (GARAND really)
-	WP_GARAND_SCOPE,	// 26 WP_GARAND
-	WP_NONE,			// 27 WP_LANDMINE
-	WP_NONE,			// 28 WP_SATCHEL
-	WP_NONE,			// 29 WP_SATCHEL_DET
-	WP_NONE,			// 30 WP_TRIPMINE
 	
-	WP_NONE,			// 31 WP_SMOKE_BOMB
-	WP_MOBILE_MG42_SET,	// 32 WP_MOBILE_MG42
-	WP_K43_SCOPE,		// 33 WP_K43
-	WP_FG42SCOPE,		// 34 WP_FG42
-    WP_NONE,            // 35 WP_DUMMY_MG42
-	WP_MORTAR_SET,		// 36 WP_MORTAR
-	WP_NONE,			// 37 WP_LOCKPICK Mad Doc - TDF
-	WP_NONE,			// 38 WP_AKIMBO_COLT
-	WP_NONE,			// 39 WP_AKIMBO_LUGER
+	WP_NONE,			// 1 WP_KNIFE
+	
+	WP_NONE,			// 2 WP_BERETTA_92F
+	WP_NONE,			// 3 WP_USP
+	
+	WP_NONE,			// 4 WP_MAC10
+	WP_NONE,			// 5 WP_MP5A2
+	WP_NONE,			// 6 WP_MP5SD
+	WP_NONE,			// 7 WP_UMP45
 
-	WP_KAR98,			// 40 WP_GPG40
-	WP_CARBINE,			// 41 WP_M7
-	WP_COLT,			// 42 WP_SILENCED_COLT
-	WP_GARAND,			// 43 WP_GARAND_SCOPE
-	WP_K43,				// 44 WP_K43_SCOPE
-	WP_FG42,			// 45 WP_FG42SCOPE
-	WP_MORTAR,			// 46 WP_MORTAR_SET
-	WP_NONE,			// 47 WP_MEDIC_ADRENALINE
-	WP_NONE,			// 48 WP_AKIMBO_SILENCEDCOLT
-	WP_NONE,			// 49 WP_AKIMBO_SILENCEDLUGER
-	WP_MOBILE_MG42,		// 50 WP_MOBILE_MG42_SET
+	WP_NONE,			// 8 WP_M4A1 - will have a scope soon
+	WP_NONE,			// 9 WP_AK105
+	WP_NONE,			// 10 WP_AK5
+	WP_NONE,			// 11 WP_FAMAS
+
+	WP_NONE,			// 12 WP_FLAMETHROWER
+	WP_NONE,			// 13 WP_HK_21
+
+	WP_NONE,			// 14 WP_BENELLIM4
+	WP_NONE,			// 15 WP_REMINGTON870
+
+	WP_NONE,			// 16 WP_HK_MSG90A1 - will have scope soon
+	WP_NONE,			// 17 WP_SAKO_TRG21 - will have scope soon
+
+	WP_NONE,			// 18 WP_FLASH_BANG
+	WP_NONE,			// 19 WP_HE_GRENADE
+
+	/* origional et stuff */
+	WP_SILENCER,		// 20 WP_LUGER
+	WP_NONE,			// 21 WP_GRENADE_LAUNCHER
+	WP_SILENCED_COLT,	// 22 WP_COLT
+	WP_NONE,			// 23 WP_GRENADE_PINEAPPLE
+
+	WP_NONE,			// 24 WP_MEDIC_SYRINGE	// JPW NERVE
+	WP_NONE,			// 25 WP_AMMO		// JPW NERVE
+	WP_NONE,			// 26 WP_ARTY		// JPW NERVE
+	WP_LUGER,			// 27 WP_SILENCER	//----(SA)	was sp5
+	WP_NONE,			// 28 WP_DYNAMITE	//----(SA)	modified (not in rotation yet)
+	WP_NONE,			// 29 WP_SMOKETRAIL
+	WP_NONE,			// 30 WP_MAPMORTAR
+	WP_NONE,			// 31 VERYBIGEXPLOSION
+	WP_NONE,			// 32 WP_MEDKIT
+
+	WP_NONE,			// 33 WP_BINOCULARS
+	WP_NONE,			// 34 WP_PLIERS
+	WP_NONE,			// 35 WP_SMOKE_MARKER
+	WP_NONE,			// 39 WP_LANDMINE
+	WP_NONE,			// 40 WP_SATCHEL
+	WP_NONE,			// 41 WP_SATCHEL_DET
+	WP_NONE,			// 42 WP_TRIPMINE
+	
+	WP_NONE,			// 40 WP_SMOKE_BOMB
+	WP_NONE,            // 41 WP_DUMMY_MG42
+	WP_MORTAR_SET,		// 42 WP_MORTAR
+	WP_NONE,			// 43 WP_LOCKPICK Mad Doc - TDF
+	WP_NONE,			// 44 WP_AKIMBO_COLT
+	WP_NONE,			// 45 WP_AKIMBO_LUGER
+	WP_KAR98,			// 46 WP_GPG40
+
+	WP_CARBINE,			// 47 WP_M7
+	WP_COLT,			// 48 WP_SILENCED_COLT
+	WP_MORTAR,			// 49 WP_MORTAR_SET
+	WP_NONE,			// 50 WP_MEDIC_ADRENALINE
+	WP_NONE,			// 51 WP_AKIMBO_SILENCEDCOLT
+	WP_NONE,			// 52 WP_AKIMBO_SILENCEDLUGER
+	WP_MOBILE_MG42,		// 53 WP_MOBILE_MG42_SET
 };
 
 
@@ -826,7 +852,33 @@ model="models/weapons2/knife/knife.md3"
 		"",						// sounds
 //		{0,0,0,0,0}
 	},
-		
+
+/*QUAKED weapon_luger (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
+-------- MODEL FOR RADIANT ONLY - DO NOT SET THIS AS A KEY --------
+model="models/weapons2/luger/luger.md3"
+*/
+	{
+		"weapon_luger", 
+		"sound/misc/w_pkup.wav",
+        {	
+			"models/weapons2/luger/luger.md3", 
+			"models/weapons2/luger/v_luger.md3", 
+			0
+		},
+
+		"",	// icon
+		"icons/ammo2",			// ammo icon
+		"Beretta 92F",			// pickup
+		50,
+		IT_WEAPON,
+		WP_LUGER,
+		WP_LUGER,
+		WP_LUGER,
+		"",						// precache
+		"",						// sounds
+//		{0,0,0,0,0}
+	},
+
 /*QUAKED weapon_luger (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
 -------- MODEL FOR RADIANT ONLY - DO NOT SET THIS AS A KEY --------
 model="models/weapons2/luger/luger.md3"
@@ -1112,32 +1164,6 @@ model="models\weapons2\mp40\mp40.md3"
 		WP_AK5,
 		"",					// precache
 		"",					// sounds
-//		{0,0,0,0,0}
-	},
-
-/*QUAKED weapon_panzerfaust (.3 .3 1) (-16 -16 -16) (16 16 16) suspended
--------- MODEL FOR RADIANT ONLY - DO NOT SET THIS AS A KEY --------
-model="models/weapons2/panzerfaust/pf.md3"
-*/
-	{
-		"weapon_panzerfaust",
-		"sound/misc/w_pkup.wav",
-        {	
-			"models/weapons2/panzerfaust/pf.md3", 
-			"models/weapons2/panzerfaust/v_pf.md3", 
-			0
-		},
-
-		"icons/iconw_panzerfaust_1",	// icon
-		"icons/ammo6",		// ammo icon
-		"Panzerfaust",				// pickup
-		1,
-		IT_WEAPON,
-		WP_PANZERFAUST,
-		WP_PANZERFAUST,
-		WP_PANZERFAUST,
-		"",						// precache
-		"",						// sounds
 //		{0,0,0,0,0}
 	},
 
@@ -2706,7 +2732,7 @@ int BG_AkimboSidearm( int weaponNum ) {
 	switch( weaponNum )
 	{
 	case WP_AKIMBO_COLT:			return WP_COLT;				break;
-	case WP_AKIMBO_SILENCEDCOLT:	return WP_COLT;	break;
+	case WP_AKIMBO_SILENCEDCOLT:	return WP_COLT;				break;
 	case WP_AKIMBO_LUGER:			return WP_LUGER;			break;
 	case WP_AKIMBO_SILENCEDLUGER:	return WP_LUGER;			break;
 	default:						return WP_NONE;				break;

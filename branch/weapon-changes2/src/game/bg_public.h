@@ -1329,7 +1329,6 @@ typedef enum extWeaponStats_s
 	WS_KNIFE,				// 0
 	WS_LUGER,				// 1
 	WS_COLT,				// 2
-	WS_MP40,				// 3
 	WS_AK5,					// 4
 	WS_THOMPSON,			// 5
 	WS_STEN,				// 6
@@ -1376,7 +1375,6 @@ typedef enum {
 	MOD_KNIFE,
 	MOD_LUGER,
 	MOD_COLT,
-	MOD_MP40,
 	MOD_AK5,
 	MOD_THOMPSON,
 	MOD_STEN,

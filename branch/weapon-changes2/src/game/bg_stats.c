@@ -18,7 +18,6 @@ static const weap_ws_convert_t aWeapID[WP_NUM_WEAPONS] = {
 	// German weapons
 	{ WP_KNIFE,				WS_KNIFE },
 	{ WP_LUGER,				WS_LUGER },
-	{ WP_MP40,				WS_MP40 },
 	{ WP_AK5,				WS_AK5 },
 	{ WP_GRENADE_LAUNCHER,	WS_GRENADE },		// 5
 	{ WP_PANZERFAUST,		WS_PANZERFAUST },

@@ -170,11 +170,6 @@ static void CG_Obituary( entityState_t *ent ) {
 			message2 = "'s .45ACP 1911";
 			break;
 
-		case MOD_MP40:
-			message = "was killed by";
-			message2 = "'s MP40";
-			break;
-
 		case MOD_AK5:
 			message = "was killed by";
 			message2 = "'s AK5";

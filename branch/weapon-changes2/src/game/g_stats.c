@@ -270,7 +270,6 @@ void G_LoseKillSkillPoints( gentity_t *tker, meansOfDeath_t mod, hitRegion_t hr,
 		case MOD_KNIFE:
 		case MOD_LUGER:
 		case MOD_COLT:
-		case MOD_MP40:
 		case MOD_AK5:
 		case MOD_THOMPSON:
 		case MOD_STEN:
@@ -341,15 +340,8 @@ void G_AddKillSkillPoints( gentity_t *attacker, meansOfDeath_t mod, hitRegion_t 
 
 		case MOD_LUGER:
 		case MOD_COLT:
-		case MOD_MP40:
 		case MOD_AK5:
-		case MOD_THOMPSON:
-		case MOD_STEN:
-		case MOD_GARAND:
 		case MOD_SILENCER:
-		case MOD_FG42:
-//		case MOD_FG42SCOPE:
-		case MOD_CARBINE:
 		case MOD_KAR98:
 		case MOD_SILENCED_COLT:
 		case MOD_K43:
