@@ -946,17 +946,11 @@ qboolean Bot_ScriptAction_SetClass( bot_state_t *bs, char *params )
 	if (!Q_stricmp( params, "ANY" )) {
 		val = -1;
 	} else if (!Q_stricmp( params, "soldier" )) {
-		val = PC_SOLDIER;
-	} else if (!Q_stricmp( params, "medic" )) {
-		val = PC_MEDIC;
+		val = PC_HEAVY;
 	} else if (!Q_stricmp( params, "engineer" )) {
-		val = PC_ENGINEER;
-	} else if (!Q_stricmp( params, "lieutenant" )) { // FIXME: remove this from missionpack? once all scripts have been updated
-		val = PC_FIELDOPS;
-	} else if (!Q_stricmp( params, "fieldops" )) {
-		val = PC_FIELDOPS;
+		val = PC_ASSAULT;
 	} else if (!Q_stricmp( params, "covertops" )) {
-		val = PC_COVERTOPS;
+		val = PC_RECON;
 	} else {
 		Bot_ScriptError( bs, "unknown class \"%s\"", params );
 	}

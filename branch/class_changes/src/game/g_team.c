@@ -1524,17 +1524,11 @@ Team_ClassForString
 */
 int Team_ClassForString( char *string ) {
 	if (!Q_stricmp( string, "soldier" )) {
-		return PC_SOLDIER;
-	} else if (!Q_stricmp( string, "medic" )) {
-		return PC_MEDIC;
+		return PC_HEAVY;
 	} else if (!Q_stricmp( string, "engineer" )) {
-		return PC_ENGINEER;
-	} else if (!Q_stricmp( string, "lieutenant" )) { // FIXME: remove from missionpack
-		return PC_FIELDOPS;
-	} else if (!Q_stricmp( string, "fieldops" )) {
-		return PC_FIELDOPS;
+		return PC_ASSAULT;
 	} else if (!Q_stricmp( string, "covertops" )) {
-		return PC_COVERTOPS;
+		return PC_RECON;
 	}
 	return -1;
 }

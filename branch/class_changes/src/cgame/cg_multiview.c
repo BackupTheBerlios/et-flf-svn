@@ -345,10 +345,8 @@ void CG_mvTransitionPlayerState(playerState_t* ps)
 	cg.zoomedBinoc = ((cent->currentState.eFlags & EF_ZOOMING) != 0 && ci->health > 0);
 
 	x = cent->currentState.teamNum;
-	if(x == PC_MEDIC) mult = cg.medicChargeTime[ci->team - 1];
-	else if(x == PC_ENGINEER) mult = cg.engineerChargeTime[ci->team - 1];
-	else if(x == PC_FIELDOPS) mult = cg.ltChargeTime[ci->team - 1];
-	else if(x == PC_COVERTOPS) mult = cg.covertopsChargeTime[ci->team - 1];
+	if(x == PC_ASSAULT) mult = cg.engineerChargeTime[ci->team - 1];
+	else if(x == PC_RECON) mult = cg.covertopsChargeTime[ci->team - 1];
 	else mult = cg.soldierChargeTime[ci->team - 1];
 
 	ps->curWeapHeat = (int)((float)ci->weapHeat * 255.0f / 100.0f);
@@ -584,11 +582,9 @@ void CG_mvWindowOverlay(int pID, float b_x, float b_y, float b_w, float b_h, flo
 	fw *= s;
 	fh *= s;
 	x = cent->currentState.teamNum;
-	if(x == PC_SOLDIER) { p_class = "^1S"; noSelectBorder = &colorMdRed; }
-	else if(x == PC_MEDIC) { p_class = "^7M"; noSelectBorder = &colorMdGrey; }
-	else if(x == PC_ENGINEER) { p_class = "^5E"; noSelectBorder = &colorMdBlue; }
-	else if(x == PC_FIELDOPS) { p_class = "^2F"; noSelectBorder = &colorMdGreen; }
-	else if(x == PC_COVERTOPS) { p_class = "^3C"; noSelectBorder = &colorMdYellow; }
+	if(x == PC_HEAVY) { p_class = "^1S"; noSelectBorder = &colorMdRed; }
+	else if(x == PC_ASSAULT) { p_class = "^5E"; noSelectBorder = &colorMdBlue; }
+	else if(x == PC_RECON) { p_class = "^3C"; noSelectBorder = &colorMdYellow; }
 
 	CG_DrawStringExt(b_x + 1, b_y + b_h - (fh*2 + 1 + 2), ci->name, colorWhite, qfalse, qtrue, fw, fh, 0);
 	CG_DrawStringExt(b_x + 1, b_y + b_h - (fh + 2), va("%s^7%d", CG_TranslateString(p_class), ci->health), colorWhite, qfalse, qtrue, fw, fh, 0);

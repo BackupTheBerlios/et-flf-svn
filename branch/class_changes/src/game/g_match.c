@@ -700,7 +700,7 @@ qboolean G_allowPanzer(gentity_t *ent)
 	gclient_t *cl;
 
 	if(team_maxPanzers.integer < 0) return(qtrue);
-	if(ent->client->sess.latchPlayerType != PC_SOLDIER || ent->client->sess.latchPlayerWeapon != 8) {
+	if(ent->client->sess.latchPlayerType != PC_HEAVY || ent->client->sess.latchPlayerWeapon != 8) {
 		ent->client->pers.panzerSelectTime = 0;
 		return(qtrue);
 	}
@@ -718,7 +718,7 @@ qboolean G_allowPanzer(gentity_t *ent)
 
 		if(cl == ent->client) continue;
 		if(cl->sess.sessionTeam != ent->client->sess.sessionTeam) continue;
-		if(cl->sess.latchPlayerType != PC_SOLDIER) continue;
+		if(cl->sess.latchPlayerType != PC_HEAVY) continue;
 
 		// ACTIVE panzers take precedence.  Limbo players will fight amongst themselves
 		if(COM_BitCheck(cl->ps.weapons, WP_PANZERFAUST) || cl->pers.panzerDropTime > level.time) {

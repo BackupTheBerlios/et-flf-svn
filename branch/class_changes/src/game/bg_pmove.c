@@ -2932,7 +2932,7 @@ void PM_CoolWeapons( void ) {
 		if( COM_BitCheck( pm->ps->weapons, wp) ) {
 			// and it's hot
 			if(pm->ps->weapHeat[wp]) {
-				if( pm->skill[SK_HEAVY_WEAPONS] >= 2 && pm->ps->stats[STAT_PLAYER_CLASS] == PC_SOLDIER ) {
+				if( pm->skill[SK_HEAVY_WEAPONS] >= 2 && pm->ps->stats[STAT_PLAYER_CLASS] == PC_HEAVY ) {
 					pm->ps->weapHeat[wp] -= ((float)GetAmmoTableData(wp)->coolRate * 2.f * pml.frametime);
 				} else {
 					pm->ps->weapHeat[wp] -= ((float)GetAmmoTableData(wp)->coolRate * pml.frametime);
@@ -3662,10 +3662,7 @@ static void PM_Weapon( void ) {
 	// JPW NERVE in MP, LT needs to zoom to call artillery
 	if(pm->ps->eFlags & EF_ZOOMING) {
 #ifdef GAMEDLL
-		if(pm->ps->stats[STAT_PLAYER_CLASS] == PC_FIELDOPS) {
-			pm->ps->weaponTime += 500;
-			PM_AddEvent( EV_FIRE_WEAPON );
-		}
+
 #endif
 		return;
 	}
@@ -4279,7 +4276,7 @@ static void PM_Weapon( void ) {
 	if (pm->ps->aimSpreadScaleFloat > 255)
 		pm->ps->aimSpreadScaleFloat = 255;
 
-	if( pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3 && pm->ps->stats[STAT_PLAYER_CLASS] == PC_COVERTOPS ) {
+	if( pm->skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 3 && pm->ps->stats[STAT_PLAYER_CLASS] == PC_RECON ) {
 		pm->ps->aimSpreadScaleFloat *= .5f;
 	}
 
@@ -5187,7 +5184,7 @@ void PmoveSingle (pmove_t *pmove) {
 
 
 	if ( pm->ps->pm_flags & PMF_RESPAWNED ) {
-		if( pm->ps->stats[STAT_PLAYER_CLASS] == PC_COVERTOPS ) {
+		if( pm->ps->stats[STAT_PLAYER_CLASS] == PC_RECON ) {
 			pm->pmext->silencedSideArm |= 1;
 		}
 	}

@@ -77,31 +77,19 @@ void Touch_Multi( gentity_t *self, gentity_t *other, trace_t *trace ) {
 
 	// START Mad Doc - TDF
 	if (self->spawnflags & 16) {
-		if (!(other->client->sess.playerType == PC_SOLDIER)) {
-			return;
-		}
-	}
-	
-	if (self->spawnflags & 32) {
-		if (!(other->client->sess.playerType == PC_FIELDOPS)) {
-			return;
-		}
-	}
-	
-	if (self->spawnflags & 64) {
-		if (!(other->client->sess.playerType == PC_MEDIC)) {
+		if (!(other->client->sess.playerType == PC_HEAVY)) {
 			return;
 		}
 	}
 	
 	if (self->spawnflags & 128) {
-		if (!(other->client->sess.playerType == PC_ENGINEER)) {
+		if (!(other->client->sess.playerType == PC_ASSAULT)) {
 			return;
 		}
 	}
 	
 	if (self->spawnflags & 256) {
-		if (!(other->client->sess.playerType == PC_COVERTOPS)) {
+		if (!(other->client->sess.playerType == PC_RECON)) {
 			return;
 		}
 	}

@@ -145,7 +145,7 @@ int Pickup_Kit( gentity_t *ent, gentity_t *other )
 				drop->item->giClipIndex = ps->ammoclip[BG_FindClipForWeapon(WP_SMOKE_MARKER)];
 				break;
 			}
-			case PC_COVERTOPS:
+			case PC_RECON:
 			{
 				drop->item->giAmmoIndex = ps->ammoclip[BG_FindClipForWeapon(WP_SMOKE_BOMB)];
 				// no second special for covert ops
@@ -531,24 +531,6 @@ int Pickup_Weapon( gentity_t *ent, gentity_t *other ) {
 	if( ent->item->giTag == WP_AMMO ) {
 		AddMagicAmmo( other, ent->count );
 
-		// if LT isn't giving ammo to self or another LT or the enemy, give him some props
-		if( other->client->ps.stats[STAT_PLAYER_CLASS] != PC_FIELDOPS ) {
-			if ( ent->parent && ent->parent->client && other->client->sess.sessionTeam == ent->parent->client->sess.sessionTeam ) {
-				if (!(ent->parent->client->PCSpecialPickedUpCount % LT_SPECIAL_PICKUP_MOD)) {
-					AddScore(ent->parent, WOLF_AMMO_UP);
-					if(ent->parent && ent->parent->client) {
-						G_LogPrintf("Ammo_Pack: %d %d\n", ent->parent - g_entities, other - g_entities);	// OSP
-					}
-				}
-				ent->parent->client->PCSpecialPickedUpCount++;
-				G_AddSkillPoints( ent->parent, SK_SIGNALS, 1.f );
-				G_DebugAddSkillPoints( ent->parent, SK_SIGNALS, 1.f, "ammo pack picked up" ); 
-
-				// extracted code originally here into AddMagicAmmo -xkan, 9/18/2002
-				// add 1 clip of magic ammo for any two-handed weapon
-			}
-			return RESPAWN_SP;
-		}
 	}
 
 	quantity = ent->count;
@@ -578,7 +560,7 @@ int Pickup_Weapon( gentity_t *ent, gentity_t *other ) {
 			weapon_t primaryWeapon = G_GetPrimaryWeaponForClient( other->client );
 
 			if( primaryWeapon || 
-				other->client->sess.playerType == PC_SOLDIER && other->client->sess.skill[SK_HEAVY_WEAPONS] >= 4 ) {
+				other->client->sess.playerType == PC_HEAVY && other->client->sess.skill[SK_HEAVY_WEAPONS] >= 4 ) {
 
 				if( primaryWeapon ) {
 					// drop our primary weapon
@@ -646,23 +628,7 @@ int Pickup_Health (gentity_t *ent, gentity_t *other) {
 	int			max;
 	int			quantity = 0;
 
-	// if medic isn't giving ammo to self or another medic or the enemy, give him some props
-	if( other->client->ps.stats[STAT_PLAYER_CLASS] != PC_MEDIC ) {
-		if( ent->parent && ent->parent->client && other->client->sess.sessionTeam == ent->parent->client->sess.sessionTeam ) {
-			if (!(ent->parent->client->PCSpecialPickedUpCount % MEDIC_SPECIAL_PICKUP_MOD)) {
-				AddScore(ent->parent, WOLF_HEALTH_UP);
-				G_LogPrintf("Health_Pack: %d %d\n", ent->parent - g_entities, other - g_entities);	// OSP
-			}
-			G_AddSkillPoints( ent->parent, SK_FIRST_AID, 1.f );
-			G_DebugAddSkillPoints( ent->parent, SK_FIRST_AID, 1.f, "health pack picked up" ); 
-			ent->parent->client->PCSpecialPickedUpCount++;
-		}
-	}	
-	
 	max = other->client->ps.stats[STAT_MAX_HEALTH];
-	if( other->client->sess.playerType == PC_MEDIC ) {
-		max *= 1.12f;
-	}
 
 	other->health += ent->item->quantity;
 	if (other->health > max ) {

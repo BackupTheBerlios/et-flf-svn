@@ -2868,21 +2868,11 @@ WARNING: when numOfClips is 0, DO NOT CHANGE ANYTHING under ps.
 */
 int BG_GrenadesForClass( int cls, int* skills ) {
 	switch( cls ) {
-		case PC_MEDIC:
-			if( skills[SK_FIRST_AID] >= 1 ) {
-				return 2;
-			}
-			return 1;
-		case PC_SOLDIER:
+		case PC_HEAVY:
 			return 4;
-		case PC_ENGINEER:
+		case PC_ASSAULT:
 			return 8;
-		case PC_FIELDOPS:
-			if( skills[SK_SIGNALS] >= 1 ) {
-				return 2;
-			}
-			return 1;
-		case PC_COVERTOPS:
+		case PC_RECON:
 			return 2;
 	}
 
@@ -3022,7 +3012,7 @@ qboolean BG_CanUseWeapon(int classNum, int teamNum, weapon_t weapon) {
 	qboolean isSinglePlayer = BG_IsSinglePlayerGame() ? qtrue : qfalse;
 
 	switch (classNum) {
-		case PC_ENGINEER:
+		case PC_ASSAULT:
 			if (weapon == WP_PLIERS
 				|| weapon == WP_DYNAMITE
 				|| weapon == WP_LANDMINE)
@@ -3032,20 +3022,8 @@ qboolean BG_CanUseWeapon(int classNum, int teamNum, weapon_t weapon) {
 				return (teamNum == TEAM_AXIS);
 			else if (weapon == WP_THOMPSON
 					|| weapon == WP_CARBINE)
-				return (teamNum == TEAM_ALLIES);
-		case PC_FIELDOPS:	
-			// TAT 1/11/2003 - in SP, field op can only use handgun, check after switch below
-			if (isSinglePlayer && teamNum == TEAM_ALLIES)
-				break;
-
-			if (weapon == WP_STEN)
-				return qtrue;
-			else if (weapon == WP_MP40)
-				return (teamNum == TEAM_AXIS);
-			else if (weapon == WP_THOMPSON)
-				return (teamNum == TEAM_ALLIES);
-			break;
-		case PC_SOLDIER:
+				return (teamNum == TEAM_ALLIES);		
+		case PC_HEAVY:
 			if (weapon == WP_STEN
 				|| weapon == WP_PANZERFAUST
 				|| weapon == WP_FLAMETHROWER
@@ -3061,22 +3039,7 @@ qboolean BG_CanUseWeapon(int classNum, int teamNum, weapon_t weapon) {
 			else if (weapon == WP_THOMPSON)
 				return (teamNum == TEAM_ALLIES);
 			break;
-
-		case PC_MEDIC:		
-			if (weapon == WP_MEDIC_SYRINGE
-				|| weapon == WP_MEDKIT)
-				return qtrue;
-
-			// TAT 1/11/2003 - in SP, medic can only use handgun, check after switch below
-			else if (isSinglePlayer && teamNum == TEAM_ALLIES)
-				break;
-
-			else if (weapon == WP_MP40)
-				return (teamNum == TEAM_AXIS);
-			else if (weapon == WP_THOMPSON)
-				return (teamNum == TEAM_ALLIES);
-			break;
-		case PC_COVERTOPS:
+		case PC_RECON:
 			if (weapon == WP_STEN
 				|| weapon == WP_SMOKE_BOMB
 				|| weapon == WP_SATCHEL
@@ -3139,15 +3102,8 @@ qboolean	BG_CanItemBeGrabbed( const entityState_t *ent, const playerState_t *ps,
 
 	case IT_HEALTH:
 		// Gordon: ps->teamNum is really class.... thx whoever decided on that...
-		if( ps->teamNum == PC_MEDIC ) {
-			// Gordon: medics can go up to 12% extra on max health as they have perm. regen
-			if( ps->stats[STAT_HEALTH] >= (int)(ps->stats[STAT_MAX_HEALTH] * 1.12) ) {
-				return qfalse;
-			}
-		} else {
-			if( ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH] ) {
-				return qfalse;
-			}
+		if( ps->stats[STAT_HEALTH] >= ps->stats[STAT_MAX_HEALTH] ) {
+			return qfalse;
 		}
 		return qtrue;
 

@@ -1638,7 +1638,7 @@ void CG_LimboPanel_RenderHead( panel_button_t* button ) {
 		CG_DrawPlayerHead( &button->rect, CG_LimboPanel_GetCharacter(), CG_LimboPanel_GetCharacter(), 180, 0, qtrue, HD_IDLE4, 0, cgs.clientinfo[ cg.clientNum ].rank, qfalse );
 	} else {
 		//CG_FillRect( button->rect.x, button->rect.y, button->rect.w, button->rect.h, colorBlack );
-		//CG_DrawPlayerHead( &button->rect, BG_GetCharacter( TEAM_ALLIES, PC_SOLDIER ), BG_GetCharacter( TEAM_ALLIES, PC_SOLDIER ), 180, 0, qtrue, HD_IDLE4, 0, 0, qtrue );
+		//CG_DrawPlayerHead( &button->rect, BG_GetCharacter( TEAM_ALLIES, PC_HEAVY ), BG_GetCharacter( TEAM_ALLIES, PC_HEAVY ), 180, 0, qtrue, HD_IDLE4, 0, 0, qtrue );
 
 		CG_DrawPic( button->rect.x, button->rect.y, button->rect.w, button->rect.h, cgs.media.limboSpectator );
 	}
@@ -2593,7 +2593,7 @@ int CG_LimboPanel_WeaponCount_ForSlot( int number ) {
 		}
 		return cnt;
 	} else {
-		if( cgs.clientinfo[cg.clientNum].skill[SK_HEAVY_WEAPONS] >= 4 && CG_LimboPanel_GetClass() == PC_SOLDIER ) {
+		if( cgs.clientinfo[cg.clientNum].skill[SK_HEAVY_WEAPONS] >= 4 && CG_LimboPanel_GetClass() == PC_HEAVY ) {
 			if( cgs.clientinfo[cg.clientNum].skill[SK_LIGHT_WEAPONS] >= 4 ) {
 				return 3;
 			} else {
@@ -2652,7 +2652,7 @@ weapon_t CG_LimboPanel_GetWeaponForNumber( int number, int slot, qboolean ignore
 		
 		return classInfo->classWeapons[ number ];
 	} else {
-		if( cgs.clientinfo[cg.clientNum].skill[SK_HEAVY_WEAPONS] >= 4 && CG_LimboPanel_GetClass() == PC_SOLDIER ) {
+		if( cgs.clientinfo[cg.clientNum].skill[SK_HEAVY_WEAPONS] >= 4 && CG_LimboPanel_GetClass() == PC_HEAVY ) {
 			if( cgs.clientinfo[cg.clientNum].skill[SK_LIGHT_WEAPONS] >= 4 ) {
 				if( number == 2 ) {
 					return CG_LimboPanel_GetTeam() == TEAM_AXIS ? WP_MP40 : WP_THOMPSON;
@@ -2666,7 +2666,7 @@ weapon_t CG_LimboPanel_GetWeaponForNumber( int number, int slot, qboolean ignore
 
 		if( cgs.clientinfo[cg.clientNum].skill[SK_LIGHT_WEAPONS] >= 4 ) {
 			if( number >= 1 ) {
-				if( CG_LimboPanel_GetClass() == PC_COVERTOPS ) {
+				if( CG_LimboPanel_GetClass() == PC_RECON ) {
 					return CG_LimboPanel_GetTeam() == TEAM_AXIS ? WP_AKIMBO_SILENCEDLUGER : WP_AKIMBO_SILENCEDCOLT;
 				} else {
 					return CG_LimboPanel_GetTeam() == TEAM_AXIS ? WP_AKIMBO_LUGER : WP_AKIMBO_COLT;
@@ -2675,7 +2675,7 @@ weapon_t CG_LimboPanel_GetWeaponForNumber( int number, int slot, qboolean ignore
 		}
 
 		if( number == 0 ) {
-			if( CG_LimboPanel_GetClass() == PC_COVERTOPS ) {
+			if( CG_LimboPanel_GetClass() == PC_RECON ) {
 				return CG_LimboPanel_GetTeam() == TEAM_AXIS ? WP_SILENCER : WP_SILENCED_COLT;
 			} else {
 				return CG_LimboPanel_GetTeam() == TEAM_AXIS ? WP_LUGER : WP_COLT;

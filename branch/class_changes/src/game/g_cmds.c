@@ -951,7 +951,7 @@ int G_NumPlayersWithWeapon( weapon_t weap, team_t team ) {
 	for( i = 0; i < level.numConnectedClients; i++ ) {
 		j = level.sortedClients[i];
 
-		if( level.clients[j].sess.playerType != PC_SOLDIER ) {
+		if( level.clients[j].sess.playerType != PC_HEAVY ) {
 			continue;
 		}
 
@@ -1119,12 +1119,12 @@ void Cmd_Team_f( gentity_t *ent, unsigned int dwCommand, qboolean fValue ) {
 	w2 =	atoi( weap2 );
 
 	ent->client->sess.latchPlayerType =	atoi( ptype );
-	if( ent->client->sess.latchPlayerType < PC_SOLDIER || ent->client->sess.latchPlayerType > PC_COVERTOPS ) {
-		ent->client->sess.latchPlayerType = PC_SOLDIER;
+	if( ent->client->sess.latchPlayerType < PC_HEAVY || ent->client->sess.latchPlayerType > PC_RECON ) {
+		ent->client->sess.latchPlayerType = PC_HEAVY;
 	}
 
-	if( ent->client->sess.latchPlayerType < PC_SOLDIER || ent->client->sess.latchPlayerType > PC_COVERTOPS ) {
-		ent->client->sess.latchPlayerType = PC_SOLDIER;
+	if( ent->client->sess.latchPlayerType < PC_HEAVY || ent->client->sess.latchPlayerType > PC_RECON ) {
+		ent->client->sess.latchPlayerType = PC_HEAVY;
 	}
 
 	if( !SetTeam( ent, s, qfalse, w, w2, qtrue ) ) {
@@ -2420,7 +2420,7 @@ Cmd_Activate_f
 qboolean Do_Activate2_f(gentity_t *ent, gentity_t *traceEnt) {
 	qboolean found = qfalse;
 
-	if( ent->client->sess.playerType == PC_COVERTOPS && !ent->client->ps.powerups[PW_OPS_DISGUISED] ) {
+	if( ent->client->sess.playerType == PC_RECON && !ent->client->ps.powerups[PW_OPS_DISGUISED] ) {
 		if( !ent->client->ps.powerups[PW_BLUEFLAG] && !ent->client->ps.powerups[PW_REDFLAG] ) {
 			if( traceEnt->s.eType == ET_CORPSE ) {
 				if( BODY_TEAM(traceEnt) < 4 && BODY_TEAM(traceEnt) != ent->client->sess.sessionTeam ) {
@@ -2754,7 +2754,7 @@ void Cmd_Activate2_f( gentity_t *ent ) {
 	qboolean	found = qfalse;
 	qboolean	pass2 = qfalse;
 
-	if( ent->client->sess.playerType != PC_COVERTOPS ) {
+	if( ent->client->sess.playerType != PC_RECON ) {
 		return;
 	}
 

@@ -883,47 +883,7 @@ void G_UpdateTeamMapData( void ) {
 			continue;
 		}
 
-		if( ent->client->sess.playerType == PC_FIELDOPS ) {
-			if( ent->client->sess.skill[SK_SIGNALS] >= 4 && ent->health > 0 ) {
-				vec3_t pos[3];
-
-				f1 = ent->client->sess.sessionTeam == TEAM_ALLIES ? qtrue : qfalse;
-				f2 = ent->client->sess.sessionTeam == TEAM_AXIS ?	qtrue : qfalse;
-
-				G_SetupFrustum( ent );
-
-				for( j = 0, ent2 = g_entities; j < level.maxclients; j++, ent2++ ) {
-					if( !ent2->inuse || ent2 == ent ) {
-						continue;
-					}
-
-					//if( ent2->s.eType != ET_PLAYER ) {
-					//	continue;
-					//}
-
-					if( ent2->client->sess.sessionTeam == TEAM_SPECTATOR )
-						continue;
-
-					if( ent2->health <= 0 ||
-						ent2->client->sess.sessionTeam == ent->client->sess.sessionTeam ||
-						!ent2->client->ps.powerups[PW_OPS_DISGUISED] ) {
-						continue;
-					}
-
-					VectorCopy( ent2->client->ps.origin, pos[0] );
-					pos[0][2] += ent2->client->ps.mins[2];
-					VectorCopy( ent2->client->ps.origin, pos[1] );
-					VectorCopy( ent2->client->ps.origin, pos[2] );
-					pos[2][2] += ent2->client->ps.maxs[2];
-
-					if( G_VisibleFromBinoculars( ent, ent2, pos[0] ) ||
-						G_VisibleFromBinoculars( ent, ent2, pos[1] ) ||
-						G_VisibleFromBinoculars( ent, ent2, pos[2] ) ) {
-						G_UpdateTeamMapData_DisguisedPlayer( ent, ent2, f1, f2 );
-					}
-				}
-			}
-		} else if( ent->client->sess.playerType == PC_COVERTOPS ) {
+		if( ent->client->sess.playerType == PC_RECON ) {
 			if( ent->health > 0 ) {
 				f1 = ent->client->sess.sessionTeam == TEAM_ALLIES ? qtrue : qfalse;
 				f2 = ent->client->sess.sessionTeam == TEAM_AXIS ?	qtrue : qfalse;

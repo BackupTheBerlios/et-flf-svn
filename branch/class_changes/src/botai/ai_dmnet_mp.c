@@ -264,16 +264,10 @@ int AINode_MP_Respawn(bot_state_t *bs) {
 				if (lastCall > level.time || lastCall < level.time - 2000) {
 					lastCall = level.time;
 					switch (bs->mpClass) {
-					case PC_SOLDIER:
+					case PC_HEAVY:
 						BotVoiceChatAfterIdleTime( bs->client, "IamSoldier", SAY_TEAM, 1000 + rand()%5000, BOT_SHOWTEXT, 20000, qfalse );
 						break;
-					case PC_MEDIC:
-						BotVoiceChatAfterIdleTime( bs->client, "IamMedic", SAY_TEAM, 1000 + rand()%5000, BOT_SHOWTEXT, 20000, qfalse  );
-						break;
-					case PC_FIELDOPS:
-						BotVoiceChatAfterIdleTime( bs->client, "IamLieutenant", SAY_TEAM, 1000 + rand()%5000, BOT_SHOWTEXT, 20000, qfalse  );
-						break;
-					case PC_ENGINEER:
+					case PC_ASSAULT:
 						BotVoiceChatAfterIdleTime( bs->client, "IamEngineer", SAY_TEAM, 1000 + rand()%5000, BOT_SHOWTEXT, 20000, qfalse  );
 						break;
 					}
@@ -890,11 +884,6 @@ int AINode_MP_GiveAmmo(bot_state_t *bs)
 	gentity_t *trav;
 
 	goal = bs->target_goal;
-	//if we have changed class
-	if (bs->sess.playerType != PC_FIELDOPS) {
-		BotDefaultNode(bs);
-		return qfalse;
-	}
 	//if we have to wait
 	// Gordon: FIXME: this looks wrong
 	if (bs->cur_ps.classWeaponTime > level.time - 8000) {
@@ -1133,12 +1122,6 @@ int AINode_MP_MedicGiveHealth(bot_state_t *bs)
 
 	goal = bs->target_goal;
 
-	//if we have changed class
-	if( bs->sess.playerType != PC_MEDIC ) {
-		BotDefaultNode(bs);
-		return qfalse;
-	}
-
 	if( BotIsObserver(bs) ) {
 		AIEnter_MP_Observer(bs);
 		return qfalse;
@@ -1369,13 +1352,7 @@ int AINode_MP_MedicRevive(bot_state_t *bs)
 	gentity_t *trav;
 
 	goal = bs->target_goal;
-	//if we have changed class
-	if (bs->sess.playerType != PC_MEDIC) {
-		bs->ignore_specialgoal_time = 0;
-		BotDefaultNode(bs);
-		return qfalse;
-	}
-	//
+
 	if (BotIsObserver(bs)) {
 		AIEnter_MP_Observer(bs);
 		return qfalse;
@@ -3380,14 +3357,7 @@ int AINode_MP_DefendTarget( bot_state_t *bs ) {
 				bs->leader = -1;
 				BotDefaultNode(bs);
 				return qfalse;
-			} else if (bs->sess.playerType == PC_MEDIC) {
-				if (g_entities[bs->leader].health <= 0 && trap_AAS_PointAreaNum(g_entities[bs->leader].r.currentOrigin) &&
-					BotGoalForEntity( bs, bs->leader, &bs->target_goal, BGU_MEDIUM )) {
-					// revive
-					g_entities[bs->target_goal.entitynum].missionLevel = level.time + 3000;
-					AIEnter_MP_MedicRevive(bs);
-					return qfalse;
-				} else if (BotHealthScale(bs->leader) <= 0.7 && trap_AAS_PointAreaNum(g_entities[bs->leader].r.currentOrigin) &&
+				if (BotHealthScale(bs->leader) <= 0.7 && trap_AAS_PointAreaNum(g_entities[bs->leader].r.currentOrigin) &&
 					BotGoalForEntity( bs, bs->leader, &bs->target_goal, BGU_MEDIUM )) {	// health stock?
 					// make this our goal
 					g_entities[bs->target_goal.entitynum].missionLevel = level.time + 3000;
@@ -3695,24 +3665,6 @@ int AINode_MP_DefendTarget( bot_state_t *bs ) {
 					bs->ideal_viewangles[2] *= 0.5;
 				}
 				bs->ideal_viewangles[2] *= 0.5;
-				// check for giving ourselves some ammo
-				if (bs->sess.playerType == PC_FIELDOPS && ClientNeedsAmmo(bs->client)) {
-					// switch to regen and pump away
-					bs->weaponnum = WP_AMMO;
-					trap_EA_SelectWeapon(bs->client, bs->weaponnum);
-					if(bs->cur_ps.weapon == WP_AMMO && BotWeaponCharged(bs, WP_AMMO)) {
-						trap_EA_Attack( bs->client );
-					}
-				}
-				// check for giving ourselves some health
-				if (bs->sess.playerType == PC_MEDIC && BotHealthScale(bs->client) < 1.0) {
-					// switch to regen and pump away
-					bs->weaponnum = WP_MEDKIT;
-					trap_EA_SelectWeapon(bs->client, bs->weaponnum);
-					if(bs->cur_ps.weapon == WP_MEDKIT && BotWeaponCharged(bs, WP_MEDKIT)) {
-						trap_EA_Attack( bs->client );
-					}
-				}
 			}
 		}
 
@@ -3737,18 +3689,6 @@ int AINode_MP_DefendTarget( bot_state_t *bs ) {
 					if (numList && i<numList) {
 						BotVoiceChatAfterIdleTime( bs->client, "NeedEngineer", SAY_TEAM, 500 + rand()%4000, qfalse, 5000 + rand()%5000, qfalse  );
 					}
-				}
-				// if we are an engineer, throw out an air-strike
-				if (bs->sess.playerType == PC_FIELDOPS && (level.time - bs->cur_ps.classWeaponTime > (level.lieutenantChargeTime[bs->sess.sessionTeam-1]*0.5f))) {
-					// select smoke grenade
-					bs->weaponnum = WP_SMOKE_MARKER;
-					trap_EA_SelectWeapon( bs->client, bs->weaponnum );
-					// look upwards
-					bs->ideal_viewangles[PITCH] = -70;
-					if (bs->cur_ps.weapon == bs->weaponnum && bs->viewangles[PITCH] < -60) {
-						trap_EA_Attack( bs->client );
-					}
-					return qtrue;
 				}
 			}
 		}
@@ -4215,24 +4155,6 @@ int AINode_MP_TouchTarget(bot_state_t *bs)
 				bs->ideal_viewangles[2] *= 0.5;
 			}
 			bs->ideal_viewangles[2] *= 0.5;
-			// check for giving ourselves some ammo
-			if (bs->sess.playerType == PC_FIELDOPS && ClientNeedsAmmo(bs->client)) {
-				// switch to regen and pump away
-				bs->weaponnum = WP_AMMO;
-				trap_EA_SelectWeapon(bs->client, bs->weaponnum);
-				if(bs->cur_ps.weapon == WP_AMMO && BotWeaponCharged(bs, WP_AMMO)) {
-					trap_EA_Attack( bs->client );
-				}
-			}
-			// check for giving ourselves some health
-			if (bs->sess.playerType == PC_MEDIC && BotHealthScale(bs->client) < 1.0) {
-				// switch to regen and pump away
-				bs->weaponnum = WP_MEDKIT;
-				trap_EA_SelectWeapon(bs->client, bs->weaponnum);
-				if(bs->cur_ps.weapon == WP_MEDKIT && BotWeaponCharged(bs, WP_MEDKIT)) {
-					trap_EA_Attack( bs->client );
-				}
-			}
 		}
 	}
 
@@ -4274,7 +4196,7 @@ int AINode_MP_SatchelChargeTarget(bot_state_t *bs) {
 
 	goal = bs->target_goal;
 	//if we have changed class
-	if( bs->sess.playerType != PC_COVERTOPS ) {
+	if( bs->sess.playerType != PC_RECON ) {
 		BotDefaultNode(bs);
 		return qfalse;
 	}
@@ -4298,7 +4220,7 @@ int AINode_MP_SatchelChargeTarget(bot_state_t *bs) {
 
 	//if there are 2 bots going for this goal, then we should abort if we are further away
 	goalDist = VectorDistanceSquared( bs->origin, goal.origin );
-	if (numList = BotNumTeamMatesWithTargetByClass( bs, goal.entitynum, list, 10, PC_ENGINEER )) {
+	if (numList = BotNumTeamMatesWithTargetByClass( bs, goal.entitynum, list, 10, PC_ASSAULT )) {
 		if (goalDist > SQR(256)) {
 			goalDist = SQR(256);	// only abort if one of our teammates is close to the goal
 		}
@@ -4561,7 +4483,7 @@ int AINode_MP_DynamiteTarget(bot_state_t *bs)
 
 	goal = bs->target_goal;
 	//if we have changed class
-	if (bs->sess.playerType != PC_ENGINEER) {
+	if (bs->sess.playerType != PC_ASSAULT) {
 		BotDefaultNode(bs);
 		return qfalse;
 	}
@@ -4582,7 +4504,7 @@ int AINode_MP_DynamiteTarget(bot_state_t *bs)
 	}
 	//if there are 2 bots going for this goal, then we should abort if we are further away
 	goalDist = VectorDistanceSquared( bs->origin, goal.origin );
-	if (numList = BotNumTeamMatesWithTargetByClass( bs, goal.entitynum, list, 10, PC_ENGINEER )) {
+	if (numList = BotNumTeamMatesWithTargetByClass( bs, goal.entitynum, list, 10, PC_ASSAULT )) {
 		if (goalDist > SQR(256)) {
 			goalDist = SQR(256);	// only abort if one of our teammates is close to the goal
 		}
@@ -4878,7 +4800,7 @@ int AINode_MP_ConstructibleTarget(bot_state_t *bs)
 	}*/
 
 	//if we have changed class
-	if (bs->sess.playerType != PC_ENGINEER) {
+	if (bs->sess.playerType != PC_ASSAULT) {
 		BotDefaultNode(bs);
 		return qfalse;
 	}
@@ -5108,7 +5030,7 @@ int AINode_MP_PlantMine(bot_state_t *bs)
 	goal = bs->target_goal;
 
 	//if we have changed class
-	if (bs->sess.playerType != PC_ENGINEER)
+	if (bs->sess.playerType != PC_ASSAULT)
 	{
 		BotDefaultNode(bs);
 		return qfalse;
@@ -5272,7 +5194,7 @@ int AINode_MP_DisarmDynamite(bot_state_t *bs)
 
 	goal = bs->target_goal;
 	//if we have changed class
-	if (bs->sess.playerType != PC_ENGINEER) {
+	if (bs->sess.playerType != PC_ASSAULT) {
 		bs->ignore_specialgoal_time = 0;
 		BotDefaultNode(bs);
 		return qfalse;
@@ -6221,23 +6143,6 @@ int AINode_MP_Script_MoveToMarker(bot_state_t *bs)
 			}
 			bs->ideal_viewangles[2] *= 0.5;
 			// check for giving ourselves some ammo
-			if (bs->sess.playerType == PC_FIELDOPS && ClientNeedsAmmo(bs->client)) {
-				// switch to regen and pump away
-				bs->weaponnum = WP_AMMO;
-				trap_EA_SelectWeapon(bs->client, bs->weaponnum);
-				if(bs->cur_ps.weapon == WP_AMMO && BotWeaponCharged(bs, WP_AMMO)) {
-					trap_EA_Attack( bs->client );
-				}
-			}
-			// check for giving ourselves some health
-			if (bs->sess.playerType == PC_MEDIC && BotHealthScale(bs->client) < 1.0) {
-				// switch to regen and pump away
-				bs->weaponnum = WP_MEDKIT;
-				trap_EA_SelectWeapon(bs->client, bs->weaponnum);
-				if(bs->cur_ps.weapon == WP_MEDKIT && BotWeaponCharged(bs, WP_MEDKIT)) {
-					trap_EA_Attack( bs->client );
-				}
-			}
 		}
 	}
 	// reload?
@@ -6448,24 +6353,6 @@ int AINode_MP_MoveToAutonomyRange(bot_state_t *bs)
 				bs->ideal_viewangles[2] *= 0.5;
 			}
 			bs->ideal_viewangles[2] *= 0.5;
-			// check for giving ourselves some ammo
-			if (bs->sess.playerType == PC_FIELDOPS && ClientNeedsAmmo(bs->client)) {
-				// switch to regen and pump away
-				bs->weaponnum = WP_AMMO;
-				trap_EA_SelectWeapon(bs->client, bs->weaponnum);
-				if(bs->cur_ps.weapon == WP_AMMO && BotWeaponCharged(bs, WP_AMMO)) {
-					trap_EA_Attack( bs->client );
-				}
-			}
-			// check for giving ourselves some health
-			if (bs->sess.playerType == PC_MEDIC && BotHealthScale(bs->client) < 1.0) {
-				// switch to regen and pump away
-				bs->weaponnum = WP_MEDKIT;
-				trap_EA_SelectWeapon(bs->client, bs->weaponnum);
-				if(bs->cur_ps.weapon == WP_MEDKIT && BotWeaponCharged(bs, WP_MEDKIT)) {
-					trap_EA_Attack( bs->client );
-				}
-			}
 		}
 	}
 	// reload?

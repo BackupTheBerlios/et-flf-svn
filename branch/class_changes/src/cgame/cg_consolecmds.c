@@ -380,13 +380,9 @@ static void CG_FTSayPlayerClass_f( void ) {
 
 	playerType = cgs.clientinfo[ cg.clientNum ].cls;
 
-	if ( playerType == PC_MEDIC )
-		s = "IamMedic";
-	else if ( playerType == PC_ENGINEER )
+	if ( playerType == PC_ASSAULT )
 		s = "IamEngineer";
-	else if ( playerType == PC_FIELDOPS )
-		s = "IamFieldOps";
-	else if ( playerType == PC_COVERTOPS )
+	else if ( playerType == PC_RECON )
 		s = "IamCovertOps";
 	else
 		s = "IamSoldier";
@@ -408,13 +404,9 @@ static void CG_SayPlayerClass_f( void )
 
 	playerType = cgs.clientinfo[ cg.clientNum ].cls;
 
-	if ( playerType == PC_MEDIC )
-		s = "IamMedic";
-	else if ( playerType == PC_ENGINEER )
+	if ( playerType == PC_ASSAULT )
 		s = "IamEngineer";
-	else if ( playerType == PC_FIELDOPS )
-		s = "IamFieldOps";
-	else if ( playerType == PC_COVERTOPS )
+	else if ( playerType == PC_RECON )
 		s = "IamCovertOps";
 	else
 		s = "IamSoldier";

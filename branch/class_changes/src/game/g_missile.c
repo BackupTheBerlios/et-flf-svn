@@ -1430,7 +1430,7 @@ void G_FreeSatchel( gentity_t* ent ) {
 		return;
 	}
 
-	if( other->client->sess.playerType != PC_COVERTOPS ) {
+	if( other->client->sess.playerType != PC_RECON ) {
 		return;
 	}
 

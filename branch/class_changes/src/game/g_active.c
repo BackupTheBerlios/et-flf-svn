@@ -598,24 +598,9 @@ void ClientTimerActions( gentity_t *ent, int msec ) {
 	while( client->timeResidual >= 1000 ) {
 		client->timeResidual -= 1000;
 
-		// regenerate
-		if( client->sess.playerType == PC_MEDIC ) {
-			if( ent->health < client->ps.stats[STAT_MAX_HEALTH]) {
-				ent->health += 3;
-				if ( ent->health > client->ps.stats[STAT_MAX_HEALTH] * 1.1){
-					ent->health = client->ps.stats[STAT_MAX_HEALTH] * 1.1;
-				}
-			} else if( ent->health < client->ps.stats[STAT_MAX_HEALTH] * 1.12) {
-				ent->health += 2;
-				if( ent->health > client->ps.stats[STAT_MAX_HEALTH] * 1.12 ) {
-					ent->health = client->ps.stats[STAT_MAX_HEALTH] * 1.12;
-				}
-			}
-		} else {
 			// count down health when over max
-			if ( ent->health > client->ps.stats[STAT_MAX_HEALTH] ) {
-				ent->health--;
-			}
+		if ( ent->health > client->ps.stats[STAT_MAX_HEALTH] ) {
+			ent->health--;
 		}
 	}
 }
@@ -832,10 +817,6 @@ void WolfFindMedic( gentity_t *self ) {
 		}
 
 		if( cl->ps.stats[ STAT_HEALTH ] <= 0 ) {
-			continue;
-		}
-
-		if( cl->ps.stats[ STAT_PLAYER_CLASS ] != PC_MEDIC ) {
 			continue;
 		}
 

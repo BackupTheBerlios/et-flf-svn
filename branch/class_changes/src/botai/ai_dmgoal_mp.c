@@ -485,7 +485,7 @@ qboolean BotMP_CheckEmergencyGoals( bot_state_t *bs ) {
 				}
 
 				// Gordon: WTH is this for?
-				if(bs->sess.playerType != PC_ENGINEER) {
+				if(bs->sess.playerType != PC_ASSAULT) {
 					if(BotCanSnipe( bs, qtrue )) {
 						if(level.explosiveTargets[bs->sess.sessionTeam == TEAM_AXIS ? 0 : 1] != BotGetTargetExplosives( bs->sess.sessionTeam, NULL, 0, qfalse )
 							|| BotNumTeamMatesWithTarget(bs, list[i], NULL, 0) >= (int)(floor(0.3*numTeammates/numList))) {
@@ -495,7 +495,7 @@ qboolean BotMP_CheckEmergencyGoals( bot_state_t *bs ) {
 				}
 
 				// if this dynamite has been laid by our team, and we are an engineer, no need to defend it
-				if (bs->sess.playerType == PC_ENGINEER && ((trav->s.teamNum % 4) == bs->sess.sessionTeam)) {
+				if (bs->sess.playerType == PC_ASSAULT && ((trav->s.teamNum % 4) == bs->sess.sessionTeam)) {
 					continue;
 				}
 
@@ -517,7 +517,7 @@ qboolean BotMP_CheckEmergencyGoals( bot_state_t *bs ) {
 						VectorCopy( center, target.origin );
 						//
 						// if we are an engineer, and this is hostile dynamite, we should defuse it, otherwise defend it
-						if (bs->sess.playerType == PC_ENGINEER && ((trav->s.teamNum % 4) != bs->sess.sessionTeam))
+						if (bs->sess.playerType == PC_ASSAULT && ((trav->s.teamNum % 4) != bs->sess.sessionTeam))
 						{
 							if (BotGoalWithinMovementAutonomy( bs, &target, BGU_HIGH )) {
 								// if we are already heading there, continue
@@ -602,11 +602,9 @@ int botgoalPriorities_CovertOps[BFG_NUMBOTGOALTYPES] = {
 };
 
 int *botgoalPriorities_Class[NUM_PLAYER_CLASSES] = {
-	botgoalPriorities_Standard,	// PC_SOLDIER
+	botgoalPriorities_Standard,	// PC_HEAVY
 	botgoalPriorities_Standard,	// PC_MEDIC
-	botgoalPriorities_Engineer,	// PC_ENGINEER
-	botgoalPriorities_Standard,	// PC_FIELDOPS
-	botgoalPriorities_CovertOps	// PC_COVERTOPS
+	botgoalPriorities_Engineer,	// PC_ASSAULT
 };
 
 int botgoalMaxCloser[BFG_NUMBOTGOALTYPES] = {
@@ -646,7 +644,7 @@ int BotMP_FindGoal_BuildGoalList( bot_state_t* bs, botgoalFind_t* pGoals, int ma
 
 	BFG_CHECKMAX;
 
-	leader = BotGetLeader( bs, (bs->sess.playerType == PC_SOLDIER) );
+	leader = BotGetLeader( bs, (bs->sess.playerType == PC_HEAVY) );
 	if( leader != -1 && g_entities[leader].r.svFlags & SVF_BOT ) {
 		pGoals[goalNum].type =		BFG_FOLLOW_LEADER;
 		pGoals[goalNum].ent	=		&g_entities[leader];
@@ -681,7 +679,7 @@ int BotMP_FindGoal_BuildGoalList( bot_state_t* bs, botgoalFind_t* pGoals, int ma
 		BFG_CHECKMAX;
 	}
 
-	if(bs->sess.playerType == PC_ENGINEER) {
+	if(bs->sess.playerType == PC_ASSAULT) {
 		// Constructibles
 		// find a constructible
 		trav = NULL;
@@ -829,7 +827,7 @@ int BotMP_FindGoal_BuildGoalList( bot_state_t* bs, botgoalFind_t* pGoals, int ma
 		}
 	}
 
-	if( bs->sess.playerType == PC_COVERTOPS ) {
+	if( bs->sess.playerType == PC_RECON ) {
 		c = BotBestLandmineSpotingSpot( bs );
 		if(c != -1) {
 			pGoals[goalNum].type =		BFG_SCANFORMINES;
@@ -934,11 +932,9 @@ int QDECL BotMP_FindGoals_Sort_CovertOps( const void *a, const void *b ) {
 typedef int QDECL sortFunc( const void *a, const void *b );
 
 sortFunc* botmp_sortFuncs[NUM_PLAYER_CLASSES] = {
-	BotMP_FindGoals_Sort_Standard,	// PC_SOLDIER
-	BotMP_FindGoals_Sort_Standard,	// PC_MEDIC
-	BotMP_FindGoals_Sort_Engineer,	// PC_ENGINEER
-	BotMP_FindGoals_Sort_Standard,	// PC_FIELDOPS
-	BotMP_FindGoals_Sort_CovertOps	// PC_COVERTOPS
+	BotMP_FindGoals_Sort_Standard,	// PC_HEAVY
+	BotMP_FindGoals_Sort_Engineer,	// PC_ASSAULT
+	BotMP_FindGoals_Sort_CovertOps	// PC_RECON
 };
 
 
@@ -949,12 +945,12 @@ int BotMP_FindGoal_ClassForGoalType( botgoalFindType_t type ) {
 		case BFG_DESTRUCTION_BUILDING:
 		case BFG_MG42_REPAIR:
 		case BFG_MINE:
-			return PC_ENGINEER;
+			return PC_ASSAULT;
 
 		case BFG_SNIPERSPOT:
 		case BFG_SCANFORMINES:
 		case BFG_DESTRUCTION_SATCHEL:
-			return PC_COVERTOPS;
+			return PC_RECON;
 	}
 
 	return -1;
@@ -1544,7 +1540,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 
 	//
 	// look for a (better?) leader
-	bs->leader = BotGetLeader(bs, (bs->sess.playerType == PC_SOLDIER) );
+	bs->leader = BotGetLeader(bs, (bs->sess.playerType == PC_HEAVY) );
 	if (bs->leader > -1) {
 		// we have a leader, follow them
 		if (BotGoalForEntity( bs, bs->leader, &secondary, BGU_LOW ) || !(g_entities[bs->leader].r.svFlags & SVF_BOT)) {
@@ -1566,7 +1562,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 	}
 
 	// IMPORTANT CONSTRUCTIBLES
-	if (bs->sess.playerType == PC_ENGINEER) {
+	if (bs->sess.playerType == PC_ASSAULT) {
 		int pass;
 		//
 		for (pass=0; pass<2; pass++) {
@@ -1615,7 +1611,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 
 				//
 				if (!BotIsConstructible( bs->sess.sessionTeam, trav->s.number )) continue;
-				if ((pass == 0) && BotNumTeamMatesWithTargetByClass( bs, trav->s.number, NULL, 0, PC_ENGINEER )) continue;		// someone else is going for it
+				if ((pass == 0) && BotNumTeamMatesWithTargetByClass( bs, trav->s.number, NULL, 0, PC_ASSAULT )) continue;		// someone else is going for it
 				if (!BotGetReachableEntityArea( bs, trav->s.number, &target )) continue;	// not reachable
 				//
 				// we can build it
@@ -1719,7 +1715,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 
 	// CONSTRUCTIBLES
 
-	if (bs->sess.playerType == PC_ENGINEER) {
+	if (bs->sess.playerType == PC_ASSAULT) {
 		int pass;
 		//
 		for (pass=0; pass<2; pass++) {
@@ -1763,7 +1759,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 
 				//
 				if (!BotIsConstructible( bs->sess.sessionTeam, trav->s.number )) continue;
-				if (BotNumTeamMatesWithTargetByClass( bs, trav->s.number, NULL, 0, PC_ENGINEER ) > pass) continue;		// someone else is going for it
+				if (BotNumTeamMatesWithTargetByClass( bs, trav->s.number, NULL, 0, PC_ASSAULT ) > pass) continue;		// someone else is going for it
 				if (!BotGetReachableEntityArea( bs, trav->s.number, &target )) continue;	// not reachable
 				if (bestGoalPriority > trav->goalPriority[bs->sess.sessionTeam-1]) continue;
 				//
@@ -1796,7 +1792,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 	}
 
 	// check for dynamite
-	if (bs->sess.playerType == PC_ENGINEER) {
+	if (bs->sess.playerType == PC_ASSAULT) {
 		// look for things to blow up
 		numTargets = BotGetTargetExplosives( bs->sess.sessionTeam, tlist, 10, qfalse );
 		if (numTargets) {
@@ -1946,7 +1942,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 	}
 
 	// BROKEN MG42
-	if (bs->sess.playerType == PC_ENGINEER) {
+	if (bs->sess.playerType == PC_ASSAULT) {
 		// look for a broken MG42 that isnt already being fixed
 		trav = NULL;
 		while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_MG42 )) {
@@ -1955,7 +1951,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 			if (trav->health <= 0) {
 				if (trav->melee) {
 					ent = trav->melee;
-					if ((ent->aiTeam == bs->sess.sessionTeam) && (ent->botIgnoreTime < level.time) && (BotNumTeamMatesWithTargetByClass( bs, trav->s.number, NULL, -1, PC_ENGINEER ) == 0)) {
+					if ((ent->aiTeam == bs->sess.sessionTeam) && (ent->botIgnoreTime < level.time) && (BotNumTeamMatesWithTargetByClass( bs, trav->s.number, NULL, -1, PC_ASSAULT ) == 0)) {
 						// go fix it?
 						if (BotGoalForEntity( bs, ent->s.number, &target, BGU_LOW )) {
 							//
@@ -1976,7 +1972,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 	}
 
 	// PLANT LAND MINES
-	if (bs->sess.playerType == PC_ENGINEER && (G_CountTeamLandmines(bs->sess.sessionTeam) < MAX_TEAM_LANDMINES)) {
+	if (bs->sess.playerType == PC_ASSAULT && (G_CountTeamLandmines(bs->sess.sessionTeam) < MAX_TEAM_LANDMINES)) {
 		// look for a land mine area that isn't full
 		closestTime = 0;
 		trav = NULL;
@@ -1989,7 +1985,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 			// has it got enough landmines?
 			if (trav->count2 >= trav->count) continue;
 			// already someone else heading for it?
-			if (BotNumTeamMatesWithTargetByClass( bs, trav->s.number, NULL, 0, PC_ENGINEER )) continue;		// someone else is going for it
+			if (BotNumTeamMatesWithTargetByClass( bs, trav->s.number, NULL, 0, PC_ASSAULT )) continue;		// someone else is going for it
 			// valid goal towards it?
 			if (!BotGoalForEntity( bs, trav->s.number, &target, BGU_LOW )) continue;
 			//
@@ -2456,7 +2452,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 
 			// MG42 AI
 			// note: mg42 only operate if flag is at base
-			if (bs->sess.playerType == PC_SOLDIER) {
+			if (bs->sess.playerType == PC_HEAVY) {
 				//
 				c = BotBestMG42Spot( bs, !gotTarget );
 				if (c > -1) {
@@ -2675,7 +2671,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 
 			// MG42 AI
 			// note: mg42 only operate if flag is at base
-			if ((bs->sess.playerType == PC_SOLDIER) && (BotFlagAtBase( bs->sess.sessionTeam, &ent ) == qtrue)) {
+			if ((bs->sess.playerType == PC_HEAVY) && (BotFlagAtBase( bs->sess.sessionTeam, &ent ) == qtrue)) {
 				// already sniping
 				if (bs->ainode == AINode_MP_MG42Mount || bs->ainode == AINode_MP_MG42Scan) return qfalse;
 				//
@@ -2840,7 +2836,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 
 		// MG42 AI
 		// note: mg42 only operate if flag is at base
-		if (qtrue) {//bs->sess.playerType == PC_SOLDIER) {
+		if (qtrue) {//bs->sess.playerType == PC_HEAVY) {
 			// already sniping
 			if (bs->ainode == AINode_MP_MG42Mount || bs->ainode == AINode_MP_MG42Scan) return qfalse;
 			//

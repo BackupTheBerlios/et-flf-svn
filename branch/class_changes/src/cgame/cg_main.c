@@ -1818,11 +1818,9 @@ static void CG_RegisterGraphics( void ) {
 
 	cgs.media.limboWeaponCardOOS =		trap_R_RegisterShaderNoMip( "gfx/limbo/outofstock" );
 
-	cgs.media.limboClassButtons[PC_ENGINEER] =	trap_R_RegisterShaderNoMip( "gfx/limbo/ic_engineer"		);
-	cgs.media.limboClassButtons[PC_SOLDIER] =	trap_R_RegisterShaderNoMip( "gfx/limbo/ic_soldier"		);
-	cgs.media.limboClassButtons[PC_COVERTOPS] = trap_R_RegisterShaderNoMip( "gfx/limbo/ic_covertops"	);
-	cgs.media.limboClassButtons[PC_FIELDOPS] =	trap_R_RegisterShaderNoMip( "gfx/limbo/ic_fieldops"		);
-	cgs.media.limboClassButtons[PC_MEDIC] =		trap_R_RegisterShaderNoMip( "gfx/limbo/ic_medic"		);
+	cgs.media.limboClassButtons[PC_ASSAULT]	=	trap_R_RegisterShaderNoMip( "gfx/limbo/ic_engineer"		);
+	cgs.media.limboClassButtons[PC_HEAVY]	 =	trap_R_RegisterShaderNoMip( "gfx/limbo/ic_soldier"		);
+	cgs.media.limboClassButtons[PC_RECON]	=	 trap_R_RegisterShaderNoMip( "gfx/limbo/ic_covertops"	);
 	cgs.media.limboSkillsBS =					trap_R_RegisterShaderNoMip( "gfx/limbo/ic_battlesense"	);
 	cgs.media.limboSkillsLW =					trap_R_RegisterShaderNoMip( "gfx/limbo/ic_lightweap"	);
 	//cgs.media.limboClassButtonBack =			trap_R_RegisterShaderNoMip( "gfx/limbo/but_class"		);
@@ -1831,11 +1829,9 @@ static void CG_RegisterGraphics( void ) {
 	cgs.media.limboClassButton2Back_off =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_back_off"			);
 	cgs.media.limboClassButton2Wedge_off =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_4pieces_off"		);
 	cgs.media.limboClassButton2Wedge_on =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_4pieces_on"		);
-	cgs.media.limboClassButtons2[PC_ENGINEER] =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_engineer"		);
-	cgs.media.limboClassButtons2[PC_SOLDIER] =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_soldier"		);
-	cgs.media.limboClassButtons2[PC_COVERTOPS] =	trap_R_RegisterShaderNoMip( "gfx/limbo/skill_covops"		);
-	cgs.media.limboClassButtons2[PC_FIELDOPS] =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_fieldops"		);
-	cgs.media.limboClassButtons2[PC_MEDIC] =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_medic"			);
+	cgs.media.limboClassButtons2[PC_ASSAULT] =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_engineer"		);
+	cgs.media.limboClassButtons2[PC_HEAVY] =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_soldier"		);
+	cgs.media.limboClassButtons2[PC_RECON]	 =		trap_R_RegisterShaderNoMip( "gfx/limbo/skill_covops"		);
 	
 
 	cgs.media.limboTeamButtonBack_on =			trap_R_RegisterShaderNoMip( "gfx/limbo/but_team_on"		);

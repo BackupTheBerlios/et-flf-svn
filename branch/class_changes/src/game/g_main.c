@@ -725,7 +725,7 @@ void G_CheckForCursorHints( gentity_t *ent ) {
 	}
 
 	// Arnout: building something - add this here because we don't have anything solid to trace to - quite ugly-ish
-	if( ent->client->touchingTOI && ps->stats[ STAT_PLAYER_CLASS ] == PC_ENGINEER ) {
+	if( ent->client->touchingTOI && ps->stats[ STAT_PLAYER_CLASS ] == PC_ASSAULT ) {
 		gentity_t* constructible;
 		if( constructible = G_IsConstructible( ent->client->sess.sessionTeam, ent->client->touchingTOI ) ) {
 			ps->serverCursorHint = HINT_CONSTRUCTIBLE;
@@ -734,7 +734,7 @@ void G_CheckForCursorHints( gentity_t *ent ) {
 		}
 	}
 
-	if( ps->stats[ STAT_PLAYER_CLASS ] == PC_COVERTOPS ) {
+	if( ps->stats[ STAT_PLAYER_CLASS ] == PC_RECON ) {
 		if(ent->client->landmineSpottedTime && level.time - ent->client->landmineSpottedTime < 500) {
 			ps->serverCursorHint = HINT_LANDMINE;
 			ps->serverCursorHintVal	= ent->client->landmineSpotted ? ent->client->landmineSpotted->count2 : 0;
@@ -778,11 +778,8 @@ void G_CheckForCursorHints( gentity_t *ent ) {
 		// Show medics a syringe if they can revive someone
 
 		if ( traceEnt->client && traceEnt->client->sess.sessionTeam == ent->client->sess.sessionTeam) {
-			if(ps->stats[ STAT_PLAYER_CLASS ] == PC_MEDIC && traceEnt->client->ps.pm_type == PM_DEAD && !( traceEnt->client->ps.pm_flags & PMF_LIMBO ) ) {
-					hintDist	= 48; // JPW NERVE matches weapon_syringe in g_weapon.c 
-					hintType	= HINT_REVIVE;
-			}
-		} else if(traceEnt->client && traceEnt->client->isCivilian) {
+
+		} else if (traceEnt->client && traceEnt->client->isCivilian) {
 			// xkan, 1/6/2003 - check for civilian, show neutral cursor (no matter which team)		
 			hintType = HINT_PLYR_NEUTRAL;
 			hintDist = CH_FRIENDLY_DIST;	// far, since this will be used to determine whether to shoot bullet weaps or not
@@ -836,7 +833,7 @@ void G_CheckForCursorHints( gentity_t *ent ) {
 				case ET_CORPSE:
 					if( !ent->client->ps.powerups[PW_BLUEFLAG] && !ent->client->ps.powerups[PW_REDFLAG] && !ent->client->ps.powerups[PW_OPS_DISGUISED]) {
 						if( BODY_TEAM(traceEnt) < 4 && BODY_TEAM(traceEnt) != ent->client->sess.sessionTeam && traceEnt->nextthink == traceEnt->timestamp + BODY_TIME(BODY_TEAM(traceEnt))) {
-							if( ent->client->ps.stats[STAT_PLAYER_CLASS] == PC_COVERTOPS ) {
+							if( ent->client->ps.stats[STAT_PLAYER_CLASS] == PC_RECON ) {
 								hintDist	= 48;
 								hintType	= HINT_UNIFORM;
 								hintVal		= BODY_VALUE(traceEnt);
@@ -857,7 +854,7 @@ void G_CheckForCursorHints( gentity_t *ent ) {
 						hintType = HINT_MG42;	
 						hintVal = 0;
 					} else {
-						if( ps->stats[ STAT_PLAYER_CLASS ] == PC_ENGINEER && G_EmplacedGunIsRepairable( traceEnt, ent)) {
+						if( ps->stats[ STAT_PLAYER_CLASS ] == PC_ASSAULT && G_EmplacedGunIsRepairable( traceEnt, ent)) {
 							hintType = HINT_BUILD;
 							hintDist = CH_BREAKABLE_DIST;
 							hintVal = traceEnt->health;
@@ -1053,7 +1050,7 @@ void G_CheckForCursorHints( gentity_t *ent ) {
 					break;
 				case ET_MISSILE:
 				case ET_BOMB:
-					if ( ps->stats[ STAT_PLAYER_CLASS ] == PC_ENGINEER ) 
+					if ( ps->stats[ STAT_PLAYER_CLASS ] == PC_ASSAULT ) 
 					{
 						hintDist	= CH_BREAKABLE_DIST;
 						hintType	= HINT_DISARM;

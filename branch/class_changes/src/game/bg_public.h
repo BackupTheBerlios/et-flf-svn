@@ -556,13 +556,11 @@ int Pmove (pmove_t *pmove);
 
 //===================================================================================
 
-#define PC_SOLDIER				0	//	shoot stuff
-#define PC_MEDIC				1	//	heal stuff
-#define PC_ENGINEER				2	//	build stuff
-#define PC_FIELDOPS				3	//	bomb stuff
-#define PC_COVERTOPS			4	//	sneak about ;o
+#define PC_RECON				0	//	Cap, sniper and fast
+#define PC_ASSAULT				1	//	Midrange
+#define PC_HEAVY				2	//	Tank, slow
 
-#define NUM_PLAYER_CLASSES		5
+#define NUM_PLAYER_CLASSES		3
 
 // JPW NERVE
 #define MAX_WEAPS_IN_BANK_MP	12

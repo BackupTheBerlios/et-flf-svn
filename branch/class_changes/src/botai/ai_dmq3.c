@@ -792,14 +792,6 @@ qboolean G_WeaponCharged( playerState_t* ps, team_t team, int weapon, int* skill
 
 		case WP_BINOCULARS:
 			switch (ps->stats[ STAT_PLAYER_CLASS ]) {
-			case PC_FIELDOPS:
-				if( skill[SK_SIGNALS] >= 2 ) {
-					if( WC_WEAPON_TIME_LEFT <= WC_FIELDOPS_TIME * 0.66f ) {
-						return qfalse;
-					}
-				} else if( WC_WEAPON_TIME_LEFT <= WC_FIELDOPS_TIME ) {
-					return qfalse;
-				}
 			default:
 				return qfalse;
 			}
@@ -1018,25 +1010,10 @@ float BotWeaponWantScale( bot_state_t *bs, weapon_t weapon ) {
 		}
 		break;
 	case WP_SMOKE_MARKER:
-		if(bs->sess.playerType == PC_FIELDOPS && bs->enemy > -1 && (bs->inventory[ENEMY_HORIZONTAL_DIST] < 400)) {
-			if(BG_GetSkyHeightAtPoint( BotGetOrigin( bs->enemy ) ) == MAX_MAP_SIZE) {
-				return 0.f;
-			}
-
-			return 1.f;
-		}
 		break;
 	case WP_BINOCULARS:
 		if (!moving) {
-			if (bs->sess.playerType == PC_FIELDOPS) {
-				if( bs->enemy > -1 && (bs->inventory[ENEMY_HORIZONTAL_DIST] < 400) ) {
-					if(BG_GetSkyHeightAtPoint( BotGetOrigin( bs->enemy ) ) == MAX_MAP_SIZE) {
-						return 0.f;
-					}
-					return 1.f;
-				}
-				return 0.f;
-			} else if ( bs->sess.playerType == PC_COVERTOPS ) {
+			if ( bs->sess.playerType == PC_RECON ) {
 				return 1.f;
 			}
 		} else {
@@ -5166,10 +5143,10 @@ void BotDeathmatchAI(bot_state_t *bs, float thinktime)
 	BotCheckAir(bs);
 
 	//check for required engineer's
-	if(BotIsDead(bs) || bs->sess.playerType != PC_ENGINEER) {
+	if(BotIsDead(bs) || bs->sess.playerType != PC_ASSAULT) {
 		if(BotCheckNeedEngineer(bs, bs->sess.sessionTeam)) {
 			// should change automatically
-			bs->mpClass = PC_ENGINEER;
+			bs->mpClass = PC_ASSAULT;
 			level.clients[bs->client].sess.latchPlayerType = bs->mpClass;
 			if(!BotIsDead(bs)) {
 				Cmd_Kill_f( &g_entities[bs->client] );
@@ -6210,22 +6187,7 @@ BotCheckVoiceChats()
 */
 void BotCheckVoiceChats( bot_state_t *bs ) {
 	if (VectorLengthSquared(bs->cur_ps.velocity) < SQR(10)) {
-		// do we need ammo?
-		//		TAT 10/8/2002 - Lieutenants shouldn't bother asking for ammo
-		if (bs->sess.playerType != PC_FIELDOPS && ClientNeedsAmmo( bs->client )) {
-			BotVoiceChatAfterIdleTime( bs->client, "NeedAmmo", SAY_TEAM, 2000 + rand()%10000, qfalse, 40000 + rand()%15000, qfalse  );
-		}
-
-		// do we need health?
-		// TAT 10/8/2002 - Medics only ask for health if they are dead
-		if ((bs->sess.playerType == PC_MEDIC && BotHealthScale(bs->client) <= 0.0) || (bs->sess.playerType != PC_MEDIC && BotHealthScale(bs->client) <= 0.2)) {
-			BotVoiceChatAfterIdleTime( bs->client, "Medic", SAY_TEAM, 2000 + rand()%10000, qfalse, 30000 + rand()%10000, qfalse  );
-		}
-
-		// if we have received health, then thank someone
-		if (bs->sess.playerType != PC_MEDIC && bs->last_checkvoice_health > 0 && bs->cur_ps.stats[STAT_HEALTH] > bs->last_checkvoice_health) {
-			BotVoiceChatAfterIdleTime( bs->client, "Thanks", SAY_TEAM, 500 + rand()%1000, qfalse, 5000 + rand()%5000, qfalse  );
-		}
+		
 	}
 
 	bs->last_checkvoice_health = bs->cur_ps.stats[STAT_HEALTH];
@@ -6806,7 +6768,7 @@ int BotCanSnipe( bot_state_t *bs, qboolean checkAmmo ) {
 	int i, best, bestAmmo, thisAmmo;
 
 	// Gordon: early out if not covert ops only they have sniper weapons
-	if( bs->cur_ps.stats[STAT_PLAYER_CLASS] != PC_COVERTOPS ) {
+	if( bs->cur_ps.stats[STAT_PLAYER_CLASS] != PC_RECON ) {
 		return WP_NONE;
 	}
 
@@ -6970,10 +6932,6 @@ int BotBestTargetWeapon( bot_state_t *bs, int targetNum )
 			COM_BitSet( validWeapons, WP_GRENADE_PINEAPPLE );
 			COM_BitSet( validWeapons, WP_SMOKE_MARKER );
 
-			if (bs->sess.playerType == PC_FIELDOPS) {
-				COM_BitSet( validWeapons, WP_BINOCULARS );
-			}
-
 			COM_BitSet( validWeapons, WP_MORTAR );
 			COM_BitSet( validWeapons, WP_GPG40 );
 			COM_BitSet( validWeapons, WP_M7 );
@@ -6997,10 +6955,6 @@ int BotBestTargetWeapon( bot_state_t *bs, int targetNum )
 				COM_BitSet( validWeapons, WP_GRENADE_LAUNCHER );
 				COM_BitSet( validWeapons, WP_GRENADE_PINEAPPLE );
 				COM_BitSet( validWeapons, WP_SMOKE_MARKER );
-
-				if (bs->sess.playerType == PC_FIELDOPS) {
-					COM_BitSet( validWeapons, WP_BINOCULARS );
-				}
 
 				COM_BitSet( validWeapons, WP_MORTAR );
 				COM_BitSet( validWeapons, WP_GPG40 );

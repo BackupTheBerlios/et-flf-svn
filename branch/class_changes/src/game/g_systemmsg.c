@@ -111,7 +111,7 @@ void G_CheckForNeededClasses( void ) {
 
 		team = ent->client->sess.sessionTeam == TEAM_AXIS ? 0 : 1;
 
-		if(ent->client->sess.playerType != PC_SOLDIER) {
+		if(ent->client->sess.playerType != PC_HEAVY) {
 			playerClasses[ent->client->sess.playerType-1][team] = qtrue;
 		}
 
@@ -120,8 +120,8 @@ void G_CheckForNeededClasses( void ) {
 
 	// ALLIES
 	if( teamCounts[1] > 3 ) {
-		if(!playerClasses[PC_ENGINEER - 1]) {
-			playerClasses[PC_ENGINEER - 1][0] = G_NeedEngineers( TEAM_ALLIES ) ? 0 : 1;
+		if(!playerClasses[PC_ASSAULT - 1]) {
+			playerClasses[PC_ASSAULT - 1][0] = G_NeedEngineers( TEAM_ALLIES ) ? 0 : 1;
 		}
 
 		cnt = 0;
@@ -146,8 +146,8 @@ void G_CheckForNeededClasses( void ) {
 
 	// AXIS
 	if( teamCounts[0] > 3 ) {
-		if(!playerClasses[PC_ENGINEER - 1]) {
-			playerClasses[PC_ENGINEER - 1][1] = G_NeedEngineers( TEAM_AXIS ) ? 0 : 1;
+		if(!playerClasses[PC_ASSAULT - 1]) {
+			playerClasses[PC_ASSAULT - 1][1] = G_NeedEngineers( TEAM_AXIS ) ? 0 : 1;
 		}
 
 		cnt = 0;

@@ -250,7 +250,7 @@ void CG_Respawn( qboolean revived ) {
 		cgs.limboLoadoutSelected = qfalse;
 	}
 
-	if( cg.predictedPlayerState.stats[STAT_PLAYER_CLASS] == PC_COVERTOPS ) {
+	if( cg.predictedPlayerState.stats[STAT_PLAYER_CLASS] == PC_RECON ) {
 		cg.pmext.silencedSideArm = 1;
 	}
 

@@ -1302,7 +1302,7 @@ qboolean BotCheckNeedEngineer( bot_state_t *bs, team_t team ) {
 
 	// Gordon: want a couple at the start
 	if( level.time - level.startTime < 20000 ) {
-		if( BotNumTeamClasses( team, PC_ENGINEER, bs->client ) < 2 ) {
+		if( BotNumTeamClasses( team, PC_ASSAULT, bs->client ) < 2 ) {
 			return qtrue;
 		} else {
 			return qfalse;
@@ -1323,7 +1323,7 @@ qboolean BotCheckNeedEngineer( bot_state_t *bs, team_t team ) {
 		return qfalse;
 	}
 
-	if( BotNumTeamClasses( team, PC_ENGINEER, bs->client ) > 0 ) {
+	if( BotNumTeamClasses( team, PC_ASSAULT, bs->client ) > 0 ) {
 		return qfalse;
 	}
 
@@ -1348,7 +1348,7 @@ int BotSuggestClass(bot_state_t *bs, team_t team) {
 //	int		list[10], numList;
 	int		numTeamMembers;
 
-	int		classPriority[NUM_PLAYER_CLASSES] = {PC_ENGINEER, PC_SOLDIER, PC_MEDIC, PC_FIELDOPS, PC_COVERTOPS};
+	int		classPriority[NUM_PLAYER_CLASSES] = {PC_RECON, PC_ASSAULT, PC_HEAVY};
 //	char	userinfo[MAX_INFO_STRING], *str;
 	float	bestDiff, diff;
 	int		bestClass;
@@ -1368,7 +1368,7 @@ int BotSuggestClass(bot_state_t *bs, team_t team) {
 
 	// quick test for engineers
 	if( BotCheckNeedEngineer( bs, team ) ) {
-		return PC_ENGINEER;
+		return PC_ASSAULT;
 	}
 
 	memset( numRequired, 0, sizeof(numRequired) );
@@ -1378,29 +1378,29 @@ int BotSuggestClass(bot_state_t *bs, team_t team) {
 	if( BotGetTargetExplosives( team, NULL, 0, qtrue ) || BotGetConstructibles( team, NULL, 0, qtrue ) ) {
 		needEngineers = qtrue;
 	} else {
-		numRequired[PC_ENGINEER] = 0;
+		numRequired[PC_ASSAULT] = 0;
 	}
 
 	if (needEngineers) {
 		if (numTeamMembers <= 3) {
-			numRequired[PC_ENGINEER] = 1;
+			numRequired[PC_ASSAULT] = 1;
 		} else {
-			numRequired[PC_ENGINEER] = (int)ceil(numTeamMembers / 3.f);
+			numRequired[PC_ASSAULT] = (int)ceil(numTeamMembers / 3.f);
 		}
 	}
 
 	// we should have at least one of each other class
-	numTeamMembers -= numRequired[PC_ENGINEER];
+	numTeamMembers -= numRequired[PC_ASSAULT];
 
-	numRequired[PC_SOLDIER] =	numTeamMembers / 2.f > 1 ? numTeamMembers / 2.f : 1;
-	numRequired[PC_COVERTOPS] = numRequired[PC_FIELDOPS] = numRequired[PC_MEDIC] = (numTeamMembers / 6.f) > 1 ? (numTeamMembers / 6.f) : 1;
+	numRequired[PC_HEAVY] =	numTeamMembers / 2.f > 1 ? numTeamMembers / 2.f : 1;
+	numRequired[PC_RECON] = (numTeamMembers / 6.f) > 1 ? (numTeamMembers / 6.f) : 1;
 
 	//
 	// special cases		
 	if(lastMg42Death && ((level.time - lastMg42Death) < (30 * 1000))) {
 		// use panzers to clear mg42 nests
-		numRequired[PC_SOLDIER] = (numTeamMembers - 3 > numRequired[PC_SOLDIER] ? numTeamMembers - 3: numRequired[PC_SOLDIER]);
-		numRequired[PC_COVERTOPS] = numRequired[PC_FIELDOPS] = numRequired[PC_MEDIC] = 1;
+		numRequired[PC_HEAVY] = (numTeamMembers - 3 > numRequired[PC_HEAVY] ? numTeamMembers - 3: numRequired[PC_HEAVY]);
+		numRequired[PC_RECON] = 1;
 	}
 
 	// allocate classes in order of priority
@@ -1423,12 +1423,12 @@ int BotSuggestClass(bot_state_t *bs, team_t team) {
 	}
 
 	if (level.time < level.startTime + 20000) {
-		return PC_SOLDIER;
+		return PC_HEAVY;
 	}
 	
 	// Gordon: FIXME: balanace it? and why not engineer, they ARE useful outside of constructing stuff etc...
 	// not important, so just pick at random
-	while ((i = rand() % NUM_PLAYER_CLASSES) == PC_ENGINEER);
+	while ((i = rand() % NUM_PLAYER_CLASSES) == PC_ASSAULT);
 
 	return i;
 }
@@ -1456,7 +1456,7 @@ int BotSuggestWeapon( bot_state_t *bs, team_t team ) {
 	// special cases
 	if (level.captureFlagMode) {
 		// if defending team, try to get some snipers at the start
-		if ((bs->mpClass == PC_COVERTOPS) && (rand()%3) && (level.time < level.startTime + 120000) && (bs->mpTeam != level.attackingTeam)) {
+		if ((bs->mpClass == PC_RECON) && (rand()%3) && (level.time < level.startTime + 120000) && (bs->mpTeam != level.attackingTeam)) {
 			r = rand() % 2;
 			switch (r) {
 			default:	return WP_FG42;
@@ -1470,7 +1470,7 @@ int BotSuggestWeapon( bot_state_t *bs, team_t team ) {
 			}
 		}
 		// if attacking, use panzers to clear defenses
-		if ((bs->mpClass == PC_SOLDIER) && (rand()%3) && (level.time < level.startTime + 30000) && (bs->mpTeam == level.attackingTeam)) {
+		if ((bs->mpClass == PC_HEAVY) && (rand()%3) && (level.time < level.startTime + 30000) && (bs->mpTeam == level.attackingTeam)) {
 			//return 4; // panzer
 			return WP_PANZERFAUST;
 		}
@@ -1487,7 +1487,7 @@ int BotSuggestWeapon( bot_state_t *bs, team_t team ) {
 		}
 	}
 
-	if (!noSniper && !(rand() % 2) && (bs->mpClass == PC_COVERTOPS)) {
+	if (!noSniper && !(rand() % 2) && (bs->mpClass == PC_RECON)) {
 		// are there sniper spots available?
 		i = BotBestSniperSpot( bs );
 		if (i >= 0) {
@@ -1505,7 +1505,7 @@ int BotSuggestWeapon( bot_state_t *bs, team_t team ) {
 	// else choose at random
 
 	switch (bs->mpClass) {
-	case PC_ENGINEER:
+	case PC_ASSAULT:
 		r = rand() % 2;
 		switch(bs->mpTeam) {
 			case TEAM_AXIS:
@@ -1519,7 +1519,7 @@ int BotSuggestWeapon( bot_state_t *bs, team_t team ) {
 			case 1:		return WP_THOMPSON;
 			}
 		}
-	case PC_SOLDIER:
+	case PC_HEAVY:
 		if(lastMg42Death && (level.time - lastMg42Death) < (60 * 1000)) {
 			// Gordon: much greater chance of panzerfaust
 			r = rand() % 12;
@@ -1540,7 +1540,7 @@ int BotSuggestWeapon( bot_state_t *bs, team_t team ) {
 			}
 		}
 		break;
-	case PC_COVERTOPS:
+	case PC_RECON:
 		r = rand() % 3;
 		switch (r) {
 		default:	return WP_FG42;
@@ -1881,7 +1881,7 @@ qboolean BotClass_CovertOpsCheckDisguises( bot_state_t *bs, int maxTravel, bot_g
 	vec3_t loc;
 
 	//if we are not covert ops
-	if (bs->sess.playerType != PC_COVERTOPS)
+	if (bs->sess.playerType != PC_RECON)
 		return qfalse;
 
 	bestTravel = maxTravel;
@@ -1895,7 +1895,7 @@ qboolean BotClass_CovertOpsCheckDisguises( bot_state_t *bs, int maxTravel, bot_g
 			continue;
 
 		// make sure there isn't already a covertop snagging their getup
-		numList = BotNumTeamMatesWithTargetByClass( bs, trav->s.number, list, 32, PC_COVERTOPS );
+		numList = BotNumTeamMatesWithTargetByClass( bs, trav->s.number, list, 32, PC_RECON );
 		if (numList) numList = BotReduceListByTravelTime( list, numList, BotGetOrigin(trav->s.number), BotGetArea(trav->s.number), BotTravelTimeToEntity( bs, trav->s.number ) );
 		if (numList) continue;
 		//
@@ -1956,11 +1956,6 @@ qboolean BotClass_MedicCheckRevives( bot_state_t *bs, int maxtravel, bot_goal_t 
 	bot_goal_t target;
 	int list[32], numList;
 
-	//if we are not medic
-	if( bs->sess.playerType != PC_MEDIC ) {
-		return qfalse;
-	}
-
 	if( !BotGotEnoughAmmoForWeapon( bs, WP_MEDIC_SYRINGE ) ) {
 		return qfalse;
 	}
@@ -1979,13 +1974,6 @@ qboolean BotClass_MedicCheckRevives( bot_state_t *bs, int maxtravel, bot_goal_t 
 
 		if(trav->client->ps.pm_flags & PMF_LIMBO) {
 			continue;
-		}
-
-		// make sure there isn't already another medic helping them
-		if(numList = BotNumTeamMatesWithTargetByClass( bs, teammates[i], list, 32, PC_MEDIC )) {
-			if(BotReduceListByTravelTime( list, numList, BotGetOrigin(teammates[i]), BotGetArea(teammates[i]), BotTravelTimeToEntity( bs, teammates[i] ) )) {
-				continue;
-			}
 		}
 
 		// check the route to them
@@ -2088,11 +2076,6 @@ qboolean BotClass_MedicCheckGiveHealth( bot_state_t *bs, int maxTravelTime, bot_
 	bot_goal_t target;
 	int list[32], numList;
 
-	//if we are not medic
-	if( bs->sess.playerType != PC_MEDIC ) {
-		return qfalse;
-	}
-
 	if(!BotWeaponCharged( bs, WP_MEDKIT )) {
 		return qfalse;
 	}
@@ -2115,19 +2098,8 @@ qboolean BotClass_MedicCheckGiveHealth( bot_state_t *bs, int maxTravelTime, bot_
 			continue;
 		}
 
-		if( trav->client->sess.playerType == PC_MEDIC ) {
-			continue;
-		}
-
 		if(trav->client->ps.pm_type != PM_NORMAL) {
 			continue;
-		}
-
-		// make sure there isn't already another medic helping them
-		if( numList = BotNumTeamMatesWithTargetByClass( bs, teammates[i], list, 32, PC_MEDIC ) ) {
-			if( BotReduceListByTravelTime( list, numList, BotGetOrigin(teammates[i]), BotGetArea(teammates[i]), BotTravelTimeToEntity( bs, teammates[i] ) )) {
-				continue;
-			}
 		}
 
 		// check the route to them
@@ -2238,11 +2210,6 @@ qboolean BotClass_LtCheckGiveAmmo( bot_state_t *bs, int maxTravelTime, bot_goal_
 	bot_goal_t target;
 	int list[32], numList;
 
-	//if we are not fieldops
-	if (bs->sess.playerType != PC_FIELDOPS) {
-		return qfalse;
-	}
-
 	if(!BotWeaponCharged( bs, WP_AMMO )) {
 		return qfalse;
 	}
@@ -2254,23 +2221,12 @@ qboolean BotClass_LtCheckGiveAmmo( bot_state_t *bs, int maxTravelTime, bot_goal_
 			continue;
 		}
 
-		if( trav->client->sess.playerType == PC_FIELDOPS ) {
-			continue;	// fieldops's dont need ammo from us
-		}
-
 		if( trav->botIgnoreAmmoTime > level.time ) {
 			continue;
 		}
 
 		if( trav->s.number == bs->target_goal.entitynum ) {
 			continue;
-		}
-
-		// make sure there isn't already another field op helping them		
-		if( numList = BotNumTeamMatesWithTargetByClass( bs, teammates[i], list, 32, PC_FIELDOPS ) ) {
-			if( BotReduceListByTravelTime( list, numList, BotGetOrigin(teammates[i]), BotGetArea(teammates[i]), BotTravelTimeToEntity( bs, teammates[i] ) ) ) {
-				continue;
-			}
 		}
 
 		time = 0;
@@ -2957,7 +2913,7 @@ int	BotGetLeader( bot_state_t *bs, qboolean onlyRequested ) {
 
 		if(!requested && obs) {
 			// let us follow engineers only
-			if (trav->client->sess.playerType != PC_ENGINEER) {
+			if (trav->client->sess.playerType != PC_ASSAULT) {
 				continue;	// if not a bot, only follow if requested
 			}
 		}
@@ -2970,9 +2926,9 @@ int	BotGetLeader( bot_state_t *bs, qboolean onlyRequested ) {
 			continue;
 		}
 
-/*		if (!requested && (trav->client->sess.playerType != PC_SOLDIER)) {
+/*		if (!requested && (trav->client->sess.playerType != PC_HEAVY)) {
 			// follow engineers only if they have a critical task
-			if (trav->client->sess.playerType == PC_ENGINEER && obs) {
+			if (trav->client->sess.playerType == PC_ASSAULT && obs) {
 				if (!(obs->ainode == AINode_MP_DynamiteTarget || obs->ainode == AINode_MP_ConstructibleTarget)) {
 					continue;
 				} else {

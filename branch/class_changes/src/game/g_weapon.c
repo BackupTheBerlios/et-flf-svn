@@ -136,7 +136,7 @@ void Weapon_Knife( gentity_t *ent ) {
 	damage = G_GetWeaponDamage(ent->s.weapon); // JPW		// default knife damage for frontal attacks
 
 	/* CHECK WITH PAUL */
-	if( ent->client->sess.playerType == PC_COVERTOPS )
+	if( ent->client->sess.playerType == PC_RECON )
 		damage *= 2;	// Watch it - you could hurt someone with that thing!
 
 	if(traceEnt->client) 
@@ -2494,11 +2494,6 @@ void Weapon_Artillery(gentity_t *ent) {
 	float traceheight, bottomtraceheight;
 	gentity_t *bomb, *bomb2;
 
-	if( ent->client->ps.stats[STAT_PLAYER_CLASS] != PC_FIELDOPS ) {
-		G_Printf("not a fieldops, you can't shoot this!\n");
-		return;
-	}
-
 	// TAT - 10/27/2002 - moved energy check into a func, so I can use same check in bot code
 	if( !ReadyToCallArtillery(ent) ) {
 		return;
@@ -3781,12 +3776,7 @@ void FireWeapon( gentity_t *ent ) {
 	}
 
 	if( (ent->client->ps.eFlags & EF_ZOOMING) && (ent->client->ps.stats[STAT_KEYS] & (1 << INV_BINOCS)) ) {
-		if( ent->client->sess.playerType == PC_FIELDOPS) {
-			if( !(ent->client->ps.leanf) ) {
-				Weapon_Artillery(ent);
-			}
-			return;
-		}
+		
 	}
 
 	if( ent->client->ps.groundEntityNum == ENTITYNUM_NONE ) {

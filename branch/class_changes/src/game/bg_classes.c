@@ -4,7 +4,7 @@
 
 bg_playerclass_t bg_allies_playerclasses[NUM_PLAYER_CLASSES] = {
 	{	
-		PC_SOLDIER,
+		PC_HEAVY,
 		"characters/temperate/allied/soldier.char",
 		"ui/assets/mp_gun_blue.tga",
 		"ui/assets/mp_arrow_blue.tga",
@@ -18,17 +18,7 @@ bg_playerclass_t bg_allies_playerclasses[NUM_PLAYER_CLASSES] = {
 	},
 
 	{
-		PC_MEDIC,
-		"characters/temperate/allied/medic.char",
-		"ui/assets/mp_health_blue.tga",
-		"ui/assets/mp_arrow_blue.tga",
-		{ 
-			WP_THOMPSON,
-		},	
-	},
-
-	{
-		PC_ENGINEER,
+		PC_ASSAULT,
 		"characters/temperate/allied/engineer.char",
 		"ui/assets/mp_wrench_blue.tga",
 		"ui/assets/mp_arrow_blue.tga",
@@ -39,17 +29,7 @@ bg_playerclass_t bg_allies_playerclasses[NUM_PLAYER_CLASSES] = {
 	},
 
 	{
-		PC_FIELDOPS,
-		"characters/temperate/allied/fieldops.char",
-		"ui/assets/mp_ammo_blue.tga",
-		"ui/assets/mp_arrow_blue.tga",
-		{ 
-			WP_THOMPSON,
-		},	
-	},
-
-	{
-		PC_COVERTOPS,
+		PC_RECON,
 		"characters/temperate/allied/cvops.char",
 		"ui/assets/mp_spy_blue.tga",
 		"ui/assets/mp_arrow_blue.tga",
@@ -63,7 +43,7 @@ bg_playerclass_t bg_allies_playerclasses[NUM_PLAYER_CLASSES] = {
 
 bg_playerclass_t bg_axis_playerclasses[NUM_PLAYER_CLASSES] = {
 	{
-		PC_SOLDIER,
+		PC_HEAVY,
 		"characters/temperate/axis/soldier.char",
 		"ui/assets/mp_gun_red.tga",
 		"ui/assets/mp_arrow_red.tga",
@@ -77,38 +57,18 @@ bg_playerclass_t bg_axis_playerclasses[NUM_PLAYER_CLASSES] = {
 	},
 
 	{
-		PC_MEDIC,
-		"characters/temperate/axis/medic.char",
-		"ui/assets/mp_health_red.tga",
-		"ui/assets/mp_arrow_red.tga",
-		{ 
-			WP_MP40,
-		},	
-	},
-
-	{
-		PC_ENGINEER,
+		PC_ASSAULT,
 		"characters/temperate/axis/engineer.char",
 		"ui/assets/mp_wrench_red.tga",
 		"ui/assets/mp_arrow_red.tga",
 		{ 
 			WP_MP40,
 			WP_KAR98,
-		},	
+		},
 	},
-
+	
 	{
-		PC_FIELDOPS,
-		"characters/temperate/axis/fieldops.char",
-		"ui/assets/mp_ammo_red.tga",
-		"ui/assets/mp_arrow_red.tga",
-		{ 
-			WP_MP40,
-		},	
-	},
-
-	{
-		PC_COVERTOPS,
+		PC_RECON,
 		"characters/temperate/axis/cvops.char",
 		"ui/assets/mp_spy_red.tga",
 		"ui/assets/mp_arrow_red.tga",
@@ -123,8 +83,8 @@ bg_playerclass_t bg_axis_playerclasses[NUM_PLAYER_CLASSES] = {
 bg_playerclass_t* BG_GetPlayerClassInfo( int team, int cls ) {
 	bg_playerclass_t* teamList;
 
-	if( cls < PC_SOLDIER || cls >= NUM_PLAYER_CLASSES ) {
-		cls = PC_SOLDIER;
+	if( cls < PC_HEAVY || cls >= NUM_PLAYER_CLASSES ) {
+		cls = PC_HEAVY;
 	}
 
 	switch( team ) {
@@ -182,16 +142,12 @@ qboolean BG_WeaponIsPrimaryForClassAndTeam( int classnum, team_t team, weapon_t 
 
 const char* BG_ShortClassnameForNumber( int classNum ) {
 	switch( classNum ) {
-		case PC_SOLDIER:
-			return "Soldr";
-		case PC_MEDIC:
-			return "Medic";
-		case PC_ENGINEER:
-			return "Engr";
-		case PC_FIELDOPS:
-			return "FdOps";
-		case PC_COVERTOPS:
-			return "CvOps";
+		case PC_HEAVY:
+			return "Heavy";
+		case PC_ASSAULT:
+			return "Assault";
+		case PC_RECON:
+			return "Recon";
 		default:
 			return "^1ERROR";
 	}
@@ -199,15 +155,11 @@ const char* BG_ShortClassnameForNumber( int classNum ) {
 
 const char* BG_ClassnameForNumber( int classNum ) {
 	switch( classNum ) {
-		case PC_SOLDIER:
+		case PC_HEAVY:
 			return "Soldier";
-		case PC_MEDIC:
-			return "Medic";
-		case PC_ENGINEER:
+		case PC_ASSAULT:
 			return "Engineer";
-		case PC_FIELDOPS:
-			return "Field Ops";
-		case PC_COVERTOPS:
+		case PC_RECON:
 			return "Covert Ops";
 		default:
 			return "^1ERROR";
@@ -216,15 +168,11 @@ const char* BG_ClassnameForNumber( int classNum ) {
 
 const char* BG_ClassLetterForNumber( int classNum ) {
 	switch( classNum ) {
-		case PC_SOLDIER:
+		case PC_HEAVY:
 			return "S";
-		case PC_MEDIC:
-			return "M";
-		case PC_ENGINEER:
+		case PC_ASSAULT:
 			return "E";
-		case PC_FIELDOPS:
-			return "F";
-		case PC_COVERTOPS:
+		case PC_RECON:
 			return "C";
 		default:
 			return "^1E";
@@ -233,24 +181,18 @@ const char* BG_ClassLetterForNumber( int classNum ) {
 
 int BG_ClassTextToClass(char *token) {
 	if (!Q_stricmp(token, "soldier")) {
-		return PC_SOLDIER;
-	} else if (!Q_stricmp(token, "medic")) {
-		return PC_MEDIC;
-	} else if (!Q_stricmp(token, "lieutenant")) { // FIXME: remove from missionpack
-		return PC_FIELDOPS;
-	} else if (!Q_stricmp(token, "fieldops")) {
-		return PC_FIELDOPS;
+		return PC_HEAVY;
 	} else if (!Q_stricmp(token, "engineer")) {
-		return PC_ENGINEER;
+		return PC_ASSAULT;
 	} else if (!Q_stricmp(token, "covertops")) {
-		return PC_COVERTOPS;
+		return PC_RECON;
 	}
 
 	return -1;
 }
 
 skillType_t BG_ClassSkillForClass( int classnum ) {
-	skillType_t classskill[NUM_PLAYER_CLASSES] = { SK_HEAVY_WEAPONS, SK_FIRST_AID, SK_EXPLOSIVES_AND_CONSTRUCTION, SK_SIGNALS, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS };
+	skillType_t classskill[NUM_PLAYER_CLASSES] = { SK_HEAVY_WEAPONS, SK_EXPLOSIVES_AND_CONSTRUCTION, SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS };
 
 	if( classnum < 0 || classnum >= NUM_PLAYER_CLASSES ) {
 		return SK_BATTLE_SENSE;

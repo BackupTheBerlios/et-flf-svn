@@ -20,7 +20,7 @@ void G_LogKill( gentity_t* ent, weapon_t weap ) {
 		return;
 	}
 
-	if(ent->client->sess.playerType == PC_SOLDIER) {
+	if(ent->client->sess.playerType == PC_HEAVY) {
 		int i, j;
 		qboolean pass = qtrue;
 
@@ -170,8 +170,6 @@ static void G_UpgradeSkill( gentity_t *ent, skillType_t skill ) {
 		if( AddWeaponToPlayer( ent->client, WP_BINOCULARS, 1, 0, qfalse ) ) {
 			ent->client->ps.stats[STAT_KEYS] |= ( 1 << INV_BINOCS );
 		}
-	} else if( skill == SK_FIRST_AID && ent->client->sess.playerType == PC_MEDIC && ent->client->sess.skill[skill] == 4 ) {
-		AddWeaponToPlayer( ent->client, WP_MEDIC_ADRENALINE, ent->client->ps.ammo[BG_FindAmmoForWeapon(WP_MEDIC_ADRENALINE)], ent->client->ps.ammoclip[BG_FindClipForWeapon(WP_MEDIC_ADRENALINE)], qfalse );
 	}
 }
 

@@ -1369,7 +1369,7 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,  vec3
 	}
 
 	// save some from flak jacket
-	if( targ->client && targ->client->sess.skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 4 && targ->client->sess.playerType == PC_ENGINEER ) {
+	if( targ->client && targ->client->sess.skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 4 && targ->client->sess.playerType == PC_ASSAULT ) {
 		if( mod == MOD_GRENADE ||
 			mod == MOD_GRENADE_LAUNCHER ||
 			mod == MOD_ROCKET ||

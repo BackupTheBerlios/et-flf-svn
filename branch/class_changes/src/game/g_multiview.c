@@ -293,10 +293,8 @@ qboolean G_smvRunCamera(gentity_t *ent)
 
 	tps = &ent->target_ent->client->ps;
 
-	if(tps->stats[STAT_PLAYER_CLASS] == PC_ENGINEER) chargeTime = g_engineerChargeTime.value;
-	else if(tps->stats[STAT_PLAYER_CLASS] == PC_MEDIC) chargeTime = g_medicChargeTime.value;
-	else if(tps->stats[STAT_PLAYER_CLASS] == PC_FIELDOPS) chargeTime = g_LTChargeTime.value;
-	else if(tps->stats[STAT_PLAYER_CLASS] == PC_COVERTOPS) chargeTime = g_covertopsChargeTime.value;
+	if(tps->stats[STAT_PLAYER_CLASS] == PC_ASSAULT) chargeTime = g_engineerChargeTime.value;
+	else if(tps->stats[STAT_PLAYER_CLASS] == PC_RECON) chargeTime = g_covertopsChargeTime.value;
 	else chargeTime = g_soldierChargeTime.value;
 
 	chargeTime = (level.time - tps->classWeaponTime >= (int)chargeTime) ? 0 : (1 + floor(15.0f * (float)(level.time - tps->classWeaponTime) / chargeTime));

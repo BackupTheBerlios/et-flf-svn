@@ -487,7 +487,7 @@ void CG_RegisterPlayerClasses( void )
 	int					team, cls;
 
 	for( team = TEAM_AXIS; team <= TEAM_ALLIES; team++ ) {
-		for( cls = PC_SOLDIER; cls < NUM_PLAYER_CLASSES; cls++ ) {
+		for( cls = PC_HEAVY; cls < NUM_PLAYER_CLASSES; cls++ ) {
 			classInfo = BG_GetPlayerClassInfo( team, cls );
 			character = BG_GetCharacter( team, cls );
 

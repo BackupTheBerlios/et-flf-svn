@@ -1999,13 +1999,7 @@ static void CG_DrawCrosshairNames( void ) {
 		}
 	} else if( cgs.clientinfo[cg.crosshairClientNum].team != cgs.clientinfo[cg.snap->ps.clientNum].team ) {
 		if( cg_entities[cg.crosshairClientNum].currentState.powerups & (1 << PW_OPS_DISGUISED) ) {
-			if( cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR &&
-				cgs.clientinfo[cg.snap->ps.clientNum].skill[SK_SIGNALS] >= 4 && cgs.clientinfo[cg.snap->ps.clientNum].cls == PC_FIELDOPS ) {
-				s = CG_TranslateString( "Disguised Enemy!" );
-				w = CG_DrawStrlen( s ) * SMALLCHAR_WIDTH;
-				CG_DrawSmallStringColor( 320 - w / 2, 170, s, color );
-				return;
-			} else if( dist > 512 ) {
+			if( dist > 512 ) {
 				if ( !cg_drawCrosshairNames.integer ) {
 					return;
 				}
@@ -2076,10 +2070,6 @@ static void CG_DrawCrosshairNames( void ) {
 				continue;
 			}
 
-			if( cgs.clientinfo[i].cls != PC_MEDIC ) {
-				continue;
-			}
-
 			maxHealth += 10;
 
 			if( maxHealth >= 125 ) {
@@ -2092,9 +2082,6 @@ static void CG_DrawCrosshairNames( void ) {
 			maxHealth += 15;
 		}
 
-		if( cgs.clientinfo[ cg.crosshairClientNum ].cls == PC_MEDIC ) {
-			maxHealth *= 1.12f;
-		}
 	}
 
 	// draw the health bar
@@ -3538,7 +3525,7 @@ static void CG_DrawNewCompass( void ) {
 
 	/*if( !(cgs.ccFilter & CC_FILTER_DESTRUCTIONS) ) {
 		// draw explosives if an engineer
-		if ( cg.predictedPlayerState.stats[ STAT_PLAYER_CLASS ] == PC_ENGINEER ) {
+		if ( cg.predictedPlayerState.stats[ STAT_PLAYER_CLASS ] == PC_ASSAULT ) {
 			for ( i = 0; i < snap->numEntities; i++ ) {
 				centity_t *cent = &cg_entities[ snap->entities[ i ].number ];
 
@@ -3558,26 +3545,11 @@ static void CG_DrawNewCompass( void ) {
 
 //	if( !(cgs.ccFilter & CC_FILTER_REQUESTS) ) {
 		// draw revive medic icons
-		if ( cg.predictedPlayerState.stats[ STAT_PLAYER_CLASS ] == PC_MEDIC ) {
-			for ( i = 0; i < snap->numEntities; i++ ) {
-				entityState_t *ent = &snap->entities[i];
-
-				if ( ent->eType != ET_PLAYER )
-					continue;
-
-				if ( ( ent->eFlags & EF_DEAD ) && ent->number == ent->clientNum ) {
-					if ( !cgs.clientinfo[ent->clientNum].infoValid || cg.predictedPlayerState.persistant[PERS_TEAM] != cgs.clientinfo[ent->clientNum].team )
-						continue;
-
-					CG_DrawCompassIcon( basex, basey, basew, baseh, cg.predictedPlayerState.origin, ent->pos.trBase, cgs.media.medicReviveShader );
-				}
-			}
-		}
 //	}
 
 /*	if( !(cgs.ccFilter & CC_FILTER_DESTRUCTIONS) ) {
 		// draw constructibles if an engineer
-		if ( cg.predictedPlayerState.stats[ STAT_PLAYER_CLASS ] == PC_ENGINEER ) {
+		if ( cg.predictedPlayerState.stats[ STAT_PLAYER_CLASS ] == PC_ASSAULT ) {
 			for ( i = 0; i < snap->numEntities; i++ ) {
 				centity_t *cent = &cg_entities[ snap->entities[ i ].number ];
 
@@ -3790,12 +3762,7 @@ static void CG_DrawPlayerHealthBar( rectDef_t *rect ) {
 	CG_ColorForHealth( colour );
 	colour[3] = 0.5f;
 
-	if( cgs.clientinfo[ cg.snap->ps.clientNum ].cls == PC_MEDIC ) {
-		frac = cg.snap->ps.stats[STAT_HEALTH] / ( (float) cg.snap->ps.stats[STAT_MAX_HEALTH] * 1.12f );
-	} else {
-		frac = cg.snap->ps.stats[STAT_HEALTH] / (float) cg.snap->ps.stats[STAT_MAX_HEALTH];
-	}
-
+	frac = cg.snap->ps.stats[STAT_HEALTH] / (float) cg.snap->ps.stats[STAT_MAX_HEALTH];
 
 	CG_FilledBar( rect->x, rect->y + (rect->h * 0.1f), rect->w, rect->h * 0.84f, colour, NULL, bgcolour, frac, flags );
 
@@ -3856,13 +3823,9 @@ static void CG_DrawWeapRecharge( rectDef_t *rect ) {
 //	}
 
 	// Draw power bar
-	if( cg.snap->ps.stats[ STAT_PLAYER_CLASS ] == PC_ENGINEER ) {
+	if( cg.snap->ps.stats[ STAT_PLAYER_CLASS ] == PC_ASSAULT ) {
 		chargeTime = cg.engineerChargeTime[cg.snap->ps.persistant[PERS_TEAM]-1];
-	} else if( cg.snap->ps.stats[ STAT_PLAYER_CLASS ] == PC_MEDIC ) {
-		chargeTime = cg.medicChargeTime[cg.snap->ps.persistant[PERS_TEAM]-1];
-	} else if( cg.snap->ps.stats[ STAT_PLAYER_CLASS ] == PC_FIELDOPS ) {
-		chargeTime = cg.ltChargeTime[cg.snap->ps.persistant[PERS_TEAM]-1];
-	} else if( cg.snap->ps.stats[ STAT_PLAYER_CLASS ] == PC_COVERTOPS ) {
+	} else if( cg.snap->ps.stats[ STAT_PLAYER_CLASS ] == PC_RECON ) {
 		chargeTime = cg.covertopsChargeTime[cg.snap->ps.persistant[PERS_TEAM]-1];
 	} else {
 		chargeTime = cg.soldierChargeTime[cg.snap->ps.persistant[PERS_TEAM]-1];
