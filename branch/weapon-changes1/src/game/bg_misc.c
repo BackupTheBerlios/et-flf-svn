@@ -1104,12 +1104,12 @@ model="models\weapons2\mp40\mp40.md3"
 
 		"icons/iconw_mp40_1",	// icon
 		"icons/ammo2",		// ammo icon
-		"MP40",				// pickup
+		"AK5",				// pickup
 		35,
 		IT_WEAPON,
-		WP_MP40,
-		WP_MP40,
-		WP_MP40,
+		WP_AK5,
+		WP_AK5,
+		WP_AK5,
 		"",					// precache
 		"",					// sounds
 //		{0,0,0,0,0}
@@ -3088,7 +3088,8 @@ qboolean BG_CanUseWeapon(int classNum, int teamNum, weapon_t weapon) {
 				|| weapon == WP_MORTAR
 				|| weapon == WP_MORTAR_SET )
 				return qtrue;
-			else if (weapon == WP_AK5)
+			else if (weapon == WP_AK5
+				|| weapon == WP_MP40 )
 				return (teamNum == TEAM_AXIS);
 			else if (weapon == WP_THOMPSON)
 				return (teamNum == TEAM_ALLIES);

@@ -854,7 +854,6 @@ void SetWolfSpawnWeapons( gclient_t *client )
 					break;
 				default:
 					AddWeaponToPlayer( client, WP_MP40, GetAmmoTableData(WP_MP40)->defaultStartingAmmo, GetAmmoTableData(WP_MP40)->defaultStartingClip, qtrue );
-					AddWeaponToPlayer( client, WP_AK5, GetAmmoTableData(WP_AK5)->defaultStartingAmmo, GetAmmoTableData(WP_AK5)->defaultStartingClip, qtrue );
 					break;
 				}
 				AddWeaponToPlayer( client, WP_LANDMINE, GetAmmoTableData(WP_LANDMINE)->defaultStartingAmmo, GetAmmoTableData(WP_LANDMINE)->defaultStartingClip, qfalse );
@@ -890,7 +889,6 @@ void SetWolfSpawnWeapons( gclient_t *client )
 
 			if( client->sess.sessionTeam == TEAM_AXIS ) {
 				AddWeaponToPlayer( client, WP_MP40,  GetAmmoTableData(WP_MP40)->defaultStartingAmmo, GetAmmoTableData(WP_MP40)->defaultStartingClip, qtrue );
-				AddWeaponToPlayer( client, WP_AK5,  GetAmmoTableData(WP_AK5)->defaultStartingAmmo, GetAmmoTableData(WP_AK5)->defaultStartingClip, qtrue );
 				AddWeaponToPlayer( client, WP_GRENADE_LAUNCHER,  0, 1, qfalse );
 			} else {
 				AddWeaponToPlayer( client, WP_THOMPSON, GetAmmoTableData(WP_THOMPSON)->defaultStartingAmmo, GetAmmoTableData(WP_THOMPSON)->defaultStartingClip, qtrue );
@@ -911,7 +909,6 @@ void SetWolfSpawnWeapons( gclient_t *client )
 
 			if (client->sess.sessionTeam == TEAM_AXIS) {
 				AddWeaponToPlayer( client, WP_MP40, 0, GetAmmoTableData(WP_MP40)->defaultStartingClip, qtrue );
-				AddWeaponToPlayer( client, WP_AK5, 0, GetAmmoTableData(WP_AK5)->defaultStartingClip, qtrue );
 				AddWeaponToPlayer( client, WP_GRENADE_LAUNCHER, 0, 1, qfalse );
 			} else {
 				AddWeaponToPlayer( client, WP_THOMPSON, 0, GetAmmoTableData(WP_THOMPSON)->defaultStartingClip, qtrue );
