@@ -1,0 +1,5 @@
+{
+name		WolfBot
+model		wolfbot
+aifile	bots/default_c.c
+}
