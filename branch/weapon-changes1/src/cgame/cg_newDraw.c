@@ -201,6 +201,7 @@ static int weapIconDrawSize(int weap) {
 		// weapons with 'wide' icons
 		case WP_THOMPSON:
 		case WP_MP40:
+		case WP_AK5:
 		case WP_STEN:
 		case WP_PANZERFAUST:
 		case WP_FLAMETHROWER:

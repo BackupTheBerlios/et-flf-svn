@@ -1534,7 +1534,7 @@ int BotSuggestWeapon( bot_state_t *bs, team_t team ) {
 		case 0:
 			switch(bs->mpTeam) {
 			case TEAM_AXIS:
-				return WP_MP40;
+				return WP_AK5;
 			default:
 				return WP_THOMPSON;
 			}

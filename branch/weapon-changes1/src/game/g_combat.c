@@ -259,6 +259,7 @@ char *modNames[] =
 	"MOD_LUGER",
 	"MOD_COLT",
 	"MOD_MP40",
+	"MOD_AK5",
 	"MOD_THOMPSON",
 	"MOD_STEN",
 	"MOD_GARAND",
@@ -719,6 +720,7 @@ qboolean IsHeadShotWeapon (int mod) {
 			mod == MOD_AKIMBO_SILENCEDCOLT ||
 			mod == MOD_AKIMBO_SILENCEDLUGER ||
 			mod == MOD_MP40 ||
+			mod == MOD_AK5 ||
 			mod == MOD_THOMPSON ||
 			mod == MOD_STEN ||
 			mod == MOD_GARAND

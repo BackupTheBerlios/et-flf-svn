@@ -754,60 +754,61 @@ typedef enum {
 	WP_KNIFE,				// 1
 	WP_LUGER,				// 2
 	WP_MP40,				// 3
-	WP_GRENADE_LAUNCHER,	// 4
-	WP_PANZERFAUST,			// 5
-	WP_FLAMETHROWER,		// 6
+	WP_AK5,					// 4
+	WP_GRENADE_LAUNCHER,	// 5
+	WP_PANZERFAUST,			// 6
+	WP_FLAMETHROWER,		// 7
 
-	WP_COLT,				// 7	// equivalent american weapon to german luger
-	WP_THOMPSON,			// 8	// equivalent american weapon to german mp40
-	WP_GRENADE_PINEAPPLE,	// 9
-	WP_STEN,				// 10	// silenced sten sub-machinegun
-	WP_MEDIC_SYRINGE,		// 11	// JPW NERVE -- broken out from CLASS_SPECIAL per Id request
-	WP_AMMO,				// 12	// JPW NERVE likewise
-	WP_ARTY,				// 13
+	WP_COLT,				// 8	// equivalent american weapon to german luger
+	WP_THOMPSON,			// 9	// equivalent american weapon to german mp40
+	WP_GRENADE_PINEAPPLE,	// 10
+	WP_STEN,				// 11	// silenced sten sub-machinegun
+	WP_MEDIC_SYRINGE,		// 12	// JPW NERVE -- broken out from CLASS_SPECIAL per Id request
+	WP_AMMO,				// 13	// JPW NERVE likewise
+	WP_ARTY,				// 14
 
-	WP_SILENCER,			// 14	// used to be sp5
-	WP_DYNAMITE,			// 15
-	WP_SMOKETRAIL,			// 16
-	WP_MAPMORTAR,			// 17	
-	VERYBIGEXPLOSION,		// 18	// explosion effect for airplanes
-	WP_MEDKIT,				// 19
-	WP_BINOCULARS,			// 20
+	WP_SILENCER,			// 15	// used to be sp5
+	WP_DYNAMITE,			// 16
+	WP_SMOKETRAIL,			// 17
+	WP_MAPMORTAR,			// 18	
+	VERYBIGEXPLOSION,		// 19	// explosion effect for airplanes
+	WP_MEDKIT,				// 20
+	WP_BINOCULARS,			// 21
 
-	WP_PLIERS,				// 21
-	WP_SMOKE_MARKER,		// 22	// Arnout: changed name to cause less confusion
-	WP_KAR98,				// 23	// WolfXP weapons
-	WP_CARBINE,				// 24
-	WP_GARAND,				// 25
-	WP_LANDMINE,			// 26
-	WP_SATCHEL,				// 27
-	WP_SATCHEL_DET,			// 28
-	WP_TRIPMINE,			// 29
-	WP_SMOKE_BOMB,			// 30
+	WP_PLIERS,				// 22
+	WP_SMOKE_MARKER,		// 23	// Arnout: changed name to cause less confusion
+	WP_KAR98,				// 24	// WolfXP weapons
+	WP_CARBINE,				// 25
+	WP_GARAND,				// 26
+	WP_LANDMINE,			// 27
+	WP_SATCHEL,				// 28
+	WP_SATCHEL_DET,			// 29
+	WP_TRIPMINE,			// 30
+	WP_SMOKE_BOMB,			// 31
 
-	WP_MOBILE_MG42,			// 31
-	WP_K43,					// 32
-	WP_FG42,				// 33
-	WP_DUMMY_MG42,          // 34 // Gordon: for storing heat on mounted mg42s...
-	WP_MORTAR,				// 35
-	WP_LOCKPICK,			// 36	// Mad Doc - TDF lockpick
-	WP_AKIMBO_COLT,			// 37
-	WP_AKIMBO_LUGER,		// 38
+	WP_MOBILE_MG42,			// 32
+	WP_K43,					// 33
+	WP_FG42,				// 34
+	WP_DUMMY_MG42,          // 35 // Gordon: for storing heat on mounted mg42s...
+	WP_MORTAR,				// 36
+	WP_LOCKPICK,			// 37	// Mad Doc - TDF lockpick
+	WP_AKIMBO_COLT,			// 38
+	WP_AKIMBO_LUGER,		// 39
 
 // Gordon: ONLY secondaries below this mark, as they are checked >= WP_GPG40 && < WP_NUM_WEAPONS
 
-	WP_GPG40,				// 39
+	WP_GPG40,				// 40
 
-	WP_M7,					// 40
-	WP_SILENCED_COLT,		// 41
-	WP_GARAND_SCOPE,		// 42
-	WP_K43_SCOPE,			// 43
-	WP_FG42SCOPE,			// 44
-	WP_MORTAR_SET,			// 45
-	WP_MEDIC_ADRENALINE,	// 46
-	WP_AKIMBO_SILENCEDCOLT,	// 47
-	WP_AKIMBO_SILENCEDLUGER,// 48
-	WP_MOBILE_MG42_SET,		// 49
+	WP_M7,					// 41
+	WP_SILENCED_COLT,		// 42
+	WP_GARAND_SCOPE,		// 43
+	WP_K43_SCOPE,			// 44
+	WP_FG42SCOPE,			// 45
+	WP_MORTAR_SET,			// 46
+	WP_MEDIC_ADRENALINE,	// 47
+	WP_AKIMBO_SILENCEDCOLT,	// 48
+	WP_AKIMBO_SILENCEDLUGER,// 49
+	WP_MOBILE_MG42_SET,		// 50
 
 	WP_NUM_WEAPONS			// WolfMP: 32 WolfXP: 50
 							// NOTE: this cannot be larger than 64 for AI/player weapons!
@@ -894,7 +895,7 @@ extern int weapAlts[];	// defined in bg_misc.c
 #define IS_AUTORELOAD_WEAPON(weapon) \
 			(	\
 				weapon==WP_LUGER	|| weapon==WP_COLT			|| weapon==WP_MP40			|| \
-				weapon==WP_THOMPSON	|| weapon==WP_STEN		|| \
+				weapon==WP_THOMPSON	|| weapon==WP_STEN			|| weapon==WP_AK5			|| \
 				weapon==WP_KAR98	|| weapon==WP_CARBINE		|| weapon==WP_GARAND_SCOPE	|| \
 				weapon==WP_FG42		|| weapon==WP_K43			|| weapon==WP_MOBILE_MG42	|| \
 				weapon==WP_SILENCED_COLT	|| weapon==WP_SILENCER		|| \
@@ -1329,25 +1330,26 @@ typedef enum extWeaponStats_s
 	WS_LUGER,				// 1
 	WS_COLT,				// 2
 	WS_MP40,				// 3
-	WS_THOMPSON,			// 4
-	WS_STEN,				// 5
-	WS_FG42,				// 6	-- Also includes WS_BAR (allies version of fg42)
-	WS_PANZERFAUST,			// 7
-	WS_FLAMETHROWER,		// 8
-	WS_GRENADE,				// 9	-- Includes axis and allies grenade types
-	WS_MORTAR,				// 10
-	WS_DYNAMITE,			// 11
-	WS_AIRSTRIKE,			// 12	-- Lt. smoke grenade attack
-	WS_ARTILLERY,			// 13	-- Lt. binocular attack
-	WS_SYRINGE,				// 14	-- Medic syringe uses/successes
+	WS_AK5,					// 4
+	WS_THOMPSON,			// 5
+	WS_STEN,				// 6
+	WS_FG42,				// 7	-- Also includes WS_BAR (allies version of fg42)
+	WS_PANZERFAUST,			// 8
+	WS_FLAMETHROWER,		// 9
+	WS_GRENADE,				// 10	-- Includes axis and allies grenade types
+	WS_MORTAR,				// 11
+	WS_DYNAMITE,			// 12
+	WS_AIRSTRIKE,			// 13	-- Lt. smoke grenade attack
+	WS_ARTILLERY,			// 14	-- Lt. binocular attack
+	WS_SYRINGE,				// 15	-- Medic syringe uses/successes
 
-	WS_SMOKE,				// 15
-	WS_SATCHEL,				// 16
-	WS_GRENADELAUNCHER,		// 17
-	WS_LANDMINE,			// 18
-	WS_MG42,				// 19
-	WS_GARAND,				// 20 // Gordon: (carbine and garand)
-	WS_K43,					// 21 // Gordon: (kar98 and k43)
+	WS_SMOKE,				// 16
+	WS_SATCHEL,				// 17
+	WS_GRENADELAUNCHER,		// 18
+	WS_LANDMINE,			// 19
+	WS_MG42,				// 20
+	WS_GARAND,				// 21 // Gordon: (carbine and garand)
+	WS_K43,					// 22 // Gordon: (kar98 and k43)
 
 	WS_MAX
 } extWeaponStats_t;
@@ -1375,6 +1377,7 @@ typedef enum {
 	MOD_LUGER,
 	MOD_COLT,
 	MOD_MP40,
+	MOD_AK5,
 	MOD_THOMPSON,
 	MOD_STEN,
 	MOD_GARAND,

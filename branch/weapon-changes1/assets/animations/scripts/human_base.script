@@ -18,16 +18,16 @@ DEFINES
 // weapons
 set weapons pistols = Luger AND Colt AND sp5 pistol AND Silenced Colt
 set weapons akimbo_pistols = Akimbo Luger AND Silenced Akimbo Luger AND Akimbo Colt AND Silenced Akimbo Colt
-set weapons machineguns = MP40 AND Thompson AND Sten AND Flamethrower AND panzerfaust AND Mobile MG42
+set weapons machineguns = MP40 AND AK5 AND Thompson AND Sten AND Flamethrower AND panzerfaust AND Mobile MG42
 set weapons rifles = K43 AND gpg40 AND gpg40a AND m1 garand AND FG42 Paratroop Rifle AND K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG42 Scope
 set weapons throwables = dynamite weapon AND pineapple AND grenade AND Smoke Bomb AND Tripmine
 
 set weapons one_handed_weapons = Luger AND Colt AND sp5 pistol AND Silenced Colt
-set weapons two_handed_weapons = MP40 AND Thompson AND Sten AND flamethrower AND panzerfaust AND K43 AND gpg40 AND gpg40a AND m1 garand AND FG42 Paratroop Rifle AND Garand AND Mobile MG42 AND K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG42 Scope
+set weapons two_handed_weapons = MP40 AND AK5 AND Thompson AND Sten AND flamethrower AND panzerfaust AND K43 AND gpg40 AND gpg40a AND m1 garand AND FG42 Paratroop Rifle AND Garand AND Mobile MG42 AND K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG42 Scope
 
-set weapons all = Luger AND Colt AND sp5 pistol AND Silenced Colt AND Binoculars AND special AND Ammo Pack AND knife AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge AND Tripmine AND MP40 AND Thompson AND Sten AND flamethrower AND panzerfaust AND Ammo Pack AND Medicheal AND gpg40 AND gpg40a AND m1 garand AND FG42 Paratroop Rifle AND Garand AND Satchel Charge AND Landmine AND Mobile MG42 AND K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG42 Scope AND Mortar AND Mounted Mortar AND Satchel Charge AND Satchel Charge Detonator
+set weapons all = Luger AND Colt AND sp5 pistol AND Silenced Colt AND Binoculars AND special AND Ammo Pack AND knife AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge AND Tripmine AND MP40 AND AK5 AND Thompson AND Sten AND flamethrower AND panzerfaust AND Ammo Pack AND Medicheal AND gpg40 AND gpg40a AND m1 garand AND FG42 Paratroop Rifle AND Garand AND Satchel Charge AND Landmine AND Mobile MG42 AND K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG42 Scope AND Mortar AND Mounted Mortar AND Satchel Charge AND Satchel Charge Detonator
 set weapons all_one_handed_weapons = Luger AND Colt AND sp5 pistol AND Silenced Colt AND Binoculars AND special AND Ammo Pack AND knife AND dynamite weapon AND pineapple AND grenade AND smokeGrenade AND Smoke Bomb AND Landmine AND Satchel Charge AND Tripmine
-set weapons all_two_handed_weapons = MP40 AND Thompson AND Sten AND flamethrower AND panzerfaust AND Ammo Pack AND Medicheal AND gpg40 AND gpg40a AND m1 garand AND FG42 Paratroop Rifle AND Garand AND Satchel Charge AND Landmine AND Mobile MG42 AND K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG42 Scope AND Mortar AND Mounted Mortar AND Satchel Charge AND Satchel Charge Detonator
+set weapons all_two_handed_weapons = MP40 AND AK5 AND Thompson AND Sten AND flamethrower AND panzerfaust AND Ammo Pack AND Medicheal AND gpg40 AND gpg40a AND m1 garand AND FG42 Paratroop Rifle AND Garand AND Satchel Charge AND Landmine AND Mobile MG42 AND K43 Rifle AND K43 Rifle Scope AND M1 Garand Scope AND FG42 Scope AND Mortar AND Mounted Mortar AND Satchel Charge AND Satchel Charge Detonator
 // movetypes
 set movetype moving = walk AND walkcr AND walkcrbk AND walkbk AND run AND runbk AND straferight AND strafeleft
 set movetype crouching = idlecr AND walkcr AND walkcrbk

@@ -504,7 +504,9 @@ int Bot_GetWeaponForClassAndTeam( int classNum, int teamNum, const char *weaponN
 	weapon_t weapon = -1;	// start by assuming the weapon is invalid
 
 	if( !Q_stricmp( weaponName, "MP40" ) )
-		weapon = WP_MP40; 
+		weapon = WP_MP40;
+	else if( !Q_stricmp( weaponName, "AK5" ) )
+		weapon =  WP_AK5;
 	else if( !Q_stricmp( weaponName, "THOMPSON" ) )
 		weapon =  WP_THOMPSON;
 	else if( !Q_stricmp( weaponName, "KAR98" ) )

@@ -287,6 +287,7 @@ static const weap_ws_convert_t aWeapMOD[MOD_NUM_MODS] = {
 	{ MOD_LUGER,				WS_LUGER },
 	{ MOD_COLT,					WS_COLT },
 	{ MOD_MP40,					WS_MP40 },
+	{ MOD_AK5,					WS_AK5 },
 	{ MOD_THOMPSON,				WS_THOMPSON },
 	{ MOD_STEN,					WS_STEN },
 	{ MOD_GARAND,				WS_GARAND },

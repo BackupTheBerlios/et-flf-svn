@@ -954,6 +954,7 @@ float BotWeaponWantScale( bot_state_t *bs, weapon_t weapon ) {
 		return 0.55;
 
 	case WP_MP40:
+	case WP_AK5:
 	case WP_THOMPSON:
 	case WP_STEN:
 		return 0.6;
@@ -3331,6 +3332,7 @@ float BotWeaponRange( bot_state_t *bs, int weaponnum ) {
 		
 	// low-mid range  
 	case WP_MP40:  
+	case WP_AK5:
 	case WP_THOMPSON:  
 	case WP_STEN: 
 		
@@ -6981,6 +6983,7 @@ int BotBestTargetWeapon( bot_state_t *bs, int targetNum )
 			if (!(ent->spawnflags & 4)) {	// allow other weapons
 				// use any of these
 				COM_BitSet( validWeapons, WP_MP40 );
+				COM_BitSet( validWeapons, WP_AK5 );
 				COM_BitSet( validWeapons, WP_THOMPSON );
 				COM_BitSet( validWeapons, WP_KAR98 );
 				COM_BitSet( validWeapons, WP_CARBINE );

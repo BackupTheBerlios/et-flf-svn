@@ -2806,6 +2806,7 @@ int G_GetWeaponDamage( int weapon ) {
 		case WP_AKIMBO_SILENCEDCOLT: 
 		case WP_THOMPSON: 
 		case WP_MP40: 
+		case WP_AK5:
 		case WP_MOBILE_MG42: 
 		case WP_MOBILE_MG42_SET:
 			return 18;
@@ -2847,6 +2848,7 @@ float G_GetWeaponSpread( int weapon ) {
 		case WP_AKIMBO_SILENCEDCOLT:
 			return 600;
 		case WP_MP40:
+		case WP_AK5:
 		case WP_THOMPSON:
 			return 400;
 		case WP_STEN:
@@ -2899,6 +2901,8 @@ float G_GetWeaponSpread( int weapon ) {
 
 #define MP40_SPREAD		G_GetWeaponSpread(WP_MP40)
 #define	MP40_DAMAGE		G_GetWeaponDamage(WP_MP40) // JPW
+#define AK5_SPREAD		G_GetWeaponSpread(WP_AK5)
+#define	AK5_DAMAGE		G_GetWeaponDamage(WP_AK5)
 #define THOMPSON_SPREAD	G_GetWeaponSpread(WP_THOMPSON)
 #define	THOMPSON_DAMAGE	G_GetWeaponDamage(WP_THOMPSON) // JPW
 #define STEN_SPREAD		G_GetWeaponSpread(WP_STEN)
@@ -3063,6 +3067,7 @@ void Bullet_Fire (gentity_t *ent, float spread, int damage, qboolean distance_fa
 		case WP_LUGER:
 		case WP_COLT:
 		case WP_MP40:
+		case WP_AK5:
 		case WP_THOMPSON:
 		case WP_STEN:
 		case WP_SILENCER:
@@ -3932,6 +3937,9 @@ void FireWeapon( gentity_t *ent ) {
 		break;
 	case WP_MP40:
 		Bullet_Fire( ent, MP40_SPREAD*aimSpreadScale, MP40_DAMAGE, qtrue );
+		break;
+	case WP_AK5:
+		Bullet_Fire( ent, AK5_SPREAD*aimSpreadScale, AK5_DAMAGE, qtrue );
 		break;
 	case WP_THOMPSON:
 		Bullet_Fire( ent, THOMPSON_SPREAD*aimSpreadScale, THOMPSON_DAMAGE, qtrue );

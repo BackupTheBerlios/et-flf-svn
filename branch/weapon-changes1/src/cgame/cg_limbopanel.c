@@ -2456,6 +2456,7 @@ void CG_LimboPanel_GetWeaponCardIconData( weapon_t weap, qhandle_t* shader, floa
 		case WP_FG42:
 		case WP_MOBILE_MG42:
 		case WP_MP40:
+		case WP_AK5:
 		case WP_STEN:
 		case WP_THOMPSON:
 			*shader = cgs.media.limboWeaponCard1;
@@ -2525,6 +2526,10 @@ void CG_LimboPanel_GetWeaponCardIconData( weapon_t weap, qhandle_t* shader, floa
 			break;
 		case WP_KAR98:
 		case WP_MP40:
+			*t0 = 5/8.f;
+			*t1 = 6/8.f;
+			break;
+		case WP_AK5:
 			*t0 = 5/8.f;
 			*t1 = 6/8.f;
 			break;

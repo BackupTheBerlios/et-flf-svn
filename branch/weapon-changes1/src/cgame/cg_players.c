@@ -2727,6 +2727,7 @@ void CG_DrawPlayer_Limbo( float x, float y, float w, float h, playerInfo_t *pi, 
 
 weaponType_t weaponTypes[] = {
 	{ WP_MP40,					"MP 40"			},
+	{ WP_AK5,					"AK 5"			},
 	{ WP_THOMPSON,				"THOMPSON"		},
 	{ WP_STEN,					"STEN",			},
 	{ WP_PANZERFAUST,			"PANZERFAUST",	},

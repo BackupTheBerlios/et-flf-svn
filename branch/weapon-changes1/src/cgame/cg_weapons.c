@@ -205,6 +205,7 @@ void CG_MachineGunEjectBrass( centity_t *cent ) {
 		case WP_K43:
 			re->hModel = cgs.media.machinegunBrassModel;
 		case WP_MP40:
+		case WP_AK5:
 		case WP_THOMPSON:
 		case WP_STEN:
 		default:
@@ -1510,6 +1511,7 @@ void CG_RegisterWeapon( int weaponNum, qboolean force ) {
 		case WP_LUGER:					filename = "luger.weap"; break;
 		case WP_COLT:					filename = "colt.weap"; break;
 		case WP_MP40:					filename = "mp40.weap"; break;
+		case WP_AK5:					filename = "ak5.weap"; break;
 		case WP_THOMPSON:				filename = "thompson.weap"; break;
 		case WP_STEN:					filename = "sten.weap"; break;
 		case WP_GRENADE_LAUNCHER:		filename = "grenade.weap"; break;
@@ -3068,6 +3070,7 @@ int getEquivWeapon( int weapnum ) {
 		// going from german to american
 		case WP_LUGER:				num = WP_COLT;				break;
 		case WP_MP40:				num = WP_THOMPSON;			break;
+		case WP_AK5:				num = WP_THOMPSON;			break;
 		case WP_GRENADE_LAUNCHER:	num = WP_GRENADE_PINEAPPLE;	break;
 		case WP_KAR98:				num = WP_CARBINE;			break;
 		case WP_SILENCER:			num = WP_SILENCED_COLT;		break;
@@ -4442,6 +4445,7 @@ void CG_WeaponFireRecoil( int weapon ) {
 	case WP_MOBILE_MG42:
 	case WP_MOBILE_MG42_SET:
 	case WP_MP40:
+	case WP_AK5:
 	case WP_THOMPSON:
 	case WP_STEN:
 		//pitchRecoilAdd = 1;
@@ -4913,6 +4917,7 @@ void CG_MissileHitWall( int weapon, int clientNum, vec3_t origin, vec3_t dir, in
 	case WP_AKIMBO_COLT:
 	case WP_AKIMBO_SILENCEDCOLT:
 	case WP_MP40:
+	case WP_AK5:
 	case WP_THOMPSON:
 	case WP_STEN:
 	case WP_GARAND:
