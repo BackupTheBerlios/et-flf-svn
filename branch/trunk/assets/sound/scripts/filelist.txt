@@ -1,2 +1,0 @@
-vo_allies.sounds
-vo_axis.sounds
