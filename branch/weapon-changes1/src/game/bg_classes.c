@@ -68,8 +68,8 @@ bg_playerclass_t bg_axis_playerclasses[NUM_PLAYER_CLASSES] = {
 		"ui/assets/mp_gun_red.tga",
 		"ui/assets/mp_arrow_red.tga",
 		{ 
-//			WP_MP40,
 			WP_AK5,
+			WP_MP40,
 			WP_MOBILE_MG42,
 			WP_FLAMETHROWER,
 			WP_PANZERFAUST,

@@ -144,13 +144,13 @@ ammotable_t ammoTableMP[WP_NUM_WEAPONS] = {
 	//	AMMO			AMT.	CLIP	AMMO	CLIP	TIME	DELAY			SHOT
 	{	0,				0,		0,		0,		0,		0,		50,				0,		0,		0,		0						},	// WP_NONE					// 0
 	{	999,			0,		999,	0,		0,		0,		50,				200,	0,		0,		MOD_KNIFE				},	// WP_KNIFE					// 1
-	{	24,				1,		8,		24,		8,		1500,	DELAY_PISTOL,	400,	0,		0,		MOD_LUGER				},	// WP_LUGER					// 2	// NOTE: also 32 round 'snail' magazine
+	{	45,				1,		15,		45,		15,		1200,	85,				400,	0,		0,		MOD_LUGER				},	// WP_LUGER - Beretta 92F	// 2	Sidearm - fast, less damage, quicker reload
 	{	90,				1,		30,		30,		30,		2400,	DELAY_LOW,		150,	0,		0,		MOD_MP40				},	// WP_MP40					// 3
 	{	105,			1,		35,		35,		35,		500,	DELAY_LOW,		50,		0,		0,		MOD_AK5					},	// WP_AK5					// 4
 	{	45,				1,		15,		0,		4,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_GRENADE_LAUNCHER	},	// WP_GRENADE_LAUNCHER		// 5
-	{	4,				1,		1,		0,		4,		1000,	750	,			2000,	0,		0,		MOD_PANZERFAUST			},	// WP_PANZERFAUST			// 6	// DHM - Nerve :: updated delay so prediction is correct
+	{	4,				1,		1,		0,		4,		1000,	750,			2000,	0,		0,		MOD_PANZERFAUST			},	// WP_PANZERFAUST			// 6	// DHM - Nerve :: updated delay so prediction is correct
 	{	200,			1,		200,	0,		200,	1000,	DELAY_LOW,		50,		0,		0,		MOD_FLAMETHROWER		},	// WP_FLAMETHROWER			// 7
-	{	24,				1,		8,		24,		8,		1500,	DELAY_PISTOL,	400,	0,		0,		MOD_COLT				},	// WP_COLT					// 8
+	{	24,				1,		8,		24,		8,		1300,	105,			600,	0,		0,		MOD_COLT				},	// WP_COLT					// 8    Sidearm - slower, more damage, slower reload
 	{	90,				1,		30,		30,		30,		2400,	DELAY_LOW,		150,	0,		0,		MOD_THOMPSON			},	// WP_THOMPSON				// 9
 	{	45,				1,		15,		0,		4,		1000,	DELAY_THROW,	1600,	0,		0,		MOD_GRENADE_PINEAPPLE	},	// WP_GRENADE_PINEAPPLE		// 10
 
@@ -4210,7 +4210,7 @@ void BG_PlayerStateToEntityStateExtraPolate( playerState_t *ps, entityState_t *s
 // Gordon: some weapons are duplicated for code puposes.... just want to treat them as a single 
 weapon_t BG_DuplicateWeapon( weapon_t weap ) {
 	switch( weap ) {
-		case WP_M7:		return WP_GPG40;
+		case WP_M7:					return WP_GPG40;
 		case WP_GARAND_SCOPE:		return WP_GARAND;
 		case WP_K43_SCOPE:			return WP_K43;
 		case WP_GRENADE_PINEAPPLE:	return WP_GRENADE_LAUNCHER;
