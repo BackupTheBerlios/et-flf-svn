@@ -928,8 +928,10 @@ static qboolean TryConstructing( gentity_t *ent ) {
 			if( !(ent->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
 				if ( !(ent->spawnflags & CONSTRUCTIBLE_NO_AAS_BLOCKING) ) {
 					// RF, if we are blocking AAS areas when built, then clear AAS blocking so we can set it again after the stage has been increased
-					if( constructible->spawnflags & CONSTRUCTIBLE_BLOCK_PATHS_WHEN_BUILD ) {
-						G_SetAASBlockingEntity( ent, AAS_AREA_ENABLED );
+					if( constructible->spawnflags & CONSTRUCTIBLE_BLOCK_PATHS_WHEN_BUILD )
+					{
+						// LC - not needed
+//						G_SetAASBlockingEntity( ent, AAS_AREA_ENABLED );
 					}
 				}
 			}
@@ -1209,11 +1211,13 @@ static qboolean TryConstructing( gentity_t *ent ) {
 	//				if( !constructible->count2 || ( constructible->grenadeFired == constructible->count2 ) )
 					{
 						// completely built, enable paths
-						G_SetAASBlockingEntity( constructible, AAS_AREA_ENABLED );
+			// LC - not needed
+//						G_SetAASBlockingEntity( constructible, AAS_AREA_ENABLED );
 					}
 				} else {
 					// builing blocks AAS paths
-					G_SetAASBlockingEntity( constructible, AAS_AREA_DISABLED );
+			// LC - not needed
+//					G_SetAASBlockingEntity( constructible, AAS_AREA_DISABLED );
 				}
 			}
 		}
@@ -1397,11 +1401,13 @@ void AutoBuildConstruction( gentity_t* constructible ) {
 				// builing creates AAS paths
 				if( !constructible->count2 || ( constructible->grenadeFired == constructible->count2 ) ) {
 					// completely built, enable paths
-					G_SetAASBlockingEntity( constructible, AAS_AREA_ENABLED );
+					// LC - not needed
+//					G_SetAASBlockingEntity( constructible, AAS_AREA_ENABLED );
 				}
 			} else {
 				// builing blocks AAS paths
-				G_SetAASBlockingEntity( constructible, AAS_AREA_DISABLED );
+				// LC - not needed
+//				G_SetAASBlockingEntity( constructible, AAS_AREA_DISABLED );
 			}
 		}
 	}

@@ -838,7 +838,7 @@ void Svcmd_ListCampaigns_f(void) {
 
 // ydnar: modified from maddoc sp func
 extern void ReviveEntity(gentity_t *ent, gentity_t *traceEnt);
-extern int FindClientByName( char *name );
+//extern int FindClientByName( char *name );
 
 void Svcmd_RevivePlayer( char *name )
 {
@@ -852,7 +852,9 @@ void Svcmd_RevivePlayer( char *name )
 		return;
 	}
 	
-	clientNum = FindClientByName( name );
+	//LC - not needed
+//	clientNum = FindClientByName( name );
+	clientNum = -1;
 	if( clientNum < 0 )
 		return;
 	player = &g_entities[ clientNum ];
@@ -1012,11 +1014,13 @@ qboolean	ConsoleCommand( void ) {
 		Svcmd_ListCampaigns_f();
 		return qtrue;
 	}
-
+/*
+// LC - not needed
 	if (Q_stricmp (cmd, "spawnbot") == 0) {
 		Svcmd_SpawnBot();
 		return qtrue;
 	}
+*/
 
 
 // START - Mad Doc - TDF

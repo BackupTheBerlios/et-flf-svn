@@ -1008,7 +1008,8 @@ void G_SetEntState( gentity_t *ent, entState_t state ) {
 									}
 
 									// if this is an mg42, then we should try and calculate mg42 spots again
-									BotCalculateMg42Spots();
+									// LC - not needed
+//									BotCalculateMg42Spots();
 
 									break;
 	case STATE_UNDERCONSTRUCTION:	ent->entstate = STATE_UNDERCONSTRUCTION;

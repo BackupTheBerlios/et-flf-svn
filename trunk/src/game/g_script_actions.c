@@ -16,7 +16,7 @@ should proceed to the next item on the list.
 */
 
 void script_linkentity(gentity_t *ent);
-int G_RemoveNamedBot( char *name );
+//int G_RemoveNamedBot( char *name );
 
 
 
@@ -1371,8 +1371,11 @@ qboolean G_ScriptAction_Trigger( gentity_t *ent, char *params )
 				if ((trent == ent) && (oldId != trent->scriptStatus.scriptId)) {
 					terminate = qtrue;
 				}
-			} else {
-				Bot_ScriptEvent( trent->s.number, "trigger", trigger );
+			}
+			else
+			{
+				// LC - not needed
+//				Bot_ScriptEvent( trent->s.number, "trigger", trigger );
 			}
 		}
 		//
@@ -1385,12 +1388,13 @@ qboolean G_ScriptAction_Trigger( gentity_t *ent, char *params )
 			G_Script_ScriptEvent( &g_entities[i], "trigger", trigger );
 		}
 		return qtrue;	// always true, as players aren't always there
-	} else if (!Q_stricmp( name, "activator" )) {
-		if(ent->activator && ent->activator->client && (ent->activator->r.svFlags & SVF_BOT) && ent->inuse && ent->activator->client->ps.stats[STAT_HEALTH] > 0) {
-			Bot_ScriptEvent( ent->activator-g_entities, "trigger", trigger );
-		}
+	}
+	else if (!Q_stricmp( name, "activator" ))
+	{
 		return qtrue;	// always true, as players aren't always there
-	} else {
+	}
+	else
+	{
 		terminate = qfalse;
 		found = qfalse;
 		// for all entities/bots with this scriptName
@@ -1404,8 +1408,11 @@ qboolean G_ScriptAction_Trigger( gentity_t *ent, char *params )
 				if ((trent == ent) && (oldId != trent->scriptStatus.scriptId)) {
 					terminate = qtrue;
 				}
-			} else {
-				Bot_ScriptEvent( trent->s.number, "trigger", trigger );
+			}
+			else
+			{
+				// LC - not needed
+//				Bot_ScriptEvent( trent->s.number, "trigger", trigger );
 			}
 		}
 		//
@@ -1935,7 +1942,7 @@ G_ScriptAction_Accum
 =================
 */
 
-int BotGetTargetDynamite( int *list, int listSize, gentity_t* target );
+//int BotGetTargetDynamite( int *list, int listSize, gentity_t* target );
 
 qboolean G_ScriptAction_Accum( gentity_t *ent, char *params )
 {
@@ -2096,7 +2103,8 @@ qboolean G_ScriptAction_Accum( gentity_t *ent, char *params )
 			G_Error( "Scripting: accum %s could not find target\n", lastToken );
 		}
 
-		ent->scriptAccumBuffer[bufferIndex] = BotGetTargetDynamite( NULL, 0, target );
+		// LC - not needed
+//		ent->scriptAccumBuffer[bufferIndex] = BotGetTargetDynamite( NULL, 0, target );
 	} else {
 		G_Error( "Scripting: accum %s: unknown command\n", params );
 	}
@@ -3525,7 +3533,8 @@ qboolean G_ScriptAction_RemoveBot(gentity_t *ent, char *params )
 		G_Error( "G_ScriptAction_RemoveBot: syntax: RemoveBot <botname>\n" );
 	}
 
-	G_RemoveNamedBot(token);
+	// LC - not needed
+//	G_RemoveNamedBot(token);
 	return qtrue;
 }
 
@@ -3697,12 +3706,17 @@ qboolean G_ScriptAction_SetAASState( gentity_t *ent, char *params ) {
 
 	hash = BG_StringHashValue( targetname );
 	while( target = G_FindByTargetnameFast( target, targetname, hash ) ) {
-		if( target->r.linked ) {
-			G_SetAASBlockingEntity( target, flags );
-		} else {
+		if( target->r.linked ) 
+		{
+			// LC - not needed
+//			G_SetAASBlockingEntity( target, flags );
+		}
+		else
+		{
 			trap_LinkEntity( target );
 
-			G_SetAASBlockingEntity( target, flags );
+			// LC - not needed
+//			G_SetAASBlockingEntity( target, flags );
 
 			trap_UnlinkEntity( target );
 		}
@@ -3998,8 +4012,9 @@ G_ScriptAction_SpawnBot
 */
 qboolean G_ScriptAction_SpawnBot( gentity_t *ent, char *params )
 {
+	// LC - not needed
 	//trap_SendConsoleCommand( EXEC_APPEND, va("spawnbot %s\n", params) );
-	G_SpawnBot( params );
+//	G_SpawnBot( params );
 	return qtrue;
 }
 

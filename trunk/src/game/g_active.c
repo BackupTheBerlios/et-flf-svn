@@ -182,7 +182,8 @@ void G_SetClientSound( gentity_t *ent ) {
 PushBot
 ==============
 */
-void BotVoiceChatAfterIdleTime( int client, const char *id, int mode, int delay, qboolean voiceonly, int idleTime, qboolean forceIfDead );
+//void BotVoiceChatAfterIdleTime( int client, const char *id, int mode, int delay, qboolean voiceonly, int idleTime, qboolean forceIfDead );
+// LC - not needed, only for bots?
 
 void PushBot( gentity_t *ent, gentity_t *other ) {
 	vec3_t dir, ang, f, r;
@@ -206,11 +207,7 @@ void PushBot( gentity_t *ent, gentity_t *other ) {
 		VectorNormalize( other->client->ps.velocity );
 		VectorScale( other->client->ps.velocity, oldspeed, other->client->ps.velocity );
 	}
-	//
-	// also, if "ent" is a bot, tell "other" to move!
-	if (rand()%50 == 0 && (ent->r.svFlags & SVF_BOT) && oldspeed < 10) {
-		BotVoiceChatAfterIdleTime( ent->s.number, "Move", SAY_TEAM, 1000, qfalse, 20000, qfalse );
-	}
+
 }
 
 /*
@@ -274,23 +271,6 @@ qboolean ReadyToConstruct(gentity_t *ent, gentity_t *constructible, qboolean upd
 	return qtrue;
 }
 
-void BotSetBlockEnt( int client, int blocker );
-/*
-==============
-CheckBotImpacts
-==============
-*/
-void CheckBotImpacts( gentity_t *ent, gentity_t *other ) {
-	char *blockEnts[] = {"func_explosive", NULL};
-	int j;
-
-	for (j=0; blockEnts[j]; j++) {
-		if (other->classname && !Q_stricmp( other->classname, blockEnts[j] )) {
-			BotSetBlockEnt( ent->s.number, other->s.number );
-		}
-	}
-}
-
 //==============================================================
 
 /*
@@ -298,50 +278,31 @@ void CheckBotImpacts( gentity_t *ent, gentity_t *other ) {
 ClientImpacts
 ==============
 */
-void ClientImpacts( gentity_t *ent, pmove_t *pm ) {
+void ClientImpacts(gentity_t *ent, pmove_t *pm)
+{
 	int		i, j;
 	gentity_t	*other;
 	trace_t	trace;
 
-	memset( &trace, 0, sizeof(trace) );
-	for (i=0 ; i<pm->numtouch ; i++) {
-		for (j=0 ; j<i ; j++) {
-			if (pm->touchents[j] == pm->touchents[i] ) {
+	memset(&trace, 0, sizeof(trace));
+	for (i=0 ; i<pm->numtouch ; i++)
+	{
+		for (j=0 ; j<i ; j++)
+		{
+			if (pm->touchents[j] == pm->touchents[i])
+			{
 				break;
 			}
 		}
-		if (j != i) {
+
+		if (j != i)
+		{
 			continue;	// duplicated
 		}
 		other = &g_entities[ pm->touchents[i] ];
 
-		if ( ( ent->r.svFlags & SVF_BOT ) && ( ent->touch ) ) {
-			ent->touch( ent, other, &trace );
-		}
-
-		// RF, bot should get pushed out the way
-		if ( (ent->client) /*&& !(ent->r.svFlags & SVF_BOT)*/ && (other->r.svFlags & SVF_BOT) ) {
-/*			vec3_t dir;
-			// if we are not heading for them, ignore
-			VectorSubtract( other->r.currentOrigin, ent->r.currentOrigin, dir );
-			VectorNormalize( dir );
-			if (DotProduct( ent->client->ps.velocity, dir ) > 0) {
-				PushBot( ent, other );
-			}
-*/
-			PushBot( ent, other );
-		}
-
-		// if we are standing on their head, then we should be pushed also
-		if ( (ent->r.svFlags & SVF_BOT) && ent->s.groundEntityNum == other->s.number && other->client) {
-			PushBot( other, ent );
-		}
-
-		if ( ent->r.svFlags & SVF_BOT ) {
-			CheckBotImpacts( ent, other );
-		}
-
-		if ( !other->touch ) {
+		if ( !other->touch )
+		{
 			continue;
 		}
 
@@ -413,27 +374,29 @@ void	G_TouchTriggers( gentity_t *ent ) {
 
 		// use seperate code for determining if an item is picked up
 		// so you don't have to actually contact its bounding box
-		if ( hit->s.eType == ET_ITEM ) {
+		if ( hit->s.eType == ET_ITEM )
+		{
 			if ( !BG_PlayerTouchesItem( &ent->client->ps, &hit->s, level.time ) ) {
 				continue;
 			}
-		} else {
+		}
+		else
+		{
 			// MrE: always use capsule for player
-			if ( !trap_EntityContactCapsule( mins, maxs, hit ) ) {
+			if (!trap_EntityContactCapsule(mins, maxs, hit))
+			{
 			//if ( !trap_EntityContact( mins, maxs, hit ) ) {
 				continue;
 			}
 		}
 
-		memset( &trace, 0, sizeof(trace) );
+		memset(&trace, 0, sizeof(trace));
 
-		if ( hit->touch ) {
+		if ( hit->touch )
+		{
 			hit->touch (hit, ent, &trace);
 		}
 
-		if ( ( ent->r.svFlags & SVF_BOT ) && ( ent->touch ) ) {
-			ent->touch( ent, hit, &trace );
-		}
 	}
 }
 
@@ -508,7 +471,8 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 	// MV clients use these buttons locally for other things
 	if(client->pers.mvCount < 1) {
 		// attack button cycles through spectators
-		if ( ( client->buttons & BUTTON_ATTACK ) && ! ( client->oldbuttons & BUTTON_ATTACK ) ) {
+		if ( ( client->buttons & BUTTON_ATTACK ) && ! ( client->oldbuttons & BUTTON_ATTACK ) )
+		{
 			Cmd_FollowCycle_f( ent, 1 );
 		}
 		// activate button swaps places with bot
@@ -518,8 +482,8 @@ void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 				( g_entities[ent->client->sess.spectatorClient].r.svFlags & SVF_BOT ) )
 		{
 			Cmd_SwapPlacesWithBot_f( ent, ent->client->sess.spectatorClient );
-		} else if ( 
-			( client->sess.sessionTeam == TEAM_SPECTATOR ) && // don't let dead team players do free fly
+		}
+		else if (( client->sess.sessionTeam == TEAM_SPECTATOR ) && // don't let dead team players do free fly
 			( client->sess.spectatorState == SPECTATOR_FOLLOW ) && 
 			( ( ( client->buttons & BUTTON_ACTIVATE ) && 
 			! ( client->oldbuttons & BUTTON_ACTIVATE )) || ucmd->upmove > 0 ) &&
@@ -949,7 +913,8 @@ void ClientThink_real( gentity_t *ent ) {
 		return;
 	}
 	
-	if( !(ent->r.svFlags & SVF_BOT) && level.time - client->pers.lastCCPulseTime > 2000 ) {
+	if (!(ent->r.svFlags & SVF_BOT) && level.time - client->pers.lastCCPulseTime > 2000 )
+	{
 		G_SendMapEntityInfo( ent );
 		client->pers.lastCCPulseTime = level.time;
 	}
@@ -1301,10 +1266,11 @@ void ClientThink( int clientNum ) {
 
 	// if this is the locally playing client, do bot thinks
 #ifndef NO_BOT_SUPPORT
-	if( bot_enable.integer && !g_dedicated.integer && clientNum == 0 ) {
-		BotAIThinkFrame(ent->client->pers.cmd.serverTime);
-		level.lastClientBotThink = level.time;
-	}
+//	if( bot_enable.integer && !g_dedicated.integer && clientNum == 0 )
+//	{
+//		BotAIThinkFrame(ent->client->pers.cmd.serverTime);
+//		level.lastClientBotThink = level.time;
+//	}
 #endif // NO_BOT_SUPPORT
 }
 

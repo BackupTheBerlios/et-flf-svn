@@ -1260,6 +1260,19 @@ void clamp_playerbehindgun (gentity_t *self, gentity_t *other, vec3_t dang) {
 	trap_LinkEntity( other );
 }
 
+float AngleDifference(float ang1, float ang2) {
+	float diff;
+
+	diff = ang1 - ang2;
+	if (ang1 > ang2) {
+		if (diff > 180.0) diff -= 360.0;
+	}
+	else {
+		if (diff < -180.0) diff += 360.0;
+	}
+	return diff;
+}
+
 void clamp_hweapontofirearc (gentity_t *self, vec3_t dang) 
 {
 	float diff, yawspeed;

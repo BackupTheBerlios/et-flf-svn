@@ -494,7 +494,7 @@ void G_DropWeapon( gentity_t *ent, weapon_t weapon )
 }
 
 // TAT 1/6/2003 - Bot picks up a new weapon
-void BotPickupWeapon(int client, int weaponnum, qboolean alreadyHave);
+//void BotPickupWeapon(int client, int weaponnum, qboolean alreadyHave);
 
 qboolean G_CanPickupWeapon( weapon_t weapon, gentity_t* ent ) {
 	if( ent->client->sess.sessionTeam == TEAM_AXIS ) {
@@ -631,10 +631,6 @@ int Pickup_Weapon( gentity_t *ent, gentity_t *other ) {
 			return 0;
 		}
 	}
-
-	// TAT 1/6/2003 - If we are a bot, call the pickup function
-	if( other->r.svFlags & SVF_BOT )
-		BotPickupWeapon( other->s.number, ent->item->giTag, alreadyHave );
 
 	return -1;
 }

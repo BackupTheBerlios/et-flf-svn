@@ -143,29 +143,32 @@ g_serverEntity_t *FindServerEntity( g_serverEntity_t *from, int fieldofs, char *
 
 // TAT 11/18/2002
 //		For the (possibly temporary) system of loading a separate file of these server entities
-extern void SP_SeekCover_Setup(g_serverEntity_t *ent);
-extern void SP_AIMarker_Setup(g_serverEntity_t *ent);
+//extern void SP_SeekCover_Setup(g_serverEntity_t *ent);
+//extern void SP_AIMarker_Setup(g_serverEntity_t *ent);
 
 // We have to hardcode the setup functions for these
 void InitServerEntitySetupFunc(g_serverEntity_t *ent)
 {
 	if (strcmp(ent->classname, "ai_marker") == 0)
 	{
-		ent->setup = SP_AIMarker_Setup;
+		// LC - not needed
+//		ent->setup = SP_AIMarker_Setup;
 	}
 	else if (strcmp(ent->classname, "bot_seek_cover_spot") == 0)
 	{
 		// set the team to allies
 		ent->team = TEAM_ALLIES;
 		// set the setup func
-		ent->setup = SP_SeekCover_Setup;
+		// LC - not needed
+//		ent->setup = SP_SeekCover_Setup;
 	}
 	else if (strcmp(ent->classname, "bot_axis_seek_cover_spot") == 0)
 	{
 		// set the team to axis
 		ent->team = TEAM_AXIS;
 		// set the setup func
-		ent->setup = SP_SeekCover_Setup;
+		// LC - not needed
+//		ent->setup = SP_SeekCover_Setup;
 	}
 }
 

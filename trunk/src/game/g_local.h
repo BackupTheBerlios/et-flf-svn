@@ -6,7 +6,7 @@
 #include "bg_public.h"
 #include "g_public.h"
 
-#include "../game/be_aas.h"
+//#include "../game/be_aas.h"
 
 //==================================================================
 
@@ -1911,6 +1911,7 @@ int			trap_AAS_Retreat
 	float dangerRange,
 	int travelflags
 );
+#ifdef AI
 int			trap_AAS_AlternativeRouteGoals(vec3_t start, vec3_t goal, int travelflags,
 										 aas_altroutegoal_t *altroutegoals, int maxaltroutegoals,
 										 int color);
@@ -2030,6 +2031,7 @@ int		trap_BotLoadWeaponWeights(int weaponstate, char *filename);
 int		trap_BotAllocWeaponState(void);
 void	trap_BotFreeWeaponState(int weaponstate);
 void	trap_BotResetWeaponState(int weaponstate);
+#endif
 
 int		trap_GeneticParentsAndChildSelection(int numranks, float *ranks, int *parent1, int *parent2, int *child);
 

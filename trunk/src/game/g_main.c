@@ -490,23 +490,23 @@ int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int a
 	case GAME_CONSOLE_COMMAND:
  		return ConsoleCommand();
 	case BOTAI_START_FRAME:
-#ifdef NO_BOT_SUPPORT
+//#ifdef NO_BOT_SUPPORT
 		return 0;
-#else
-		return BotAIStartFrame( arg0 );
-#endif // NO_BOT_SUPPORT
+//#else
+//		return BotAIStartFrame( arg0 );
+//#endif // NO_BOT_SUPPORT
 	case BOT_VISIBLEFROMPOS:
-#ifdef NO_BOT_SUPPORT
+//#ifdef NO_BOT_SUPPORT
 		return qfalse;
-#else
-		return BotVisibleFromPos( (float *)arg0, arg1, (float *)arg2, arg3, arg4 );
-#endif // NO_BOT_SUPPORT
+//#else
+//		return BotVisibleFromPos( (float *)arg0, arg1, (float *)arg2, arg3, arg4 );
+//#endif // NO_BOT_SUPPORT
 	case BOT_CHECKATTACKATPOS:
-#ifdef NO_BOT_SUPPORT
+//#ifdef NO_BOT_SUPPORT
 		return qfalse;
-#else
-		return BotCheckAttackAtPos( arg0, arg1, (float *)arg2, arg3, arg4 );
-#endif // NO_BOT_SUPPORT
+//#else
+//		return BotCheckAttackAtPos( arg0, arg1, (float *)arg2, arg3, arg4 );
+//#endif // NO_BOT_SUPPORT
 	case GAME_SNAPSHOT_CALLBACK:
 		return G_SnapshotCallback( arg0, arg1 );
 	}
@@ -1753,7 +1753,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 	G_Printf ("-----------------------------------\n");
 
 	trap_PbStat ( -1 , "INIT" , "GAME" ) ;
-
+/*LC
 #ifndef NO_BOT_SUPPORT
 	if ( bot_enable.integer ) {
 		BotAISetup( restart );
@@ -1761,7 +1761,7 @@ void G_InitGame( int levelTime, int randomSeed, int restart ) {
 		G_InitBots( restart );
 	}
 #endif // NO_BOT_SUPPORT
-
+*/
 	G_RemapTeamShaders();
 
 	BG_ClearAnimationPool();
@@ -1817,12 +1817,14 @@ void G_ShutdownGame( int restart ) {
 
 	// write all the client session data so we can get it back
 	G_WriteSessionData( restart );
-
+//LC
+	/*
 #ifndef NO_BOT_SUPPORT
 	if ( bot_enable.integer ) {
 		BotAIShutdown( restart );
 	}
 #endif // NO_BOT_SUPPORT
+*/
 }
 
 
@@ -2138,7 +2140,8 @@ void MoveClientToIntermission( gentity_t *ent ) {
 	ent->r.contents = 0;
 
 	// todo: call bot routine so they can process the transition to intermission (send voice chats, etc)
-	BotMoveToIntermission( ent->s.number );
+//LC
+	//	BotMoveToIntermission( ent->s.number );
 }
 
 /*
@@ -3057,8 +3060,8 @@ static void G_EnableRenderingThink(gentity_t *ent)
 	G_FreeEntity( ent );
 }
 
-extern gentity_t *BotFindEntityForName( char *name );
-extern void Bot_ScriptThink( void );
+//extern gentity_t *BotFindEntityForName( char *name );
+//extern void Bot_ScriptThink( void );
 
 static void G_CheckLoadGame(void) {
 	char loading[4];
@@ -3089,11 +3092,15 @@ static void G_CheckLoadGame(void) {
 //			reloading = qtrue;	// this gets reset at the Map_Restart() since the server unloads the game dll
 			trap_Cvar_Set( "g_reloading", "1" );
 		}
-
+//lc
+		/*
 		ready = qtrue;
 		if ((ent = BotFindEntityForName("player")) == NULL)
 			ready = qfalse;
 		else if (!ent->client || ent->client->pers.connected != CON_CONNECTED)
+			ready = qfalse;
+*/
+		if (!ent->client || ent->client->pers.connected != CON_CONNECTED)
 			ready = qfalse;
 
 		if (ready) {
@@ -3113,17 +3120,21 @@ static void G_CheckLoadGame(void) {
 
 			// make sure sound fades up
 			trap_SendServerCommand(-1, va("snd_fade 1 %d 0", 2000) );	//----(SA)	added
-
-			Bot_ScriptThink();
+//LC - not needed
+//			Bot_ScriptThink();
 		}
 	} else {
 
 		ready = qtrue;
+		// LC
+		/*
 		if ((ent = BotFindEntityForName("player")) == NULL)
 			ready = qfalse;
 		else if (!ent->client || ent->client->pers.connected != CON_CONNECTED)
 			ready = qfalse;
-
+*/
+		if (!ent->client || ent->client->pers.connected != CON_CONNECTED)
+			ready = qfalse;
 		// not loading a game, we must be in a new level, so look for some persistant data to read in, then save the game
 		if (ready) {
 			G_LoadPersistant();		// make sure we save the game after we have brought across the items
@@ -3134,8 +3145,8 @@ static void G_CheckLoadGame(void) {
 			trap_SendServerCommand(-1, "rockandroll\n");
 
 			level.reloadPauseTime = level.time + 1100;
-
-			Bot_ScriptThink();
+// LC
+//			Bot_ScriptThink();
 		}
 	}
 }

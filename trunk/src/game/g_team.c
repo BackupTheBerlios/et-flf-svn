@@ -521,7 +521,8 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 			G_Script_ScriptEvent( level.gameManager, "trigger", "allied_object_stolen" );
 		}
 		G_Script_ScriptEvent( ent, "trigger", "stolen" );
-		Bot_TeamScriptEvent( TEAM_ALLIES, "objective", "stolen" );
+		// LC - not needed
+//		Bot_TeamScriptEvent( TEAM_ALLIES, "objective", "stolen" );
 	} else {
 		gentity_t* pm = G_PopupMessage( PM_OBJECTIVE );
 		pm->s.effect3Time = G_StringIndex( ent->message );
@@ -536,7 +537,8 @@ int Team_TouchEnemyFlag( gentity_t *ent, gentity_t *other, int team ) {
 			G_Script_ScriptEvent( level.gameManager, "trigger", "axis_object_stolen" );
 		}
 		G_Script_ScriptEvent( ent, "trigger", "stolen" );
-		Bot_TeamScriptEvent( TEAM_AXIS, "objective", "stolen" );
+		// LC - not needed
+//		Bot_TeamScriptEvent( TEAM_AXIS, "objective", "stolen" );
 	}
 	// dhm
 // jpw
@@ -1671,23 +1673,29 @@ qboolean G_checkReady(void)
 	if(0 == g_doWarmup.integer) return(qtrue);
 
 	// Ensure we have enough real players
-	if(level.numNonSpectatorClients >= match_minplayers.integer && level.voteInfo.numVotingClients > 0) {
+	if (level.numNonSpectatorClients >= match_minplayers.integer && level.voteInfo.numVotingClients > 0)
+	{
 		// Step through all active clients
 		notReady = 0;
-		for(i=0; i<level.numConnectedClients; i++) {
+		for(i=0; i<level.numConnectedClients; i++)
+		{
 			cl = level.clients + level.sortedClients[i];
 
-			if(cl->pers.connected != CON_CONNECTED || cl->sess.sessionTeam == TEAM_SPECTATOR) continue;
-			else if(cl->pers.ready || (g_entities[level.sortedClients[i]].r.svFlags & SVF_BOT)) ready++;
-			else notReady++;
+			if (cl->pers.connected != CON_CONNECTED || cl->sess.sessionTeam == TEAM_SPECTATOR)
+				continue;
+			else if (cl->pers.ready)
+				ready++;
+			else
+				notReady++;
 		}
 	}
 
 	notReady = (notReady > 0 || ready > 0) ? notReady : match_minplayers.integer;
-	if(g_minGameClients.integer != notReady) trap_Cvar_Set("g_minGameClients", va("%d", notReady));
+	if (g_minGameClients.integer != notReady)
+		trap_Cvar_Set("g_minGameClients", va("%d", notReady));
 
 	// Do we have enough "ready" players?
-	return(level.ref_allready || ((ready + notReady > 0) && 100*ready/(ready+notReady) >= match_readypercent.integer));
+	return (level.ref_allready || ((ready + notReady > 0) && 100*ready/(ready+notReady) >= match_readypercent.integer));
 }
 
 

@@ -895,10 +895,13 @@ void script_mover_die(gentity_t *self, gentity_t *inflictor, gentity_t *attacker
 	self->die = NULL;
 }
 
-void script_mover_set_blocking( gentity_t *ent ) {
+void script_mover_set_blocking( gentity_t *ent )
+{
+	// LC - not needed
+	/*
 	if (ent->r.linked && ent->r.contents == CONTENTS_SOLID) {
 		G_SetAASBlockingEntity( ent, AAS_AREA_AVOID );
-	}
+	}*/
 }
 
 void script_mover_aas_blocking( gentity_t *ent ) {
@@ -906,9 +909,11 @@ void script_mover_aas_blocking( gentity_t *ent ) {
 		// are we moving?
 		if (ent->s.pos.trType != TR_STATIONARY /*VectorLengthSquared( ent->s.pos.trDelta )*/) {
 			// never block while moving
+			// LC - not needed
+			/*
 			if (ent->AASblocking) {
 				G_SetAASBlockingEntity( ent, AAS_AREA_ENABLED );
-			}
+			}*/
 		} else if (!VectorCompare( ent->s.pos.trBase, ent->botAreaPos )) {
 			script_mover_set_blocking( ent );
 			VectorCopy( ent->s.pos.trBase, ent->botAreaPos );

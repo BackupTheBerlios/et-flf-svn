@@ -216,10 +216,7 @@ void G_SetupFrustum_ForBinoculars( gentity_t* ent )
 	vec3_t	vieworg;
 	float baseAngle;
 
-	if (ent->r.svFlags & SVF_BOT)
-		baseAngle = BOT_BINOCULAR_ANGLE;
-	else
-		baseAngle = BINOCULAR_ANGLE;
+	baseAngle = BINOCULAR_ANGLE;
 
 	ang = (baseAngle / 180.f)* M_PI * 0.5f;
 	xs = sin( ang );

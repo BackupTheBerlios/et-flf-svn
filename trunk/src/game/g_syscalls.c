@@ -497,7 +497,7 @@ int trap_AAS_Retreat
 {
 	return syscall( BOTLIB_AAS_RETREAT, dangerSpots, dangerSpotCount, srcpos, srcarea, dangerpos, dangerarea, PASSFLOAT(range), PASSFLOAT(dangerRange),travelflags );
 }
-
+#ifdef AI
 int trap_AAS_AlternativeRouteGoals(vec3_t start, vec3_t goal, int travelflags,
 										 aas_altroutegoal_t *altroutegoals, int maxaltroutegoals,
 										 int color) {
@@ -938,6 +938,7 @@ void trap_BotResetWeaponState(int weaponstate) {
 int trap_GeneticParentsAndChildSelection(int numranks, float *ranks, int *parent1, int *parent2, int *child) {
 	return syscall( BOTLIB_AI_GENETIC_PARENTS_AND_CHILD_SELECTION, numranks, ranks, parent1, parent2, child );
 }
+#endif
 
 void trap_PbStat ( int clientNum , char *category , char *values ) {
 	syscall ( PB_STAT_REPORT , clientNum , category , values ) ;

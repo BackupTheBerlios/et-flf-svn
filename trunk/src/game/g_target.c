@@ -761,6 +761,8 @@ Use_Target_Lock
 */
 void Use_Target_Lock( gentity_t *ent, gentity_t *other, gentity_t *activator )
 {
+	// LC - not needed
+	/*
 	gentity_t	*t = 0;
 
 	while ( (t = G_Find (t, FOFS(targetname), ent->target)) != NULL )
@@ -773,7 +775,7 @@ void Use_Target_Lock( gentity_t *ent, gentity_t *other, gentity_t *activator )
 			G_SetAASBlockingEntity( t, AAS_AREA_ENABLED );
 		}
 	}
-
+*/
 }
 
 //==========================================================

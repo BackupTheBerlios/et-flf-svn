@@ -760,12 +760,6 @@ void ReadClient (fileHandle_t f, gclient_t *client, int size)
 
 	ent = &g_entities[client->ps.clientNum];
 
-	if( ent->r.svFlags & SVF_BOT ) {
-		if( trap_BotAllocateClient( client->ps.clientNum ) < 0 ) {
-			G_Error("G_LoadGame: can't allocate required client for bot");
-		}
-	}
-
 	// make sure they face the right way
 	trap_GetUsercmd( ent->client - level.clients, &ent->client->pers.cmd );
 	SetClientViewAngle( ent, ent->client->ps.viewangles );
@@ -786,14 +780,13 @@ void ReadClient (fileHandle_t f, gclient_t *client, int size)
 	ClientUserinfoChanged( ent->client - level.clients );
 
 	// tell the client to reset it's cgame stuff
-	if (!(ent->r.svFlags & SVF_BOT)) {
-		vmCvar_t cvar;
-		// tell it which weapon to use after spawning in
-		trap_Cvar_Register( &cvar, "cg_loadWeaponSelect", "0", CVAR_ROM );
-		trap_Cvar_Set( "cg_loadWeaponSelect", va("%i", client->ps.weapon ) );
-		//
-		trap_SendServerCommand( client->ps.clientNum, "map_restart\n" );
-	}
+	vmCvar_t cvar;
+	// tell it which weapon to use after spawning in
+	trap_Cvar_Register( &cvar, "cg_loadWeaponSelect", "0", CVAR_ROM );
+	trap_Cvar_Set( "cg_loadWeaponSelect", va("%i", client->ps.weapon ) );
+	//
+	trap_SendServerCommand( client->ps.clientNum, "map_restart\n" );
+
 }
 
 //=========================================================
@@ -888,19 +881,27 @@ void ReadEntity (fileHandle_t f, gentity_t *ent, int size)
 	memcpy( ent, &temp, size );
 
 	// notify server of changes in position/orientation
-	if (ent->r.linked /*&& (!(ent->r.svFlags & SVF_BOT) || !ent->aiInactive)*/) {
+	if (ent->r.linked)
+	{
 		trap_LinkEntity( ent );
-	} else {
+	}
+	else
+	{
 		trap_UnlinkEntity( ent );
 	}
 
-	// if this is a mover, check areaportals
-	if (ent->s.eType == ET_MOVER && ent->moverState != backup.moverState) {
-		if ( ent->teammaster == ent || !ent->teammaster ) {
-			if ( ent->moverState == MOVER_POS1ROTATE || ent->moverState == MOVER_POS1 ) {
-				// closed areaportal
+	// if this is a mover, check area portals
+	if (ent->s.eType == ET_MOVER && ent->moverState != backup.moverState)
+	{
+		if ( ent->teammaster == ent || !ent->teammaster )
+		{
+			if ( ent->moverState == MOVER_POS1ROTATE || ent->moverState == MOVER_POS1 )
+			{
+				// closed area portal
 				trap_AdjustAreaPortalState( ent, qfalse );
-			} else {	// must be open
+			}
+			else
+			{	// must be open
 				// portals are always opened before the mover starts to open, so we must move
 				// it back to the start position, link, set portals, then move it back
 				backup2 = *ent;
@@ -1419,20 +1420,6 @@ qboolean G_SaveGame(char *username)
 			G_SaveWriteError();
 		}
 
-		// store userinfo if bot
-		if( g_entities[i].r.svFlags & SVF_BOT ) {
-			trap_GetUserinfo(i, userinfo, sizeof(userinfo));
-			len = strlen( userinfo );
-			if (!G_SaveWrite (&len, sizeof(len), f)) {
-				G_SaveWriteError();
-			}
-			if( len ) {
-				if (!G_SaveWrite (userinfo, strlen(userinfo), f)) {
-					G_SaveWriteError();
-				}
-			}
-		}
-
 		WriteClient (f, cl);
 	}
 	i = -1;
@@ -1679,26 +1666,25 @@ void G_LoadGame(void) {
 			trap_FS_FCloseFile( f );
 			G_Error( "G_LoadGame: entitynum out of range (%i, MAX = %i)\n", i, MAX_GENTITIES );
 		}
-//		if( i < MAX_CLIENTS && ent->inuse && ent->r.svFlags & SVF_BOT ) {
-//			BotAIShutdownClient(i);
-//			trap_DropClient( i, "" );
-//		}
-		if (i >= level.num_entities) {	// notify server
+
+		if (i >= level.num_entities)
+		{	// notify server
 			level.num_entities = i + 1;
 			serverEntityUpdate = qtrue;
 		}
 		//ent = &g_entities[i];
 		ReadEntity (f, ent, size);
 		// free all entities that we skipped
-		for ( ; last < i; last++) {
-			if (g_entities[last].inuse && i != ENTITYNUM_WORLD) {
-				if (last < MAX_CLIENTS) {
-					// free any bot data if present
-//					if( g_entities[last].r.svFlags & SVF_BOT ) {
-//						BotAIShutdownClient(last);
-//					}
+		for ( ; last < i; last++)
+		{
+			if (g_entities[last].inuse && i != ENTITYNUM_WORLD)
+			{
+				if (last < MAX_CLIENTS)
+				{
 					trap_DropClient( last, "", 0 );
-				} else {
+				}
+				else
+				{
 					G_FreeEntity( &g_entities[last] );
 				}
 			}
@@ -1728,21 +1714,6 @@ void G_LoadGame(void) {
 		}
 		cl = &level.clients[i];
 
-		// load userinfo if bot
-		if( g_entities[i].r.svFlags & SVF_BOT ) {
-			// get length
-			trap_FS_Read (&len, sizeof(len), f);
-			// get fog string
-			if( len )
-				trap_FS_Read (userinfo, len, f);
-			userinfo[len] = 0;
-			trap_SetUserinfo( i, userinfo );
-		}
-
-		/*if (cl->pers.connected == CON_DISCONNECTED) {
-			trap_FS_FCloseFile( f );
-			G_Error( "G_LoadGame: client mis-match in savegame" );
-		}*/
 		ReadClient (f, cl, size);
 	}
 

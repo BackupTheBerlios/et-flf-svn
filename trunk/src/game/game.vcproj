@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding = "Windows-1252"?>
+<?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="7.00"
+	Version="7.10"
 	Name="game"
 	SccProjectName=""
 	SccAuxPath=""
@@ -61,7 +61,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy to dir..."
-				CommandLine="copy &quot;$(TargetPath)&quot; &quot;$(WOLFDIR)\etmain\&quot;"/>
+				CommandLine="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files\Wolfenstein - Enemy Territory\et-flf&quot;"/>
 			<Tool
 				Name="VCPreBuildEventTool"/>
 			<Tool
@@ -73,7 +73,13 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -135,34 +141,21 @@
 			<Tool
 				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
 				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
+	<References>
+	</References>
 	<Files>
 		<Filter
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;hpj;bat;for;f90">
-			<File
-				RelativePath="..\botai\ai_cmd.c">
-			</File>
-			<File
-				RelativePath="..\botai\ai_dmgoal_mp.c">
-			</File>
-			<File
-				RelativePath="..\botai\ai_dmnet_mp.c">
-			</File>
-			<File
-				RelativePath="..\botai\ai_dmq3.c">
-			</File>
-			<File
-				RelativePath="..\botai\ai_main.c">
-			</File>
-			<File
-				RelativePath="..\botai\ai_script.c">
-			</File>
-			<File
-				RelativePath="..\botai\ai_script_actions.c">
-			</File>
 			<File
 				RelativePath="..\botai\ai_team.c">
 			</File>
@@ -225,9 +218,6 @@
 			</File>
 			<File
 				RelativePath="g_antilag.c">
-			</File>
-			<File
-				RelativePath=".\g_bot.c">
 			</File>
 			<File
 				RelativePath="g_buddy_list.c">
@@ -345,48 +335,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;fi;fd">
 			<File
-				RelativePath="..\botai\ai_cmd.h">
-			</File>
-			<File
-				RelativePath="..\botai\ai_dmgoal_mp.h">
-			</File>
-			<File
-				RelativePath="..\botai\ai_dmnet_mp.h">
-			</File>
-			<File
-				RelativePath="..\botai\ai_dmq3.h">
-			</File>
-			<File
-				RelativePath="..\botai\ai_main.h">
-			</File>
-			<File
-				RelativePath="..\botai\ai_team.h">
-			</File>
-			<File
-				RelativePath=".\be_aas.h">
-			</File>
-			<File
-				RelativePath=".\be_ai_char.h">
-			</File>
-			<File
-				RelativePath=".\be_ai_chat.h">
-			</File>
-			<File
-				RelativePath=".\be_ai_gen.h">
-			</File>
-			<File
-				RelativePath=".\be_ai_goal.h">
-			</File>
-			<File
-				RelativePath=".\be_ai_move.h">
-			</File>
-			<File
-				RelativePath=".\be_ai_weap.h">
-			</File>
-			<File
-				RelativePath=".\be_ea.h">
-			</File>
-			<File
 				RelativePath="bg_classes.h">
 			</File>
 			<File
@@ -394,15 +342,6 @@
 			</File>
 			<File
 				RelativePath=".\bg_public.h">
-			</File>
-			<File
-				RelativePath="..\botai\botai.h">
-			</File>
-			<File
-				RelativePath=".\botlib.h">
-			</File>
-			<File
-				RelativePath="..\botai\chars.h">
 			</File>
 			<File
 				RelativePath=".\g_local.h">
@@ -417,19 +356,10 @@
 				RelativePath=".\game.def">
 			</File>
 			<File
-				RelativePath="..\botai\inv.h">
-			</File>
-			<File
-				RelativePath="..\botai\match.h">
-			</File>
-			<File
 				RelativePath=".\q_shared.h">
 			</File>
 			<File
 				RelativePath=".\surfaceflags.h">
-			</File>
-			<File
-				RelativePath="..\botai\syn.h">
 			</File>
 			<Filter
 				Name="Resource Files"

@@ -298,11 +298,12 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 		ready[0] = 0;
 
 		// Rate info
-		if(cl_ent->r.svFlags & SVF_BOT) {
-			strcpy(rate, va("%s%s%s%s", "[BOT]", " -----", "       --", "     --"));
-		} else if(cl->pers.connected == CON_CONNECTING) {
+		if (cl->pers.connected == CON_CONNECTING)
+		{
 			strcpy(rate, va("%s", "^3>>> CONNECTING <<<"));
-		} else {
+		}
+		else
+		{
 			trap_GetUserinfo( idnum, userinfo, sizeof(userinfo));
 			s = Info_ValueForKey( userinfo, "rate" );
 			user_rate = (max_rate > 0 && atoi(s) > max_rate) ? max_rate : atoi(s);
@@ -312,33 +313,40 @@ void G_players_cmd(gentity_t *ent, unsigned int dwCommand, qboolean fValue)
 			strcpy(rate, va("%5d%6d%9d%7d", cl->pers.clientTimeNudge, user_rate, cl->pers.clientMaxPackets, user_snaps));
 		}
 
-		if(g_gamestate.integer != GS_PLAYING) {
+		if (g_gamestate.integer != GS_PLAYING)
+		{
 			if(cl->sess.sessionTeam == TEAM_SPECTATOR || cl->pers.connected == CON_CONNECTING)
 				strcpy(ready, ((ent) ? "^5--------^1 :" : "-------- :"));
-			else if(cl->pers.ready || (g_entities[idnum].r.svFlags & SVF_BOT))
+			else if(cl->pers.ready)
 				strcpy(ready, ((ent) ? "^3(READY)^1  :" : "(READY)  :"));
 			else
 				strcpy(ready, ((ent) ? "NOTREADY^1 :" : "NOTREADY :"));
 		}
 
-		if(cl->sess.referee) strcpy(ref, "REF");
+		if (cl->sess.referee) strcpy(ref, "REF");
 
-		if(cl->sess.coach_team) {
+		if (cl->sess.coach_team)
+		{
 			tteam = cl->sess.coach_team;
 			coach = (ent) ? "^3C" : "C";
-		} else {
+		}
+		else
+		{
 			tteam = cl->sess.sessionTeam;
 			coach = " ";
 		}
 
 		tc = (ent) ? "^7 " : " ";
-		if(g_gametype.integer >= GT_WOLF) {
+		if (g_gametype.integer >= GT_WOLF)
+		{
 			if(tteam == TEAM_AXIS) tc = (ent) ? "^1X^7" : "X";
 			if(tteam == TEAM_ALLIES) tc = (ent) ? "^4L^7" : "L";
 		}
 
-		if(ent) CP(va("print \"%s%s%2d%s^1:%s %-26s^7%s  ^3%s\n\"", ready, tc, idnum, coach, ((ref[0])?"^3":"^7"), n2, rate, ref));
-		else G_Printf("%s%s%2d%s: %-26s%s  %s\n", ready, tc, idnum, coach, n2, rate, ref);
+		if (ent)
+			CP(va("print \"%s%s%2d%s^1:%s %-26s^7%s  ^3%s\n\"", ready, tc, idnum, coach, ((ref[0])?"^3":"^7"), n2, rate, ref));
+		else
+			G_Printf("%s%s%2d%s: %-26s%s  %s\n", ready, tc, idnum, coach, n2, rate, ref);
 
 		cnt++;
 	}

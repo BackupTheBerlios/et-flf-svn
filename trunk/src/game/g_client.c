@@ -567,26 +567,19 @@ reinforce
 ================
 // -- called when time expires for a team deployment cycle and there is at least one guy ready to go
 */
-void reinforce(gentity_t *ent) {
+void reinforce(gentity_t *ent)
+{
 	int p, team;// numDeployable=0, finished=0; // TTimo unused
 	char *classname;
 	gclient_t *rclient;
-	char	userinfo[MAX_INFO_STRING], *respawnStr;
-
-	if (ent->r.svFlags & SVF_BOT) {
-		trap_GetUserinfo( ent->s.number, userinfo, sizeof(userinfo) );
-		respawnStr = Info_ValueForKey( userinfo, "respawn" );
-		if (!Q_stricmp( respawnStr, "no" ) || !Q_stricmp( respawnStr, "off" )) {
-			return;	// no respawns
-		}
-	}
 
 	if (!(ent->client->ps.pm_flags & PMF_LIMBO)) {
 		G_Printf("player already deployed, skipping\n");
 		return;
 	}
 
-	if(ent->client->pers.mvCount > 0) {
+	if (ent->client->pers.mvCount > 0)
+	{
 		G_smvRemoveInvalidClients(ent, TEAM_AXIS);
 		G_smvRemoveInvalidClients(ent, TEAM_ALLIES);
 	}
@@ -594,13 +587,15 @@ void reinforce(gentity_t *ent) {
 	// get team to deploy from passed entity
 	team = ent->client->sess.sessionTeam;
 
-	// find number active team spawnpoints
+	// find number active team spawn points
 	if (team == TEAM_AXIS)
 		classname = "team_CTF_redspawn";
 	else if (team == TEAM_ALLIES)
 		classname = "team_CTF_bluespawn";
 	else
+	{
 		assert(0);
+	}
 
 	// DHM - Nerve :: restore persistant data now that we're out of Limbo
 	rclient = ent->client;
@@ -786,17 +781,16 @@ qboolean AddWeaponToPlayer( gclient_t *client, weapon_t weapon, int ammo, int am
 	return qtrue;
 }
 
-void BotSetPOW(int entityNum, qboolean isPOW);
+//void BotSetPOW(int entityNum, qboolean isPOW);
 
 /*
 ===========
 SetWolfSpawnWeapons
 ===========
 */
-void SetWolfSpawnWeapons( gclient_t *client ) 
+void SetWolfSpawnWeapons(gclient_t *client) 
 {
-	int		pc = client->sess.playerType;
-	qboolean	isBot = (g_entities[client->ps.clientNum].r.svFlags & SVF_BOT) ? qtrue : qfalse;
+	int			pc = client->sess.playerType;
 	qboolean	isPOW = (g_entities[client->ps.clientNum].r.svFlags & SVF_POW) ? qtrue : qfalse;
 
 	if ( client->sess.sessionTeam == TEAM_SPECTATOR )
@@ -817,16 +811,6 @@ void SetWolfSpawnWeapons( gclient_t *client )
 	// All players start with a knife (not OR-ing so that it clears previous weapons)
 	client->ps.weapons[0] = 0;
 	client->ps.weapons[1] = 0;
-
-	// Gordon: set up pow status
-	if( isBot ) {
-		if( isPOW ) {
-			BotSetPOW( client->ps.clientNum, qtrue );
-			return;
-		} else {
-			BotSetPOW( client->ps.clientNum, qfalse );
-		}
-	}
 
 	AddWeaponToPlayer( client, WP_KNIFE, 1, 0, qtrue );
 
@@ -1273,15 +1257,17 @@ void ClientUserinfoChanged( int clientNum ) {
 	client->ps.clientNum = clientNum;
 
 	client->medals = 0;
-	for( i = 0; i < SK_NUM_SKILLS; i++ ) {
+	for( i = 0; i < SK_NUM_SKILLS; i++ )
+	{
 		client->medals += client->sess.medals[ i ];
 	}
 
 	trap_GetUserinfo( clientNum, userinfo, sizeof( userinfo ) );
 
 	// check for malformed or illegal info strings
-	if ( !Info_Validate(userinfo) ) {
-		Q_strncpyz( userinfo, "\\name\\badinfo", sizeof(userinfo) );
+	if (!Info_Validate(userinfo))
+	{
+		Q_strncpyz(userinfo, "\\name\\badinfo", sizeof(userinfo));
 	}
 
 #ifndef DEBUG_STATS
@@ -1293,36 +1279,31 @@ void ClientUserinfoChanged( int clientNum ) {
 
 	// check for local client
 	s = Info_ValueForKey( userinfo, "ip" );
-	if ( s && !strcmp( s, "localhost" ) ) {
+	if (s && !strcmp(s, "localhost"))
+	{
 		client->pers.localClient = qtrue;
 		level.fLocalHost = qtrue;
 		client->sess.referee = RL_REFEREE;
 	}
 
-	// OSP - extra client info settings
-	//		 FIXME: move other userinfo flag settings in here
-	if(ent->r.svFlags & SVF_BOT) {
-		client->pers.autoActivate = PICKUP_TOUCH;
+	s = Info_ValueForKey(userinfo, "cg_uinfo");
+	sscanf(s, "%i %i %i",
+							&client->pers.clientFlags,
+							&client->pers.clientTimeNudge,
+							&client->pers.clientMaxPackets);
+
+	client->pers.autoActivate = (client->pers.clientFlags & CGF_AUTOACTIVATE) ? PICKUP_TOUCH : PICKUP_ACTIVATE;
+	client->pers.predictItemPickup = ((client->pers.clientFlags & CGF_PREDICTITEMS) != 0);
+
+	if(client->pers.clientFlags & CGF_AUTORELOAD)
+	{
 		client->pers.bAutoReloadAux = qtrue;
 		client->pmext.bAutoReload = qtrue;
-		client->pers.predictItemPickup = qfalse;
-	} else {
-		s = Info_ValueForKey(userinfo, "cg_uinfo");
-		sscanf(s, "%i %i %i",
-								&client->pers.clientFlags,
-								&client->pers.clientTimeNudge,
-								&client->pers.clientMaxPackets);
-
-		client->pers.autoActivate = (client->pers.clientFlags & CGF_AUTOACTIVATE) ? PICKUP_TOUCH : PICKUP_ACTIVATE;
-		client->pers.predictItemPickup = ((client->pers.clientFlags & CGF_PREDICTITEMS) != 0);
-
-		if(client->pers.clientFlags & CGF_AUTORELOAD) {
-			client->pers.bAutoReloadAux = qtrue;
-			client->pmext.bAutoReload = qtrue;
-		} else {
-			client->pers.bAutoReloadAux = qfalse;
-			client->pmext.bAutoReload = qfalse;
-		}
+	}
+	else
+	{
+		client->pers.bAutoReloadAux = qfalse;
+		client->pmext.bAutoReload = qfalse;
 	}
 
 	// set name
@@ -1330,14 +1311,16 @@ void ClientUserinfoChanged( int clientNum ) {
 	s = Info_ValueForKey (userinfo, "name");
 	ClientCleanName( s, client->pers.netname, sizeof(client->pers.netname) );
 
-	if ( client->pers.connected == CON_CONNECTED ) {
-		if ( strcmp( oldname, client->pers.netname ) ) {
-			trap_SendServerCommand( -1, va("print \"[lof]%s" S_COLOR_WHITE " [lon]renamed to[lof] %s\n\"", oldname, 
-				client->pers.netname) );
+	if (client->pers.connected == CON_CONNECTED)
+	{
+		if (strcmp( oldname, client->pers.netname))
+		{
+			trap_SendServerCommand( -1, va("print \"[lof]%s" S_COLOR_WHITE " [lon]renamed to[lof] %s\n\"", oldname, client->pers.netname) );
 		}
 	}
 
-	for( i = 0; i < SK_NUM_SKILLS; i++ ) {
+	for( i = 0; i < SK_NUM_SKILLS; i++ )
+	{
 		Q_strcat( skillStr, sizeof(skillStr), va("%i",client->sess.skill[i]) );
 		Q_strcat( medalStr, sizeof(medalStr), va("%i",client->sess.medals[i]) );
 		// FIXME: Gordon: wont this break if medals > 9 arnout? JK: Medal count is tied to skill count :() Gordon: er, it's based on >> skill per map, so for a huuuuuuge campaign it could break...
@@ -1347,9 +1330,12 @@ void ClientUserinfoChanged( int clientNum ) {
 
 	// check for custom character
 	s = Info_ValueForKey( userinfo, "ch" );
-	if( *s ) {
+	if( *s )
+	{
 		characterIndex = atoi(s);
-	} else {
+	}
+	else
+	{
 		characterIndex = -1;
 	}
 
@@ -1359,53 +1345,22 @@ void ClientUserinfoChanged( int clientNum ) {
 
 	// send over a subset of the userinfo keys so other clients can
 	// print scoreboards, display models, and play custom sounds
-	if ( ent->r.svFlags & SVF_BOT ) {
-		// n: netname
-		// t: sessionTeam
-		// c1: color
-		// hc: maxHealth
-		// skill: skill
-		// c: playerType (class?)
-		// r: rank
-		// f: fireteam
-		// bot: botSlotNumber
-		// nwp: noWeapon
-		// m: medals
-		// ch: character
-
-		s = va( "n\\%s\\t\\%i\\skill\\%s\\c\\%i\\r\\%i\\m\\%s\\s\\%s%s\\dn\\%s\\dr\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i",
-			client->pers.netname,
-			client->sess.sessionTeam, 
-			Info_ValueForKey( userinfo, "skill" ), 
-			client->sess.playerType,
-			client->sess.rank,
-			medalStr,
-            skillStr,
-			characterIndex >= 0 ? va( "\\ch\\%i", characterIndex ) : "",
-			client->disguiseNetname,
-			client->disguiseRank,
-			client->sess.playerWeapon,
-			client->sess.latchPlayerWeapon,
-			client->sess.latchPlayerWeapon2,
-			client->sess.muted ? 1 : 0
-		);
-	} else {
-		s = va( "n\\%s\\t\\%i\\c\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%s\\dr\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i",
-			client->pers.netname, 
-			client->sess.sessionTeam, 
-			client->sess.playerType, 
-			client->sess.rank, 
-			medalStr,
-			skillStr,
-			client->disguiseNetname,
-			client->disguiseRank,
-			client->sess.playerWeapon,
-			client->sess.latchPlayerWeapon,
-			client->sess.latchPlayerWeapon2,
-			client->sess.muted ? 1 : 0,
-			client->sess.referee
-		);
-	}
+	
+	s = va( "n\\%s\\t\\%i\\c\\%i\\r\\%i\\m\\%s\\s\\%s\\dn\\%s\\dr\\%i\\w\\%i\\lw\\%i\\sw\\%i\\mu\\%i\\ref\\%i",
+		client->pers.netname, 
+		client->sess.sessionTeam, 
+		client->sess.playerType, 
+		client->sess.rank, 
+		medalStr,
+		skillStr,
+		client->disguiseNetname,
+		client->disguiseRank,
+		client->sess.playerWeapon,
+		client->sess.latchPlayerWeapon,
+		client->sess.latchPlayerWeapon2,
+		client->sess.muted ? 1 : 0,
+		client->sess.referee
+	);
 
 	trap_GetConfigstring( CS_PLAYERS + clientNum, oldname, sizeof( oldname ) );
 
@@ -1543,38 +1498,17 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		client->pers.enterTime = level.time;
 	}
 
-	if( isBot ) {
-		// Set up the name for the bot client before initing the bot
-		value = Info_ValueForKey ( userinfo, "scriptName" );
-		if (value && value[0]) {
-			Q_strncpyz( client->pers.botScriptName, value, sizeof( client->pers.botScriptName ) );
-			ent->scriptName = client->pers.botScriptName;
-		}
-		ent->aiName = ent->scriptName;
-		ent->s.number = clientNum;
-
-		ent->r.svFlags |= SVF_BOT;
-		ent->inuse = qtrue;
-		// if this bot is reconnecting, and they aren't supposed to respawn, then dont let it in
-		if (!firstTime) {
-			value = Info_ValueForKey (userinfo, "respawn");
-			if (value && value[0] && (!Q_stricmp(value, "NO") || !Q_stricmp(value, "DISCONNECT"))) {
-				return "BotConnectFailed (no respawn)";
-			}
-		}
-
-		if( !G_BotConnect( clientNum, !firstTime ) ) {
-			return "BotConnectfailed";
-		}
-	}
-	else if( g_gametype.integer == GT_COOP || g_gametype.integer == GT_SINGLE_PLAYER ) {
+	if (g_gametype.integer == GT_COOP || g_gametype.integer == GT_SINGLE_PLAYER)
+	{
 		// RF, in single player, enforce team = ALLIES
 		// Arnout: disabled this for savegames as the double ClientBegin it causes wipes out all loaded data
 		if( saveGamePending != 2 )
 			client->sess.sessionTeam = TEAM_ALLIES;
 			client->sess.spectatorState = SPECTATOR_NOT;
 			client->sess.spectatorClient = 0;
-	} else if( firstTime ) {
+	}
+	else if( firstTime )
+	{
 		// force into spectator
 		client->sess.sessionTeam = TEAM_SPECTATOR;
 		client->sess.spectatorState = SPECTATOR_FREE;
@@ -1584,26 +1518,23 @@ char *ClientConnect( int clientNum, qboolean firstTime, qboolean isBot ) {
 		trap_UnlinkEntity( ent );
 	}
 
-	// get and distribute relevent paramters
+	// get and distribute relevent parameters
 	G_LogPrintf( "ClientConnect: %i\n", clientNum );
 	G_UpdateCharacter( client );
 	ClientUserinfoChanged( clientNum );
 
-	if (g_gametype.integer == GT_SINGLE_PLAYER) {
-
-		if (!isBot) {
-			ent->scriptName = "player";
+	if (g_gametype.integer == GT_SINGLE_PLAYER)
+	{
+		ent->scriptName = "player";
 
 // START	Mad Doctor I changes, 8/14/2002
-			// We must store this here, so that BotFindEntityForName can find the
-			// player.
-			ent->aiName = "player";
+		// We must store this here, so that BotFindEntityForName can find the
+		// player.
+		ent->aiName = "player";
 // END		Mad Doctor I changes, 8/12/2002
 
-			G_Script_ScriptParse( ent );
-			G_Script_ScriptEvent( ent, "spawn", "" );
-		}
-
+		G_Script_ScriptParse( ent );
+		G_Script_ScriptEvent( ent, "spawn", "" );
 	}
 
 
@@ -1820,7 +1751,7 @@ gentity_t *SelectSpawnPointFromList( char *list, vec3_t spawn_origin, vec3_t spa
 
 
 // TAT 1/14/2003 - init the bot's movement autonomy pos to it's current position
-void BotInitMovementAutonomyPos(gentity_t *bot);
+//void BotInitMovementAutonomyPos(gentity_t *bot);
 
 static char *G_CheckVersion( gentity_t *ent )
 {
@@ -1972,10 +1903,7 @@ void ClientSpawn( gentity_t *ent, qboolean revived )
 	ent->client = &level.clients[index];
 	ent->takedamage = qtrue;
 	ent->inuse = qtrue;
-	if( ent->r.svFlags & SVF_BOT )
-		ent->classname = "bot";
-	else
-		ent->classname = "player";
+	ent->classname = "player";
 	ent->r.contents = CONTENTS_BODY;
 
 	ent->clipmask = MASK_PLAYERSOLID;
@@ -2107,16 +2035,8 @@ void ClientSpawn( gentity_t *ent, qboolean revived )
 		SetClientViewAnglePitch( ent, 0 );
 	}
 
-	if( ent->r.svFlags & SVF_BOT ) {
-		// xkan, 10/11/2002 - the ideal view angle is defaulted to 0,0,0, but the 
-		// spawn_angles is the desired angle for the bots to face.
-		BotSetIdealViewAngles( index, spawn_angles );
-
-		// TAT 1/14/2003 - now that we have our position in the world, init our autonomy positions
-		BotInitMovementAutonomyPos(ent);
-	}
-
-	if( ent->client->sess.sessionTeam != TEAM_SPECTATOR ) {
+	if( ent->client->sess.sessionTeam != TEAM_SPECTATOR )
+	{
 		//G_KillBox( ent );
 		trap_LinkEntity (ent);
 	}
@@ -2162,26 +2082,12 @@ void ClientSpawn( gentity_t *ent, qboolean revived )
 	// https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=569
 	G_ResetMarkers( ent );
 
-	// Set up bot speed bonusses
-	BotSpeedBonus( ent->s.number );
-
 	// RF, start the scripting system
-	if (!revived && client->sess.sessionTeam != TEAM_SPECTATOR) {
-		Bot_ScriptInitBot( ent->s.number );
-		//
-		if (spawnPoint && spawnPoint->targetname) {
-			Bot_ScriptEvent( ent->s.number, "spawn", spawnPoint->targetname );
-		} else {
-			Bot_ScriptEvent( ent->s.number, "spawn", "" );
-		}
+	if (!revived && client->sess.sessionTeam != TEAM_SPECTATOR)
+	{
 		// RF, call entity scripting event
 		G_Script_ScriptEvent( ent, "playerstart", "" );
-	} else if( revived && ent->r.svFlags & SVF_BOT) {
-		Bot_ScriptEvent( ent->s.number, "revived", "" );
 	}
-
-
-
 }
 
 
@@ -2329,10 +2235,6 @@ void ClientDisconnect( int clientNum ) {
 
 
 	CalculateRanks();
-
-	if ( ent->r.svFlags & SVF_BOT ) {
-		BotAIShutdownClient( clientNum );
-	}
 
 	// OSP
 	G_verifyMatchState(i);

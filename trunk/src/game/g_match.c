@@ -670,23 +670,33 @@ void G_statsPrint(gentity_t *ent, int nType)
 	char *cmd = (nType == 0) ? "ws" : ((nType == 1) ? "wws" : "gstats");	// Yes, not the cleanest
 	char arg[MAX_TOKEN_CHARS];
 
-	if(!ent || (ent->r.svFlags & SVF_BOT)) return;
+	if(!ent)
+		return;
 
 	// If requesting stats for self, its easy.
-	if(trap_Argc() < 2) {
-		if(ent->client->sess.sessionTeam != TEAM_SPECTATOR) {
+	if(trap_Argc() < 2)
+	{
+		if(ent->client->sess.sessionTeam != TEAM_SPECTATOR)
+		{
 			CP(va("%s %s\n", cmd, G_createStats(ent)));
 		// Specs default to players they are chasing
-		} else if(ent->client->sess.spectatorState == SPECTATOR_FOLLOW) {
+		}
+		else if(ent->client->sess.spectatorState == SPECTATOR_FOLLOW)
+		{
 			CP(va("%s %s\n", cmd, G_createStats(g_entities + ent->client->sess.spectatorClient)));
-		} else {
+		}
+		else
+		{
 			CP("cpm \"Type ^3\\stats <player_id>^7 to see stats on an active player.\n\"");
 			return;
 		}
-	} else {
+	}
+	else
+	{
 		// Find the player to poll stats.
 		trap_Argv(1, arg, sizeof(arg));
-		if((pid = ClientNumberFromString(ent, arg)) == -1) return;
+		if ((pid = ClientNumberFromString(ent, arg)) == -1)
+			return;
 
 		CP(va("%s %s\n", cmd, G_createStats(g_entities + pid)));
 	}

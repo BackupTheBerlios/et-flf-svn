@@ -828,7 +828,8 @@ void SetMoverState( gentity_t *ent, moverState_t moverState, int time ) {
 			// if this entity is blocking AAS, then update it
 			if (ent->AASblocking && ent->s.pos.trType == TR_STATIONARY) {
 				// set new areas
-				G_SetAASBlockingEntity( ent, AAS_AREA_DISABLED );
+				//LC - not needed
+//				G_SetAASBlockingEntity( ent, AAS_AREA_DISABLED );
 			}
 		} else if (ent->key || ent->allowteams) {	// doors should only block when locked and at POS1
 			switch (moverState) {
@@ -851,21 +852,31 @@ void SetMoverState( gentity_t *ent, moverState_t moverState, int time ) {
 					if (!blockflags) {
 						if (g_cheats.integer)
 							G_Printf( "WARNING: %s at %s has allowteams flag, but no spawnflags to define which team is allowed\n", ent->classname, vtos(ent->r.absmin) );
-					} else {
-						G_SetAASBlockingEntity( ent, blockflags );
+					} else
+					{
+						// LC - not needed
+//						G_SetAASBlockingEntity( ent, blockflags );
 					}
-				} else {
+				}
+				else
+				{
 					// blocked for all
-					G_SetAASBlockingEntity( ent, AAS_AREA_DISABLED );
+					// LC - not needed
+//					G_SetAASBlockingEntity( ent, AAS_AREA_DISABLED );
 				}
 				break;
 			default:
 				// no blocking
-				G_SetAASBlockingEntity( ent, AAS_AREA_ENABLED );
+				// LC - not needed
+//				G_SetAASBlockingEntity( ent, AAS_AREA_ENABLED );
 				break;
 			}
-		} else {	// door is not locked, make sure it's not blocking
-			G_SetAASBlockingEntity( ent, AAS_AREA_ENABLED );
+		}
+		else
+		{
+			// door is not locked, make sure it's not blocking
+			// LC - not needed
+//			G_SetAASBlockingEntity( ent, AAS_AREA_ENABLED );
 		}
 	}
 
@@ -1979,8 +1990,10 @@ void finishSpawningKeyedMover(gentity_t *ent)
 	}
 //----(SA)	end
 
-	if (ent->key) {
-		G_SetAASBlockingEntity( ent, AAS_AREA_DISABLED );
+	if (ent->key)
+	{
+		// LC - not needed
+//		G_SetAASBlockingEntity( ent, AAS_AREA_DISABLED );
 	}
 
 	ent->nextthink = level.time + FRAMETIME;
@@ -2006,8 +2019,10 @@ void finishSpawningKeyedMover(gentity_t *ent)
 
 			slave->key = ent->key;
 
-			if (slave->key) {
-				G_SetAASBlockingEntity( slave, AAS_AREA_DISABLED );
+			if (slave->key)
+			{
+				// LC - not needed
+//				G_SetAASBlockingEntity( slave, AAS_AREA_DISABLED );
 			}
 		}
 	}
@@ -2235,12 +2250,15 @@ void SP_func_door (gentity_t *ent) {
 
 
 	// special case for single player
+	// LC - not needed
+	/*
 	if (BotSinglePlayer() && (ent->key == 99)) {
 		ent->key = KEY_LOCKED_PICKABLE;
 
 		// TAT 1/29/2003 - also load how long it takes to pick the lock - default to 30 seconds
 		G_SpawnInt( "lockpickTime", "30", &ent->grenadeFired );
 	}
+*/
 
 	// if the key is invalid, set the key in the finishSpawning routine
 	if(	ent->key > KEY_NUM_KEYS || ent->key < -2)
@@ -2362,6 +2380,8 @@ void SP_func_secret (gentity_t *ent) {
 		ent->key = -1;					// otherwise, set the key when this ent finishes spawning
 
 	// special case for single player
+	// LC - not needed
+/*
 	if (BotSinglePlayer() && (ent->key == 99))
 	{
 		ent->key = KEY_LOCKED_PICKABLE;
@@ -2369,7 +2389,7 @@ void SP_func_secret (gentity_t *ent) {
 		// TAT 1/29/2003 - also load how long it takes to pick the lock - default to 30 seconds
 		G_SpawnInt( "lockpickTime", "30", &ent->grenadeFired );
 	}
-
+*/
 
 	// if the key is invalid, set the key in the finishSpawning routine
 	if(	ent->key > KEY_NUM_KEYS || ent->key < -1)
@@ -3314,13 +3334,15 @@ void Static_Pain (gentity_t *ent, gentity_t *attacker, int damage, vec3_t point)
 
 }
 
-void G_BlockThink( gentity_t *ent ) {
-	if( ent->r.linked && ent->entstate == STATE_DEFAULT ) {
+void G_BlockThink( gentity_t *ent )
+{
+// LC - not needed
+/*	if( ent->r.linked && ent->entstate == STATE_DEFAULT ) {
 		G_SetAASBlockingEntity( ent, AAS_AREA_DISABLED );
 	} else {
 		G_SetAASBlockingEntity( ent, AAS_AREA_ENABLED );
 	}
-
+*/
 	ent->nextthink = level.time + FRAMETIME;
 }
 
@@ -3879,7 +3901,8 @@ void func_explosive_explode(gentity_t *self, gentity_t *inflictor, gentity_t *at
 
 	// RF, AAS areas are now free
 	if (!(self->spawnflags & EXPLOSIVE_NO_AAS_BLOCKING))
-		G_SetAASBlockingEntity( self, AAS_AREA_ENABLED );
+		// LC - not needed
+		//G_SetAASBlockingEntity( self, AAS_AREA_ENABLED );
 
 	self->takedamage = qfalse;			// don't allow anything try to hurt me now that i'm exploding
 
@@ -3994,9 +4017,10 @@ void func_explosive_spawn ( gentity_t *self, gentity_t *other, gentity_t *activa
 	// turn the brush to visible
 
 	// RF, AAS areas are now occupied
-	if (!(self->spawnflags & EXPLOSIVE_NO_AAS_BLOCKING)) {
-		G_SetAASBlockingEntity( self, AAS_AREA_DISABLED );
-	}
+	// LC - not needed
+//	if (!(self->spawnflags & EXPLOSIVE_NO_AAS_BLOCKING)) {
+//		G_SetAASBlockingEntity( self, AAS_AREA_DISABLED );
+//	}
 }
 
 
@@ -4501,11 +4525,14 @@ void func_constructible_use( gentity_t *self, gentity_t *other, gentity_t *activ
 		}
 		trap_LinkEntity( self );
 		// Gordon: are we scripted only?
+		// LC - not needed
+		/*
 		if( !(self->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
 			if ( !(self->spawnflags & CONSTRUCTIBLE_NO_AAS_BLOCKING) ) {
 				G_SetAASBlockingEntity( self, AAS_AREA_DISABLED );
 			}
 		}
+		*/
 		// ...and restore
 		trap_SetBrushModel( self, va( "*%i", constructibleModelindex ) );
 		self->clipmask = constructibleClipmask;
@@ -4513,7 +4540,10 @@ void func_constructible_use( gentity_t *self, gentity_t *other, gentity_t *activ
 		if( !constructibleNonSolidBModel )
 			self->s.eFlags &= ~EF_NONSOLID_BMODEL;
 		trap_UnlinkEntity( self );
-	} else {
+	} else
+	{
+		// LC - not needed
+		/*
 		// Gordon: are we scripted only?
 		if( !(self->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
 			if ( !(self->spawnflags & CONSTRUCTIBLE_NO_AAS_BLOCKING) ) {
@@ -4521,6 +4551,7 @@ void func_constructible_use( gentity_t *self, gentity_t *other, gentity_t *activ
 				G_SetAASBlockingEntity( self, AAS_AREA_ENABLED );
 			}
 		}
+		*/
 	}
 
 	// Arnout: TODO - make this explode or so?
@@ -4679,6 +4710,8 @@ void func_constructible_explode( gentity_t *self, gentity_t *inflictor, gentity_
 				}
 			}
 
+			// LC - not needed
+			/*
 			// Gordon: are we scripted only?
 			if( !(self->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
 				if ( !(self->spawnflags & CONSTRUCTIBLE_NO_AAS_BLOCKING) ) {
@@ -4693,6 +4726,7 @@ void func_constructible_explode( gentity_t *self, gentity_t *inflictor, gentity_
 					}
 				}
 			}
+			*/
 
 			// Skills stuff
 			if( G_GetWeaponClassForMOD( mod ) >= self->constructibleStats.weaponclass ) {
@@ -4711,21 +4745,28 @@ void func_constructible_explode( gentity_t *self, gentity_t *inflictor, gentity_
 					}
 					trap_LinkEntity( self );
 					// Gordon: are we scripted only?
+					// LC - not needed
+					/*
 					if( !(self->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
 						G_SetAASBlockingEntity( self, AAS_AREA_DISABLED );
-					}
+					}*/
+
 					if( !self->count2 )
 						trap_SetBrushModel( self, self->model );
 					else {
 						trap_SetBrushModel( self, va( "*%i", self->conbmodels[self->grenadeFired] ) );	// set the final stage
 					}
 					trap_UnlinkEntity( self );
-				} else {
+				}
+				else
+				{
 					// Gordon: are we scripted only?
+					// LC - not needed
+					/*
 					if( !(self->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
 						// RF, AAS areas are now usable
 						G_SetAASBlockingEntity( self, AAS_AREA_ENABLED );
-					}
+					}*/
 				}
 			}
 
@@ -4750,21 +4791,25 @@ void func_constructible_explode( gentity_t *self, gentity_t *inflictor, gentity_
 				}
 				trap_LinkEntity( self );
 				// Gordon: are we scripted only?
-				if( !(self->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
-					G_SetAASBlockingEntity( self, AAS_AREA_DISABLED );
-				}
+				// LC - not needed
+//				if( !(self->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
+//					G_SetAASBlockingEntity( self, AAS_AREA_DISABLED );
+//				}
 				if( !self->count2 )
 					trap_SetBrushModel( self, self->model );
 				else {
 					trap_SetBrushModel( self, va( "*%i", self->conbmodels[self->grenadeFired] ) );	// set the final stage
 				}
 				trap_UnlinkEntity( self );
-			} else {
+			}
+			else
+			{
+				// LC - not needed
 				// Gordon: are we scripted only?
-				if( !(self->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
-					// RF, AAS areas are now usable
-					G_SetAASBlockingEntity( self, AAS_AREA_ENABLED );
-				}
+//				if( !(self->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
+//					// RF, AAS areas are now usable
+//					G_SetAASBlockingEntity( self, AAS_AREA_ENABLED );
+//				}
 			}
 		}
 
@@ -4954,6 +4999,8 @@ void func_constructiblespawn( gentity_t *ent ) {
 
 		trap_LinkEntity( ent );
 
+		// LC - not needed
+		/*
 		if ( !(ent->spawnflags & CONSTRUCTIBLE_NO_AAS_BLOCKING) ) {
 			if( !(ent->spawnflags & CONSTRUCTIBLE_BLOCK_PATHS_WHEN_BUILD) ) {
 				// RF, AAS areas are now unusable
@@ -4963,6 +5010,7 @@ void func_constructiblespawn( gentity_t *ent ) {
 				G_SetAASBlockingEntity( ent, AAS_AREA_ENABLED );
 			}
 		}
+*/
 
 		trap_UnlinkEntity( ent );
 		// RF, done.
@@ -5062,6 +5110,8 @@ void func_constructiblespawn( gentity_t *ent ) {
 
 				SnapVector( e->s.pos.trBase );
 
+				// LC - not needed
+				/*
 				// Gordon: are we scripted only?
 				if( !(ent->spawnflags & CONSTRUCTIBLE_AAS_SCRIPTED) ) {
 					if ( !(ent->spawnflags & CONSTRUCTIBLE_NO_AAS_BLOCKING) ) {
@@ -5074,7 +5124,7 @@ void func_constructiblespawn( gentity_t *ent ) {
 						}
 					}
 				}
-
+				*/
 				trap_LinkEntity( e );
 			}
 		}

@@ -641,7 +641,7 @@ void Cmd_Kill_f( gentity_t *ent )
 	player_die(ent, ent, ent, (g_gamestate.integer == GS_PLAYING) ? 100000 : 135, MOD_SUICIDE);
 }
 
-void BotRecordTeamChange( int client );
+//void BotRecordTeamChange( int client );
 
 void G_TeamDataForString( const char* teamstr, int clientNum, team_t* team, spectatorState_t* sState, int* specClient ) {
 	*sState = SPECTATOR_NOT;
@@ -864,7 +864,8 @@ qboolean SetTeam( gentity_t *ent, char *s, qboolean force, weapon_t w1, weapon_t
 	}
 
 	G_verifyMatchState(oldTeam);
-	BotRecordTeamChange( clientNum );
+// LC - not needed
+//	BotRecordTeamChange( clientNum );
 
 	// Reset stats when changing teams
 	if(team != oldTeam) {
@@ -1503,7 +1504,7 @@ void Cmd_Say_f( gentity_t *ent, int mode, qboolean arg0 )
 	G_Say(ent, NULL, mode, ConcatArgs(((arg0) ? 0 : 1)));
 }
 
-extern void BotRecordVoiceChat( int client, int destclient, const char *id, int mode, qboolean noResponse );
+//extern void BotRecordVoiceChat( int client, int destclient, const char *id, int mode, qboolean noResponse );
 
 // NERVE - SMF
 void G_VoiceTo( gentity_t *ent, gentity_t *other, int mode, const char *id, qboolean voiceonly ) {
@@ -1558,7 +1559,8 @@ void G_VoiceTo( gentity_t *ent, gentity_t *other, int mode, const char *id, qboo
 
 	// RF, record this chat so bots can parse them
 	// bots respond with voiceonly, so we check for this so they dont keep responding to responses
-	BotRecordVoiceChat( ent->s.number, other->s.number, id, mode, voiceonly == 2 );
+// LC - not needed
+//	BotRecordVoiceChat( ent->s.number, other->s.number, id, mode, voiceonly == 2 );
 
 	if (voiceonly == 2) {
 		voiceonly = qfalse;
@@ -2355,7 +2357,7 @@ void Cmd_SetCameraOrigin_f( gentity_t *ent ) {
 	}
 }
 
-extern gentity_t *BotFindEntityForName( char *name );
+//extern gentity_t *BotFindEntityForName( char *name );
 
 /*
 ==============
@@ -2367,9 +2369,10 @@ void Cmd_InterruptCamera_f( gentity_t *ent ) {
 
 	if( g_gametype.integer != GT_SINGLE_PLAYER && g_gametype.integer != GT_COOP )
 		return;
+// LC - not needed
+//	player = BotFindEntityForName( "player" );
 
-	player = BotFindEntityForName( "player" );
-
+	player = NULL;
 	if( !player )
 		return;
 
