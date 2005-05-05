@@ -3520,6 +3520,7 @@ int AINode_MP_DefendTarget( bot_state_t *bs ) {
 			}
 			break;
 		case ET_ATTRACTOR_HINT:
+		default: // rain
 			break;
 	}
 
@@ -3861,7 +3862,7 @@ int AINode_MP_TouchTarget(bot_state_t *bs)
 	vec3_t target, dir;
 	bot_moveresult_t moveresult;
 	gentity_t *ent;
-	qboolean altroute;
+	qboolean altroute = qfalse;
 	vec3_t mins, maxs;
 
 	goal = bs->target_goal;
@@ -4024,7 +4025,7 @@ int AINode_MP_TouchTarget(bot_state_t *bs)
 				//initialize the movement state
 				BotSetupForMovement(bs);
 				// check for an alternate route
-				if (numList = trap_AAS_AlternativeRouteGoals( bs->origin, bs->target_goal.origin, bs->tfl, altroutegoals, 40, 0 )) {
+				if ((numList = trap_AAS_AlternativeRouteGoals( bs->origin, bs->target_goal.origin, bs->tfl, altroutegoals, 40, 0 ))) {
 					for (i=0; i<numList; i++) {
 						BotClearGoal( &tempgoal );
 						tempgoal.areanum = altroutegoals[i].areanum;
@@ -4298,7 +4299,7 @@ int AINode_MP_SatchelChargeTarget(bot_state_t *bs) {
 
 	//if there are 2 bots going for this goal, then we should abort if we are further away
 	goalDist = VectorDistanceSquared( bs->origin, goal.origin );
-	if (numList = BotNumTeamMatesWithTargetByClass( bs, goal.entitynum, list, 10, PC_ENGINEER )) {
+	if ((numList = BotNumTeamMatesWithTargetByClass( bs, goal.entitynum, list, 10, PC_ENGINEER ))) {
 		if (goalDist > SQR(256)) {
 			goalDist = SQR(256);	// only abort if one of our teammates is close to the goal
 		}
@@ -4363,7 +4364,7 @@ int AINode_MP_SatchelChargeTarget(bot_state_t *bs) {
 				}
 				return qtrue;
 			}
-		} else if( trav = G_FindSatchel( &g_entities[bs->client] )) {
+		} else if ((trav = G_FindSatchel( &g_entities[bs->client] ))) {
 
 /*			// check for emergency targets (flags, etc)
 			if (BotCheckEmergencyTargets( bs )) {
@@ -4582,7 +4583,7 @@ int AINode_MP_DynamiteTarget(bot_state_t *bs)
 	}
 	//if there are 2 bots going for this goal, then we should abort if we are further away
 	goalDist = VectorDistanceSquared( bs->origin, goal.origin );
-	if (numList = BotNumTeamMatesWithTargetByClass( bs, goal.entitynum, list, 10, PC_ENGINEER )) {
+	if ((numList = BotNumTeamMatesWithTargetByClass( bs, goal.entitynum, list, 10, PC_ENGINEER ))) {
 		if (goalDist > SQR(256)) {
 			goalDist = SQR(256);	// only abort if one of our teammates is close to the goal
 		}
@@ -5154,7 +5155,7 @@ int AINode_MP_PlantMine(bot_state_t *bs)
 		bs->ideal_viewangles[PITCH] = 70;
 		// have we recently dropped a land mine?
 		trav = NULL;
-		while(trav = G_FindLandmine( trav )) {
+		while ((trav = G_FindLandmine( trav ))) {
 			if (!trav->parent || trav->parent->s.number != bs->client)
 				continue;
 			if (VectorDistanceSquared( bs->target_goal.origin, trav->r.currentOrigin ) > SQR(100))

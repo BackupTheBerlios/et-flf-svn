@@ -31,13 +31,6 @@ static const char *MonthAbbrev[] = {
 	"Oct","Nov","Dec"
 };
 
-static const char *netSources[] = {
-	"Local",
-	"Internet",
-	"Favorites"
-};
-static const int numNetSources = sizeof(netSources) / sizeof(const char*);
-
 static const serverFilter_t serverFilters[] = {
 	{"All", "" }
 };
@@ -64,15 +57,6 @@ static const char *shortETGameTypes[] = {
 static int const numETGameTypes = sizeof(ETGameTypes) / sizeof(const char*);*/
 
 static const int numServerFilters = sizeof(serverFilters) / sizeof(serverFilter_t);
-
-static const char *sortKeys[] = {
-	"Server Name",
-	"Map Name",
-	"Open Player Spots",
-	"Game Type",
-	"Ping Time"
-};
-static const int numSortKeys = sizeof(sortKeys) / sizeof(const char*);
 
 static char* netnames[] = {
 	"???",
@@ -214,6 +198,7 @@ typedef struct {
 #define UI_ITEM1_PIC	"window_item1_pic"
 #define UI_ITEM2_PIC	"window_item2_pic"
 
+#if 0 // rain - not used
 static uiitemType_t itemTypes[] = {
 	{ UI_KNIFE_PIC,		PT_KNIFE,		"ui/assets/weapon_knife.tga" },
 	{ UI_PISTOL_PIC,	PT_PISTOL,		"ui/assets/weapon_colt1911.tga" },
@@ -227,6 +212,7 @@ static uiitemType_t itemTypes[] = {
 
 	{ NULL, 0, NULL }
 };
+#endif
 
 extern displayContextDef_t *DC;
 
@@ -253,11 +239,15 @@ void _UI_Refresh( int realtime );
 qboolean _UI_IsFullscreen( void );
 
 #if defined(__MACOS__)
+#ifndef __GNUC__
 #pragma export on
+#endif
 #endif
 int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
 #if defined(__MACOS__)
+#ifndef __GNUC__
 #pragma export off
+#endif
 #endif
 
 	switch ( command ) {
@@ -1026,15 +1016,6 @@ void _UI_Refresh( int realtime )
 		}
 	}
 
-#ifndef NDEBUG
-	if (uiInfo.uiDC.debug)
-	{
-		// cursor coordinates
-		//FIXME
-		//UI_DrawString( 0, 0, va("(%d,%d)",uis.cursorx,uis.cursory), UI_LEFT|UI_SMALLFONT, colorRed );
-	}
-#endif
-
 }
 
 /*
@@ -1337,7 +1318,7 @@ void UI_LoadMenus( const char *menuFile, qboolean reset ) {
 		trap_Error( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );
 		handle = trap_PC_LoadSource( "ui/menus.txt" );
 		if (!handle) {
-			trap_Error( va( S_COLOR_RED "default menu file not found: ui_mp/menus.txt, unable to continue!\n", menuFile ) );
+			trap_Error( S_COLOR_RED "default menu file not found: ui_mp/menus.txt, unable to continue!\n" );
 		}
 	}
 
@@ -1860,7 +1841,7 @@ static void UI_DrawCampaignName(rectDef_t *rect, float scale, vec4_t color, int 
 }
 
 void UI_DrawCampaignDescription( rectDef_t *rect, float scale, vec4_t color, float text_x, float text_y, int textStyle, int align, qboolean net ) {
-	const char *p, *textPtr, *newLinePtr;
+	const char *p, *textPtr, *newLinePtr = NULL;
 	char buff[1024];
 	int height, len, textWidth, newLine, newLineWidth;
 	float y;
@@ -1950,7 +1931,7 @@ void UI_DrawCampaignDescription( rectDef_t *rect, float scale, vec4_t color, flo
 }
 
 void UI_DrawGametypeDescription( rectDef_t *rect, float scale, vec4_t color, float text_x, float text_y, int textStyle, int align, qboolean net ) {
-	const char *p, *textPtr, *newLinePtr;
+	const char *p, *textPtr = NULL, *newLinePtr = NULL;
 	char buff[1024];
 	int height, len, textWidth, newLine, newLineWidth, i;
 	float y;
@@ -2849,7 +2830,8 @@ static void UI_BuildPlayerList() {
 
 		if (info[0]) {
 			Q_strncpyz( namebuf, Info_ValueForKey( info, "n" ), sizeof( namebuf ) );
-			Q_CleanStr( namebuf );
+// fretn - dont expand colors twice, so: foo^^xbar -> foo^bar -> fooar
+//			Q_CleanStr( namebuf );
 			Q_strncpyz( uiInfo.playerNames[uiInfo.playerCount], namebuf, sizeof( uiInfo.playerNames[0] ) );
 			muted = atoi(Info_ValueForKey( info, "mu" ));
 			if( muted ) {
@@ -2862,7 +2844,8 @@ static void UI_BuildPlayerList() {
 			team2 = atoi(Info_ValueForKey(info, "t"));
 			if (team2 == team) {
 				Q_strncpyz( namebuf, Info_ValueForKey( info, "n" ), sizeof( namebuf ) );
-				Q_CleanStr( namebuf );
+// fretn - dont expand colors twice, so: foo^^xbar -> foo^bar -> fooar
+//				Q_CleanStr( namebuf );
 				Q_strncpyz( uiInfo.teamNames[uiInfo.myTeamCount], namebuf, sizeof( uiInfo.teamNames[0] ) );
 				uiInfo.teamClientNums[uiInfo.myTeamCount] = n;
 				if (uiInfo.playerNumber == n) {
@@ -2885,15 +2868,6 @@ static void UI_BuildPlayerList() {
 		trap_Cvar_Set("cg_selectedPlayerName", uiInfo.teamNames[n]);
 	}
 }
-
-/*
-===============
-UI_BuildBuddyList
-===============
-*/
-static void UI_BuildBuddyList( void ) {
-}
-
 
 static void UI_DrawSelectedPlayer(rectDef_t *rect, float scale, vec4_t color, int textStyle) {
 	if (uiInfo.uiDC.realTime > uiInfo.playerRefresh) {
@@ -4505,7 +4479,7 @@ void UI_RunMenuScript(char **args) {
 		} else if (Q_stricmp(name, "Loadgame") == 0) {
 			trap_Cmd_ExecuteText(EXEC_APPEND, va("loadgame %s\n", uiInfo.savegameList[uiInfo.savegameIndex].name) );
 		} else if (Q_stricmp(name, "Savegame") == 0) {
-			trap_Cmd_ExecuteText(EXEC_APPEND, va("savegame %s\n", UI_Cvar_VariableString("ui_savegame"), MAX_NAME_LENGTH));
+			trap_Cmd_ExecuteText(EXEC_APPEND, va("savegame %s\n", UI_Cvar_VariableString("ui_savegame")));
 		} else if (Q_stricmp(name, "DelSavegame") == 0) {
 			UI_DelSavegame();
 //----(SA)	end
@@ -5217,6 +5191,11 @@ void UI_RunMenuScript(char **args) {
 		} else if (Q_stricmp(name, "reconnect") == 0) {
 			// TODO: if dumped because of cl_allowdownload problem, toggle on first (we don't have appropriate support for this yet)
 			trap_Cmd_ExecuteText( EXEC_APPEND, "reconnect\n" );
+		} else if (Q_stricmp(name, "redirect") == 0) { // fretn
+			char	buf[MAX_STRING_CHARS];
+			trap_Cvar_VariableStringBuffer( "com_errorMessage", buf, sizeof(buf) );
+			trap_Cmd_ExecuteText( EXEC_APPEND, va( "connect %s\n", buf ) );
+			trap_Cvar_Set( "com_errorMessage", "" );
 		} else if( Q_stricmp( name, "updateGameType" ) == 0 ) {
 			trap_Cvar_Update( &ui_netGameType );
 			/*if( ui_netGameType.integer == GT_WOLF_CAMPAIGN ) {
@@ -5492,6 +5471,7 @@ static int UI_MapCountByGameType(qboolean singlePlayer) {
 UI_MapCountByCampaign
 ==================
 */
+#if 0 // rain - unused
 static int UI_MapCountByCampaign( qboolean singlePlayer ) {
 	int campaign;
 	int i, count = 0;
@@ -5507,6 +5487,7 @@ static int UI_MapCountByCampaign( qboolean singlePlayer ) {
 
 	return( count );
 }
+#endif
 
 /*
 ==================
@@ -7119,6 +7100,7 @@ static qboolean GameType_Parse(char **p, qboolean join) {
 	return qfalse;
 }
 
+#if 0
 static qboolean MapList_Parse(char **p) {
 	char *token;
 
@@ -7182,6 +7164,7 @@ static qboolean MapList_Parse(char **p) {
 	}
 	return qfalse;
 }
+#endif
 
 static void UI_ParseGameInfo(const char *teamFile) {
 	char	*token;
@@ -7352,7 +7335,7 @@ UI_Init
 =================
 */
 void _UI_Init( qboolean inGameLoad ) {
-	int start;
+	int start, x;
 
 	//uiInfo.inGameLoad = inGameLoad;
 
@@ -7489,7 +7472,12 @@ void _UI_Init( qboolean inGameLoad ) {
 	UI_LoadBestScores(uiInfo.mapList[0].mapLoadName, uiInfo.gameTypes[ui_gameType.integer].gtEnum);
 
 	// sets defaults for ui temp cvars
-	uiInfo.effectsColor = gamecodetoui[(int)trap_Cvar_VariableValue("color")-1];
+	// rain - bounds check array index, although I'm pretty sure this
+	// stuff isn't used anymore...
+	x = (int)trap_Cvar_VariableValue("color")-1;
+	if (x < 0 || x >= sizeof(gamecodetoui)/sizeof(gamecodetoui[0]))
+		x = 0;
+	uiInfo.effectsColor = gamecodetoui[x];
 	uiInfo.currentCrosshair = (int)trap_Cvar_VariableValue("cg_drawCrosshair");
 	trap_Cvar_Set("ui_mousePitch", (trap_Cvar_VariableValue("m_pitch") >= 0) ? "0" : "1");
 
@@ -7657,6 +7645,21 @@ void _UI_SetActiveMenu( uiMenuCommand_t menu ) {
 				if( !Q_stricmpn( buf, "Invalid password", 16 ) ) {
 					trap_Cvar_Set( "com_errorMessage", trap_TranslateString( buf ) );		// NERVE - SMF
 					Menus_ActivateByName("popupPassword", qtrue);
+				} else if( strlen( buf ) > 5 && !Q_stricmpn( buf, "ET://", 5 ) ) { // fretn
+					Q_strncpyz( buf, buf+5, sizeof( buf ) );
+					Com_Printf( "Server is full, redirect to: %s\n", buf );
+					switch( ui_autoredirect.integer ) {
+						//auto-redirect
+						case 1:
+							trap_Cvar_Set( "com_errorMessage", "" );
+							trap_Cmd_ExecuteText( EXEC_APPEND, va( "connect %s\n", buf ) );
+							break;
+						//prompt (default)
+						default:
+							trap_Cvar_Set( "com_errorMessage", buf );
+							Menus_ActivateByName("popupServerRedirect", qtrue);
+							break;
+					}
 				} else {
 					qboolean pb_enable = qfalse;
 
@@ -7834,6 +7837,7 @@ void Text_PaintCenter(float x, float y, float scale, vec4_t color, const char *t
 	Text_Paint(x - len / 2, y, scale, color, text, 0, 0, ITEM_TEXTSTYLE_SHADOWEDMORE);
 }
 
+#if 0 // rain - unused
 #define ESTIMATES 80
 static void UI_DisplayDownloadInfo( const char *downloadName, float centerPoint, float yStart, float scale ) {
 	static char dlText[]	= "Downloading:";
@@ -7920,6 +7924,7 @@ static void UI_DisplayDownloadInfo( const char *downloadName, float centerPoint,
 		}
 	}
 }
+#endif
 
 /*
 ========================
@@ -8227,6 +8232,9 @@ vmCvar_t	cg_crosshairSize;
 
 vmCvar_t	cl_bypassMouseInput;
 
+//bani
+vmCvar_t	ui_autoredirect;
+
 cvarTable_t		cvarTable[] = {
 
 	{ &ui_glCustom, "ui_glCustom", "4", CVAR_ARCHIVE }, // JPW NERVE missing from q3ta
@@ -8470,6 +8478,9 @@ cvarTable_t		cvarTable[] = {
 	{ NULL,		"g_currentCampaignMap",		"0",	CVAR_WOLFINFO | CVAR_ROM, },
 
 	{ NULL,		"ui_showtooltips",			"1",	CVAR_ARCHIVE },
+
+	//bani
+	{ &ui_autoredirect, "ui_autoredirect", "0", CVAR_ARCHIVE },
 };
 
 int		cvarTableSize = sizeof(cvarTable) / sizeof(cvarTable[0]);
@@ -8636,10 +8647,10 @@ static void UI_StartServerRefresh( qboolean full )
 	if( ui_netSource.integer == AS_GLOBAL ) {
 		ptr = UI_Cvar_VariableString( "debug_protocol" );
 		if( *ptr ) {
-			trap_Cmd_ExecuteText( EXEC_APPEND, va( "globalservers %d %s full empty\n", 0, ptr));
+			trap_Cmd_ExecuteText( EXEC_APPEND, va( "globalservers %d %s\n", 0, ptr));
 		}
 		else {
-			trap_Cmd_ExecuteText( EXEC_APPEND, va( "globalservers %d %d full empty\n", 0, (int)trap_Cvar_VariableValue( "protocol" ) ) );
+			trap_Cmd_ExecuteText( EXEC_APPEND, va( "globalservers %d %d\n", 0, (int)trap_Cvar_VariableValue( "protocol" ) ) );
 		}
 	}
 }

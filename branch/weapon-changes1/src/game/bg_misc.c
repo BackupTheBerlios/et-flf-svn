@@ -3061,9 +3061,9 @@ weapon_t BG_GrenadeTypeForTeam( team_t team ) {
 			return WP_GRENADE_LAUNCHER;
 		case TEAM_ALLIES:
 			return WP_GRENADE_PINEAPPLE;
+		default:
+			return WP_NONE;
 	}
-
-	return WP_NONE;
 }
 
 // Gordon: setting numOfClips = 0 allows you to check if the client needs ammo, but doesnt give any
@@ -4363,6 +4363,8 @@ gitem_t* BG_ValidStatWeapon( weapon_t weap ) {
 		case WP_SMOKE_BOMB:
 		case WP_AMMO:
 			return NULL;
+		default:
+			break;
 	}
 
 	if(!BG_WeaponInWolfMP(weap)) {

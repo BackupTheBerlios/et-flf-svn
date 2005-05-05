@@ -2,7 +2,8 @@
 //
 // Name:			g_script.c
 // Function:		Wolfenstein Entity Scripting
-//
+// Programmer:		Ridah
+// Tab Size:		4 (real tabs)
 //===========================================================================
 
 #include "../game/g_local.h"
@@ -114,6 +115,9 @@ qboolean G_ScriptAction_ConstructibleHealth( gentity_t *ent, char *params ) ;
 qboolean G_ScriptAction_ConstructibleWeaponclass( gentity_t *ent, char *params ) ;
 qboolean G_ScriptAction_ConstructibleDuration( gentity_t *ent, char *params ) ;
 
+//bani
+qboolean etpro_ScriptAction_SetValues( gentity_t *ent, char *params );
+
 // these are the actions that each event can call
 g_script_stack_action_t gScriptActions[] =
 {
@@ -211,6 +215,9 @@ g_script_stack_action_t gScriptActions[] =
 	{"addtankammo",						G_ScriptAction_AddTankAmmo},
 	{"kill",							G_ScriptAction_Kill},
 	{"disablemessage",					G_ScriptAction_DisableMessage},
+
+//bani
+	{"set",							etpro_ScriptAction_SetValues},
 
 	{ "constructible_class",			G_ScriptAction_ConstructibleClass },
 	{ "constructible_chargebarreq",		G_ScriptAction_ConstructibleChargeBarReq },
@@ -583,6 +590,26 @@ void G_Script_ScriptParse( gentity_t *ent )
 
 				memset( params, 0, sizeof(params) );
 
+				// Ikkyo - Parse for {}'s if this is a set command
+				if( !Q_stricmp( action->actionString, "set" ) ) {
+					token = COM_Parse( &pScript );
+					if( token[0] != '{' ) {
+						COM_ParseError( "'{' expected, found: %s.\n", token );
+					}
+
+					while( ( token = COM_Parse( &pScript ) ) && ( token[0] != '}') ) {
+						if ( strlen( params ) )   // add a space between each param
+							Q_strcat( params, sizeof( params ), " " );
+
+						if ( strrchr( token,' ') ) // need to wrap this param in quotes since it has more than one word
+							Q_strcat( params, sizeof( params ), "\"" );
+
+						Q_strcat( params, sizeof( params ), token );
+
+						if ( strrchr( token,' ') ) // need to wrap this param in quotes since it has mor
+							Q_strcat( params, sizeof( params ), "\"" );
+					}
+				} else
 				// hackly precaching of custom characters
 				if( !Q_stricmp(token, "spawnbot") )	{
 					// this is fairly indepth, so I'll move it to a separate function for readability
@@ -859,7 +886,8 @@ void mountedmg42_fire( gentity_t *other ) {
 
 	AngleVectors( other->client->ps.viewangles, forward, right, up );
 	VectorCopy( other->s.pos.trBase, muzzle );
-	VectorMA( muzzle, 42, up, muzzle );
+//	VectorMA( muzzle, 42, up, muzzle );
+	muzzle[2] += other->client->ps.viewheight;
 	VectorMA( muzzle, 58, forward, muzzle );
 
 	SnapVector( muzzle );

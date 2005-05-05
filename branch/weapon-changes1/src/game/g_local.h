@@ -481,6 +481,9 @@ struct gentity_s {
 	qboolean runthisframe;
 
 	g_constructible_stats_t	constructibleStats;
+
+	//bani
+	int	etpro_misc_1;
 };
 
 // Ridah
@@ -562,8 +565,7 @@ typedef struct {
 	int			latchPlayerType;	// DHM - Nerve :: for GT_WOLF not archived
 	int			latchPlayerWeapon;	// DHM - Nerve :: for GT_WOLF not archived
 	int			latchPlayerWeapon2;	// Gordon: secondary weapon
-	char		buddyClients[4];
-	char		ignoreClients[4];
+	int			ignoreClients[MAX_CLIENTS / (sizeof(int)*8)];
 	qboolean	muted;
 	float		skillpoints[SK_NUM_SKILLS];		// Arnout: skillpoints
 	float		startskillpoints[SK_NUM_SKILLS];// Gordon: initial skillpoints at map beginning
@@ -707,7 +709,6 @@ typedef struct {
 	vec3_t origin;
 
 	int time;
-	int servertime;
 } clientMarker_t;
 
 
@@ -1120,6 +1121,8 @@ char *G_NewString( const char *string );
 // Ridah
 qboolean G_CallSpawn( gentity_t *ent );
 // done.
+char *G_AddSpawnVarToken( const char *string );
+void G_ParseField( const char *key, const char *value, gentity_t *ent );
 
 //
 // g_cmds.c
@@ -1229,6 +1232,7 @@ void G_AdjustedDamageVec( gentity_t *ent, vec3_t origin, vec3_t vec );
 qboolean CanDamage (gentity_t *targ, vec3_t origin);
 void G_Damage (gentity_t *targ, gentity_t *inflictor, gentity_t *attacker, vec3_t dir, vec3_t point, int damage, int dflags, int mod);
 qboolean G_RadiusDamage (vec3_t origin, gentity_t *inflictor, gentity_t *attacker, float damage, float radius, gentity_t *ignore, int mod);
+qboolean etpro_RadiusDamage( vec3_t origin, gentity_t *inflictor, gentity_t *attacker, float damage, float radius, gentity_t *ignore, int mod, qboolean clientsonly );
 void body_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int damage, int meansOfDeath );
 void TossClientItems( gentity_t *self );
 gentity_t* G_BuildHead(gentity_t *ent);
@@ -1429,11 +1433,11 @@ void Cmd_SetClass_f( gentity_t *ent, unsigned int dwCommand, qboolean fValue );
 //
 void FindIntermissionPoint( void );
 void G_RunThink (gentity_t *ent);
-void QDECL G_LogPrintf( const char *fmt, ... );
+void QDECL G_LogPrintf( const char *fmt, ... )_attribute((format(printf,1,2)));
 void SendScoreboardMessageToAllClients( void );
-void QDECL G_Printf( const char *fmt, ... );
-void QDECL G_DPrintf( const char *fmt, ... );
-void QDECL G_Error( const char *fmt, ... );
+void QDECL G_Printf( const char *fmt, ... )_attribute((format(printf,1,2)));
+void QDECL G_DPrintf( const char *fmt, ... )_attribute((format(printf,1,2)));
+void QDECL G_Error( const char *fmt, ... )_attribute((format(printf,1,2)));
 // Is this a single player type game - sp or coop?
 qboolean G_IsSinglePlayerGame();
 
@@ -2035,6 +2039,9 @@ int		trap_GeneticParentsAndChildSelection(int numranks, float *ranks, int *paren
 
 void	trap_SnapVector( float *v );
 
+void		trap_SendMessage( int clientNum, char *buf, int buflen );
+messageStatus_t	trap_MessageStatus( int clientNum );
+
 void G_ExplodeMissile( gentity_t *ent );
 
 void Svcmd_StartMatch_f(void);
@@ -2048,6 +2055,9 @@ void G_StoreClientPosition( gentity_t* ent );
 void G_AdjustClientPositions( gentity_t* ent, int time, qboolean forward);
 void G_ResetMarkers( gentity_t* ent );
 void G_HistoricalTrace( gentity_t* ent, trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask );
+void G_HistoricalTraceBegin( gentity_t *ent );
+void G_HistoricalTraceEnd( gentity_t *ent );
+void G_Trace( gentity_t* ent, trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask );
 
 #define BODY_VALUE(ENT) ENT->watertype
 #define BODY_TEAM(ENT) ENT->s.modelindex
@@ -2367,7 +2377,7 @@ void G_refWarmup_cmd(gentity_t* ent);
 void G_refWarning_cmd(gentity_t* ent);
 void G_refMute_cmd(gentity_t *ent, qboolean mute);
 int  G_refClientnumForName(gentity_t *ent, const char *name);
-void G_refPrintf(gentity_t* ent, const char *fmt, ...);
+void G_refPrintf(gentity_t* ent, const char *fmt, ...)_attribute((format(printf,2,3)));
 void G_PlayerBan(void);
 void G_MakeReferee(void);
 void G_RemoveReferee(void);

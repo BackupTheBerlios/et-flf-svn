@@ -2212,6 +2212,15 @@ extern	vmCvar_t		cg_reloading;
 extern	vmCvar_t		cg_fastSolids;
 extern	vmCvar_t		cg_instanttapout;
 
+// bani - demo recording cvars
+extern	vmCvar_t		cl_demorecording;
+extern	vmCvar_t		cl_demofilename;
+extern	vmCvar_t		cl_demooffset;
+extern	vmCvar_t		cl_waverecording;
+extern	vmCvar_t		cl_wavefilename;
+extern	vmCvar_t		cl_waveoffset;
+extern	vmCvar_t		cg_recording_statusline;
+
 //
 // cg_main.c
 //
@@ -2528,10 +2537,10 @@ void CG_ParticleBloodCloud (centity_t *cent, vec3_t origin, vec3_t dir);
 //
 // cg_trails.c
 //
-int CG_AddTrailJunc(int headJuncIndex, qhandle_t shader, int spawnTime, int sType, vec3_t pos, int trailLife, float alphaStart, float alphaEnd, float startWidth, float endWidth, int flags, vec3_t colorStart, vec3_t colorEnd, float sRatio, float animSpeed);
-int CG_AddSparkJunc(int headJuncIndex, qhandle_t shader, vec3_t pos, int trailLife, float alphaStart, float alphaEnd, float startWidth, float endWidth);
-int CG_AddSmokeJunc(int headJuncIndex, qhandle_t shader, vec3_t pos, int trailLife, float alpha, float startWidth, float endWidth);
-int CG_AddFireJunc(int headJuncIndex, qhandle_t shader, vec3_t pos, int trailLife, float alpha, float startWidth, float endWidth);
+// rain - usedby for zinx's trail fixes
+int CG_AddTrailJunc(int headJuncIndex, void *usedby, qhandle_t shader, int spawnTime, int sType, vec3_t pos, int trailLife, float alphaStart, float alphaEnd, float startWidth, float endWidth, int flags, vec3_t colorStart, vec3_t colorEnd, float sRatio, float animSpeed);
+int CG_AddSparkJunc(int headJuncIndex, void *usedby, qhandle_t shader, vec3_t pos, int trailLife, float alphaStart, float alphaEnd, float startWidth, float endWidth);
+int CG_AddSmokeJunc(int headJuncIndex, void *usedby, qhandle_t shader, vec3_t pos, int trailLife, float alpha, float startWidth, float endWidth);
 void CG_AddTrails(void);
 void CG_ClearTrails (void);
 // done.
@@ -3012,7 +3021,7 @@ void trap_Key_SetBinding( int keynum, const char *binding );
 void trap_Key_KeynumToStringBuf( int keynum, char *buf, int buflen );
 // -NERVE - SMF
 
-char* trap_TranslateString( const char *string );		// NERVE - SMF - localization
+void trap_TranslateString( const char *string, char *buf );		// NERVE - SMF - localization
 
 int trap_CIN_PlayCinematic( const char *arg0, int xpos, int ypos, int width, int height, int bits);
 e_status trap_CIN_StopCinematic(int handle);
@@ -3025,6 +3034,18 @@ void trap_SnapVector( float *v );
 qboolean	trap_GetEntityToken( char *buffer, int bufferSize );
 qboolean	trap_R_inPVS( const vec3_t p1, const vec3_t p2 );
 void		trap_GetHunkData( int* hunkused, int* hunkexpected );
+
+//zinx - binary message channel
+void		trap_SendMessage( char *buf, int buflen );
+messageStatus_t	trap_MessageStatus( void );
+
+//bani - dynamic shaders
+qboolean	trap_R_LoadDynamicShader( const char *shadername, const char *shadertext );
+//fretn - render to texture
+void	trap_R_RenderToTexture( int textureid, int x, int y, int w, int h );
+int	trap_R_GetTextureId( const char *name );
+//bani - flush rendering buffer
+void	trap_R_Finish( void );
 
 // Duffy, camera stuff
 #define CAM_PRIMARY 0	// the main camera for cutscenes, etc.

@@ -1471,7 +1471,7 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	Q_strncpyz( text, chatText, sizeof(text) );
 
 	if ( target ) {
-		if( !(target->client->sess.ignoreClients[(ent-g_entities) / 8] & (1 << ((ent-g_entities) % 8))) ) {
+		if( !COM_BitCheck( target->client->sess.ignoreClients, ent - g_entities ) ) {
 			G_SayTo( ent, target, mode, color, name, text, localize );
 		}
 		return;
@@ -1485,7 +1485,7 @@ void G_Say( gentity_t *ent, gentity_t *target, int mode, const char *chatText ) 
 	// send it to all the apropriate clients
 	for(j=0; j<level.numConnectedClients; j++) {
 		other = &g_entities[level.sortedClients[j]];
-		if( !(other->client->sess.ignoreClients[(ent-g_entities) / 8] & (1 << ((ent-g_entities) % 8))) ) {
+		if( !COM_BitCheck( other->client->sess.ignoreClients, ent - g_entities ) ) {
 			G_SayTo( ent, other, mode, color, name, text, localize );
 		}
 	}
@@ -1817,15 +1817,6 @@ void Cmd_Where_f( gentity_t *ent ) {
 	trap_SendServerCommand( ent-g_entities, va("print \"%s\n\"", vtos( ent->s.origin ) ) );
 }
 
-static const char *gameNames[] = {
-	"Single Player",
-	"Cooperative",
-	"Objective",
-	"Stopwatch",
-	"Campaign",
-	"Last Man Standing"
-};
-
 /*
 ==================
 Cmd_CallVote_f
@@ -1902,7 +1893,7 @@ qboolean Cmd_CallVote_f( gentity_t *ent, unsigned int dwCommand, qboolean fRefCo
 		G_globalSound("sound/misc/referee.wav");
 	} else {
 		level.voteInfo.voteYes = 1;
-		AP(va("print \"[lof]%s^7 [lon]called a vote.\n\"", ent->client->pers.netname));
+		AP(va("print \"[lof]%s^7 [lon]called a vote.[lof]  Voting for: %s\n\"", ent->client->pers.netname, level.voteInfo.voteString));
 		AP(va("cp \"[lof]%s\n^7[lon]called a vote.\n\"", ent->client->pers.netname));
 		G_globalSound("sound/misc/vote.wav");
 	}
@@ -2420,7 +2411,7 @@ Cmd_Activate_f
 qboolean Do_Activate2_f(gentity_t *ent, gentity_t *traceEnt) {
 	qboolean found = qfalse;
 
-	if( ent->client->sess.playerType == PC_COVERTOPS && !ent->client->ps.powerups[PW_OPS_DISGUISED] ) {
+	if( ent->client->sess.playerType == PC_COVERTOPS && !ent->client->ps.powerups[PW_OPS_DISGUISED] && ent->health > 0 ) {
 		if( !ent->client->ps.powerups[PW_BLUEFLAG] && !ent->client->ps.powerups[PW_REDFLAG] ) {
 			if( traceEnt->s.eType == ET_CORPSE ) {
 				if( BODY_TEAM(traceEnt) < 4 && BODY_TEAM(traceEnt) != ent->client->sess.sessionTeam ) {
@@ -3060,11 +3051,15 @@ void Cmd_IntermissionWeaponStats_f ( gentity_t* ent ) {
 void G_MakeReady( gentity_t* ent ) {
 	ent->client->ps.eFlags |= EF_READY;
 	ent->s.eFlags |= EF_READY;
+	// rain - #105 - moved this set here
+	ent->client->pers.ready = qtrue;
 }
 
 void G_MakeUnready( gentity_t* ent ) {
 	ent->client->ps.eFlags &= ~EF_READY;
 	ent->s.eFlags &= ~EF_READY;
+	// rain - #105 - moved this set here
+	ent->client->pers.ready = qfalse;
 }
 
 void Cmd_IntermissionReady_f ( gentity_t* ent ) {
@@ -3198,7 +3193,7 @@ void Cmd_Ignore_f (gentity_t* ent ) {
 	cnum = G_refClientnumForName(ent, cmd);
 
 	if ( cnum != MAX_CLIENTS ) {
-		ent->client->sess.ignoreClients[cnum/8] |= (1 << (cnum % 8));
+		COM_BitSet( ent->client->sess.ignoreClients, cnum );
 	}
 }
 
@@ -3224,7 +3219,7 @@ void Cmd_UnIgnore_f (gentity_t* ent ) {
 	cnum = G_refClientnumForName(ent, cmd);
 
 	if ( cnum != MAX_CLIENTS ) {
-		ent->client->sess.ignoreClients[cnum/8] &= ~(1 << (cnum % 8));
+		COM_BitClear( ent->client->sess.ignoreClients, cnum );
 	}
 }
 

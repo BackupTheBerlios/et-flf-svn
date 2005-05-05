@@ -279,7 +279,7 @@ float *BotSortPlayersByTraveltime( int areanum, int *list, int numList ) {
 	static float outDistances[MAX_CLIENTS];
 
 	float	distances[MAX_CLIENTS], bestDist;
-	int i, j, outList[MAX_CLIENTS], best;
+	int i, j, outList[MAX_CLIENTS], best = 0;
 	bot_state_t *lbs;
 
 	for(i = 0; i < numList; i++) {
@@ -389,7 +389,7 @@ int BotFlagAtBase( int team, gentity_t **returnEnt ) {
 	//
 	ent = NULL;
 	if (returnEnt) *returnEnt = NULL;
-	while (ent = BotFindNextStaticEntity(ent, flags[team-1])) {
+	while ((ent = BotFindNextStaticEntity(ent, flags[team-1]))) {
 		if (ent->flags & FL_DROPPED_ITEM)
 			continue;
 		if (returnEnt) *returnEnt = ent;
@@ -500,11 +500,11 @@ int BotFindSparseDefendArea( bot_state_t *bs, bot_goal_t *goal, qboolean force )
 	gentity_t	*trav, *flagEnt;
 	qboolean hasflag, getFurthestFromFlag;
 	bot_goal_t flagGoal, flag;
-	int		flagDestTime;
+	int		flagDestTime = 0;
 	bot_state_t *obs;
 	vec3_t brushPos, center, vec;
 	int list[20], numList;
-	int oldestTime, oldest;
+	int oldestTime = -1, oldest = 0;
 	//
 	if (!force && bs->last_SparseDefense > level.time - 400 - rand()%200) return -1;
 	bs->last_SparseDefense = level.time;
@@ -644,7 +644,7 @@ int BotFindSparseDefendArea( bot_state_t *bs, bot_goal_t *goal, qboolean force )
 	numAvoidPos = 0;
 	for (i=0; avoidEnts[i]>=0; i++) {
 		trav = NULL;
-		while (trav = BotFindNextStaticEntity(trav, avoidEnts[i])) {
+		while ((trav = BotFindNextStaticEntity(trav, avoidEnts[i]))) {
 			VectorAdd( trav->r.absmin, trav->r.absmax, dSpot );
 			VectorScale( dSpot, 0.5, dSpot );
 			VectorCopy( dSpot, avoidPos[numAvoidPos] );
@@ -862,12 +862,12 @@ gentity_t* G_IsConstructible( team_t team, gentity_t* toi ) {
 
 gentity_t* G_FindDynamiteTargetForTeam( gentity_t* trav, team_t team ) {
 	gentity_t* targ;
-	while(trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO )) {
+	while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO ))) {
 		if(!trav->r.linked) {
 			continue;
 		}
 
-		if( targ = trav->target_ent ) {
+		if ((targ = trav->target_ent)) {
 			if( targ->s.eType == ET_EXPLOSIVE ) {
 				if(!(targ->spawnflags & 64)) {	// DY-NO-MITE
 					continue;
@@ -921,12 +921,12 @@ gentity_t* G_FindDynamiteTargetForTeam( gentity_t* trav, team_t team ) {
 
 gentity_t* G_FindSatchelChargeTargetForTeam( gentity_t* trav, team_t team ) {
 	gentity_t* targ;
-	while(trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO )) {
+	while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO ))) {
 		if(!trav->r.linked) {
 			continue;
 		}
 
-		if( targ = trav->target_ent ) {
+		if ((targ = trav->target_ent)) {
 			if( targ->s.eType == ET_EXPLOSIVE ) {
 				continue;
 			} else if( targ->s.eType == ET_CONSTRUCTIBLE ) {
@@ -1186,7 +1186,7 @@ int BotGetConstructibles( team_t team, int *list, int listSize, qboolean ignoreB
 	int count = 0;
 
 	trav = NULL;
-	while(trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_OBJECTIVE_INFO)) {
+	while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_OBJECTIVE_INFO))) {
 		if(!trav->r.linked) {
 			continue;
 		}
@@ -1476,7 +1476,7 @@ int BotSuggestWeapon( bot_state_t *bs, team_t team ) {
 		}
 		// if GT_WOLF, and checkpoint is owned by opposition, then no point in having snipers
 		trav = NULL;
-		while ( trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_CHECKPOINT) ) {
+		while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_CHECKPOINT))) {
 			if (trav->count == level.attackingTeam) {
 				break;
 			}
@@ -1534,7 +1534,7 @@ int BotSuggestWeapon( bot_state_t *bs, team_t team ) {
 		case 0:
 			switch(bs->mpTeam) {
 			case TEAM_AXIS:
-				return WP_AK5;
+				return WP_MP40;
 			default:
 				return WP_THOMPSON;
 			}
@@ -1888,7 +1888,7 @@ qboolean BotClass_CovertOpsCheckDisguises( bot_state_t *bs, int maxTravel, bot_g
 
 	trav = NULL;
 	// loop through all the corpses in the world
-	while (trav = G_Find(trav, FOFS(classname), "corpse"))
+	while ((trav = G_Find(trav, FOFS(classname), "corpse")))
 	{
 		// if on the same team
 		if (OnSameTeam( BotGetEntity(bs->client), trav))
@@ -1982,7 +1982,7 @@ qboolean BotClass_MedicCheckRevives( bot_state_t *bs, int maxtravel, bot_goal_t 
 		}
 
 		// make sure there isn't already another medic helping them
-		if(numList = BotNumTeamMatesWithTargetByClass( bs, teammates[i], list, 32, PC_MEDIC )) {
+		if ((numList = BotNumTeamMatesWithTargetByClass( bs, teammates[i], list, 32, PC_MEDIC ))) {
 			if(BotReduceListByTravelTime( list, numList, BotGetOrigin(teammates[i]), BotGetArea(teammates[i]), BotTravelTimeToEntity( bs, teammates[i] ) )) {
 				continue;
 			}
@@ -2124,7 +2124,7 @@ qboolean BotClass_MedicCheckGiveHealth( bot_state_t *bs, int maxTravelTime, bot_
 		}
 
 		// make sure there isn't already another medic helping them
-		if( numList = BotNumTeamMatesWithTargetByClass( bs, teammates[i], list, 32, PC_MEDIC ) ) {
+		if ((numList = BotNumTeamMatesWithTargetByClass( bs, teammates[i], list, 32, PC_MEDIC ))) {
 			if( BotReduceListByTravelTime( list, numList, BotGetOrigin(teammates[i]), BotGetArea(teammates[i]), BotTravelTimeToEntity( bs, teammates[i] ) )) {
 				continue;
 			}
@@ -2231,7 +2231,7 @@ BotClass_LtCheckGiveAmmo
 qboolean BotClass_LtCheckGiveAmmo( bot_state_t *bs, int maxTravelTime, bot_goal_t *goal )
 {
 	gentity_t *trav;
-	int i, area, best=-1, bestArea = -1; // Arnout: bestArea was not initialized
+	int i, area = 0, best=-1, bestArea = -1; // Arnout: bestArea was not initialized
 	int time;
 	int bestTravelTime = maxTravelTime;
 	int teammates[64], numTeammates;
@@ -2267,7 +2267,7 @@ qboolean BotClass_LtCheckGiveAmmo( bot_state_t *bs, int maxTravelTime, bot_goal_
 		}
 
 		// make sure there isn't already another field op helping them		
-		if( numList = BotNumTeamMatesWithTargetByClass( bs, teammates[i], list, 32, PC_FIELDOPS ) ) {
+		if ((numList = BotNumTeamMatesWithTargetByClass( bs, teammates[i], list, 32, PC_FIELDOPS ))) {
 			if( BotReduceListByTravelTime( list, numList, BotGetOrigin(teammates[i]), BotGetArea(teammates[i]), BotTravelTimeToEntity( bs, teammates[i] ) ) ) {
 				continue;
 			}

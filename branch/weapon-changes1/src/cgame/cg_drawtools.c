@@ -1313,7 +1313,20 @@ void UI_DrawProportionalString( int x, int y, const char* str, int style, vec4_t
 	UI_DrawProportionalString2( x, y, str, color, sizeScale, cgs.media.charsetProp );
 }
 
+#define	MAX_VA_STRING		32000
+
 char* CG_TranslateString( const char *string ) {
-	// dont even make the call if we're in english
-	return trap_TranslateString( string );
+	static char staticbuf[2][MAX_VA_STRING];
+	static int bufcount = 0;
+	char *buf;
+
+	// some code expects this to return a copy always, even
+	// if none is needed for translation, so always supply
+	// another buffer
+
+	buf = staticbuf[bufcount++ % 2];
+
+	trap_TranslateString( string, buf );
+
+	return buf;
 }

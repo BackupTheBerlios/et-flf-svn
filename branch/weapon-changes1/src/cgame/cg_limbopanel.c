@@ -1078,8 +1078,13 @@ void CG_LimboPanel_SendSetupMsg( qboolean forceteam ) {
 			str = "b";
 			break;
 		default:
-			str = "s";
+			str = NULL; // rain - don't go spec
 			break;
+	}
+
+	// rain - if this happens, we're dazed and confused, abort
+	if( !str ) {
+		return;
 	}
 
 	trap_SendClientCommand( va( "team %s %i %i %i\n", str, CG_LimboPanel_GetClass(), weap1, weap2 ) );
@@ -1095,6 +1100,9 @@ void CG_LimboPanel_SendSetupMsg( qboolean forceteam ) {
 			break;
 		case TEAM_ALLIES:
 			str = "Allied";
+			break;
+		default: // rain - added default
+			str = "unknown";
 			break;
 	}
 
@@ -1409,7 +1417,7 @@ void CG_LimboPanel_RenderObjectiveText( panel_button_t* button ) {
 		}
 	}
 
-	while( s = strchr(buffer, '*') ) {
+	while ((s = strchr(buffer, '*'))) {
 		*s = '\n';
 	}
 
@@ -1626,6 +1634,19 @@ void CG_DrawPlayerHead( rectDef_t *rect, bg_character_t* character, bg_character
 		}
 	}
 	trap_R_RenderScene( &refdef );
+
+//bani - render to texture api example
+//draws the player head on one of the fueldump textures.
+#ifdef TEST_API_RENDERTOTEXTURE
+	{
+		static int texid = 0;
+
+		if( !texid ) {
+			texid = trap_R_GetTextureId( "textures/stone/mxsnow3.tga" );
+		}
+		trap_R_RenderToTexture( texid, 0, 0, 256, 256 );
+	}
+#endif
 
 	trap_R_RestoreViewParms();
 }
@@ -2476,6 +2497,9 @@ void CG_LimboPanel_GetWeaponCardIconData( weapon_t weap, qhandle_t* shader, floa
 		case WP_K43:
 			*shader = cgs.media.limboWeaponCard2;
 			break;
+		
+		default: // shouldn't happen
+			*shader = 0;
 	}
 
 	// setup s co-ords
@@ -2542,6 +2566,10 @@ void CG_LimboPanel_GetWeaponCardIconData( weapon_t weap, qhandle_t* shader, floa
 		case WP_THOMPSON:
 			*t0 = 7/8.f;
 			*t1 = 8/8.f;
+			break;
+		default: // shouldn't happen
+			*t0 = 0.0;
+			*t1 = 1.0;
 			break;
 	}
 

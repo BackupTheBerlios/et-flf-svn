@@ -124,6 +124,7 @@ void CG_BloodTrail( localEntity_t *le ) {
 	int		t2;
 	int		step;
 	vec3_t	newOrigin;
+	float	vl;	//bani
 
 #ifndef BLOOD_PARTICLE_TRAIL
 	static vec3_t col = {1,1,1};
@@ -141,7 +142,15 @@ cent = &cg_entities[le->ownerNum];
 	step = 10;
 #else
 	// time it takes to move 3 units
-	step = (1000*3)/VectorLength(le->pos.trDelta);
+	vl = VectorLength( le->pos.trDelta );
+	// rain - need to check FLT_EPSILON because floating-point math sucks <3
+	if( vl < FLT_EPSILON )
+		return;
+	step = ( 1000*3 ) / vl;
+//bani - avoid another div by 0
+//zinx - check against <= 0 instead of == 0, because it can still wrap; (3000 / (FLT_EPSILON*11.7f)) < 0
+	if( step <= 0 )
+		return;
 #endif
 
 	t = step * ( (cg.time - cg.frametime + step ) / step );
@@ -155,6 +164,7 @@ cent = &cg_entities[le->ownerNum];
 #else	
 		// Ridah, blood trail using trail code (should be faster since we don't have to spawn as many)
 		le->headJuncIndex = CG_AddTrailJunc( le->headJuncIndex,
+									le, // rain - zinx's trail fix
 									cgs.media.bloodTrailShader,
 									t,
 									STYPE_STRETCH,
@@ -688,6 +698,7 @@ void CG_AddSparkElements( localEntity_t *le ) {
 
 		// add a trail
 		le->headJuncIndex = CG_AddSparkJunc( le->headJuncIndex,
+									le, // rain - zinx's trail fix
 									le->refEntity.customShader,
 									le->refEntity.origin,
 									200,
@@ -749,7 +760,8 @@ float FUSE_SPARK_WIDTH		= 1.0;
 
 		//if (lifeFrac > 0.2) {
 			// add a trail
-			le->headJuncIndex = CG_AddTrailJunc( le->headJuncIndex, cgs.media.sparkParticleShader, time, STYPE_STRETCH, le->refEntity.origin, (int)(lifeFrac*(float)(le->endTime - le->startTime)/2.0),
+			// rain - added le for zinx's trail fix
+			le->headJuncIndex = CG_AddTrailJunc( le->headJuncIndex, le, cgs.media.sparkParticleShader, time, STYPE_STRETCH, le->refEntity.origin, (int)(lifeFrac*(float)(le->endTime - le->startTime)/2.0),
 				1.0/*(1.0 - lifeFrac)*/, 0.0, FUSE_SPARK_WIDTH*(1.0 - lifeFrac), FUSE_SPARK_WIDTH*(1.0 - lifeFrac), TJFL_SPARKHEADFLARE, whiteColor, whiteColor, 0, 0 );
 		//}
 
@@ -770,10 +782,11 @@ void CG_AddBloodElements( localEntity_t *le ) {
 	trace_t	trace;
 	float	time;
 	float	lifeFrac;
+	int	numbounces;
 
 	time = (float)(cg.time - cg.frametime);
 
-	while (1) {
+	for (numbounces = 0; numbounces < 5; numbounces++) {
 		// calculate new position
 		BG_EvaluateTrajectory( &le->pos, cg.time, newOrigin, qfalse, -1 );
 
@@ -795,6 +808,7 @@ void CG_AddBloodElements( localEntity_t *le ) {
 
 		// add a trail
 		le->headJuncIndex = CG_AddSparkJunc( le->headJuncIndex,
+									le, // rain - zinx's trail fix
 									cgs.media.bloodTrailShader,
 									le->refEntity.origin,
 									200,
@@ -856,6 +870,7 @@ void CG_AddDebrisElements( localEntity_t *le ) {
 #if 1	// flame
 		if (le->effectWidth > 0) {
 			le->headJuncIndex = CG_AddSparkJunc( le->headJuncIndex,
+										le, // rain - zinx's trail fix
 										cgs.media.fireTrailShader,
 										le->refEntity.origin,
 										(int)(500.0 * (0.5 + 0.5*(1.0 - lifeFrac))),	// trail life
@@ -866,6 +881,7 @@ void CG_AddDebrisElements( localEntity_t *le ) {
 #else	// spark line
 		if (le->effectWidth > 0) {
 			le->headJuncIndex = CG_AddSparkJunc( le->headJuncIndex,
+										le, // rain - zinx's trail fix
 										cgs.media.sparkParticleShader,
 										le->refEntity.origin,
 										(int)(600.0 * (0.5 + 0.5*(0.5 - lifeFrac))),	// trail life
@@ -881,6 +897,7 @@ void CG_AddDebrisElements( localEntity_t *le ) {
 		if (le->effectFlags & 1)
 		{
 			le->headJuncIndex2 = CG_AddSmokeJunc( le->headJuncIndex2,
+										le, // rain - zinx's trail fix
 										cgs.media.smokeTrailShader,
 										le->refEntity.origin,
 										(int)(2000.0 * (0.5 + 0.5*(1.0 - lifeFrac))),	// trail life

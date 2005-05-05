@@ -433,7 +433,7 @@ qboolean BotFindNearbyTriggerGoal(bot_state_t *bs)
 		}
 		//
 		trav = NULL;
-		while (trav = G_Find(trav, FOFS(classname), goalnames[i]))
+		while ((trav = G_Find(trav, FOFS(classname), goalnames[i])))
 		{
 			// triggers don't have a location, they just have bounds
 			//		so see how far we are from the center of the trigger
@@ -470,38 +470,40 @@ qboolean BotFindNearbyGoal( bot_state_t *bs ) {
 				{
 					gitem_t* item = &bg_itemlist[ent->s.modelindex];
 					switch(item->giType) {
-					case IT_TEAM:
-						switch( item->giType ) {
-							case PW_REDFLAG:
-								if( bs->sess.sessionTeam == TEAM_AXIS ) {
-									continue;
-								}
-								break;
-							case PW_BLUEFLAG:
-								if( bs->sess.sessionTeam == TEAM_ALLIES ) {
-									continue;
-								}
-								break;
-						}
-						break;
-					case IT_WEAPON:
-						if(!needAmmo) {
-							continue;
-						}
-						switch( item->giType ) {
-							case WP_AMMO:								
-								break;
-							default:
+						case IT_TEAM:
+							switch( item->giType ) {
+								case PW_REDFLAG:
+									if( bs->sess.sessionTeam == TEAM_AXIS ) {
+										continue;
+									}
+									break;
+								case PW_BLUEFLAG:
+									if( bs->sess.sessionTeam == TEAM_ALLIES ) {
+										continue;
+									}
+									break;
+								default:
+									break;
+							}
+							break;
+						case IT_WEAPON:
+							if(!needAmmo) {
 								continue;
-						}
-						break;
-					case IT_HEALTH:
-						if(!needHealth) {
+							}
+							switch( item->giType ) {
+								case WP_AMMO:								
+									break;
+								default:
+									continue;
+							}
+							break;
+						case IT_HEALTH:
+							if(!needHealth) {
+								continue;
+							}
+							break;
+						default:
 							continue;
-						}
-						break;
-					default:
-						continue;
 					}
 
 					if( ent->r.ownerNum == bs->client && ent->botIgnoreTime > level.time ) {
@@ -930,119 +932,121 @@ float BotWeaponWantScale( bot_state_t *bs, weapon_t weapon ) {
 	moving = (VectorLengthSquared( bs->cur_ps.velocity ) > SQR(10));
 
 	switch( weapon ) {
-	case WP_KNIFE:
-		// for fun, have random bots use the knife in warmup scrumage
-		if (level.warmupTime > level.time && !((bs->client + level.warmupTime/100)%5)) {
-			return 2.0;
-		}
-		return 0.2;
-
-	case WP_LUGER:
-	case WP_COLT:
-		return 0.4;
-
-	case WP_SILENCER:
-	case WP_SILENCED_COLT:
-		return 0.45;
-	
-	case WP_AKIMBO_COLT:
-	case WP_AKIMBO_LUGER:
-		return 0.5;
-
-	case WP_AKIMBO_SILENCEDCOLT:
-	case WP_AKIMBO_SILENCEDLUGER:
-		return 0.55;
-
-	case WP_MP40:
-	case WP_AK5:
-	case WP_THOMPSON:
-	case WP_STEN:
-		return 0.6;
-
-	case WP_GPG40:
-	case WP_M7:
-		if (bs->inventory[ENEMY_HORIZONTAL_DIST] > 512) {
-			return 1.0;
-		}
-		return 0.1;
-
-	case WP_CARBINE:
-	case WP_GARAND:
-	case WP_FG42:
-	case WP_KAR98:
-	case WP_K43:
-		return 0.6;
-
-	case WP_MOBILE_MG42:
-		if (!moving && bs->inventory[ENEMY_HORIZONTAL_DIST] > 500) {
-			return 3.0;
-		}
-		return 0.3;
-	case WP_GARAND_SCOPE:
-	case WP_K43_SCOPE:
-	case WP_FG42SCOPE:
-		if((!moving && bs->enemy > -1) && (bs->inventory[ENEMY_HORIZONTAL_DIST] > 300)) {
-			return 1.0;
-		}
-		return 0.1;
-	case WP_FLAMETHROWER:
-		if ((!moving || bs->enemy > -1) && bs->inventory[ENEMY_HORIZONTAL_DIST] < 800) {
-			return 1.0;
-		}
-		return 0.1;
-	case WP_PANZERFAUST:
-		if(!moving || bs->enemy > -1) {
-			if(bs->enemy >= 0) {
-				if(BotTeamMatesNearEnemy( bs ) > 1) {
-					return 0.f;
-				}
+		case WP_KNIFE:
+			// for fun, have random bots use the knife in warmup scrumage
+			if (level.warmupTime > level.time && !((bs->client + level.warmupTime/100)%5)) {
+				return 2.0;
 			}
+			return 0.2;
 
-			if(bs->inventory[INVENTORY_HEALTH] < 15 || bs->inventory[ENEMY_HORIZONTAL_DIST] > 400) {
+		case WP_LUGER:
+		case WP_COLT:
+			return 0.4;
+
+		case WP_SILENCER:
+		case WP_SILENCED_COLT:
+			return 0.45;
+		
+		case WP_AKIMBO_COLT:
+		case WP_AKIMBO_LUGER:
+			return 0.5;
+
+		case WP_AKIMBO_SILENCEDCOLT:
+		case WP_AKIMBO_SILENCEDLUGER:
+			return 0.55;
+
+		case WP_MP40:
+		case WP_THOMPSON:
+		case WP_STEN:
+			return 0.6;
+
+		case WP_GPG40:
+		case WP_M7:
+			if (bs->inventory[ENEMY_HORIZONTAL_DIST] > 512) {
 				return 1.0;
 			}
-		}
-		return 0.1;
-	case WP_GRENADE_LAUNCHER:
-	case WP_GRENADE_PINEAPPLE:
-
-		if(bs->enemy > -1 && bs->inventory[ENEMY_HORIZONTAL_DIST] < 300) {
-			if(BotHealthScale(bs->client) < 0.3 && (bs->enemy < 0 || !BotCarryingFlag(bs->enemy)))  {
-				return 2.0 * (1.0 - (float)bs->inventory[INVENTORY_HEALTH]/40.0);	// try and get a grenade off before death
-			}
-			if(bs->inventory[ENEMY_HORIZONTAL_DIST] > 200)
-				return 0.5;
-			else
-				return 0.3;
-		} else {
 			return 0.1;
-		}
-		break;
-	case WP_SMOKE_MARKER:
-		if(bs->sess.playerType == PC_FIELDOPS && bs->enemy > -1 && (bs->inventory[ENEMY_HORIZONTAL_DIST] < 400)) {
-			if(BG_GetSkyHeightAtPoint( BotGetOrigin( bs->enemy ) ) == MAX_MAP_SIZE) {
-				return 0.f;
-			}
 
-			return 1.f;
-		}
-		break;
-	case WP_BINOCULARS:
-		if (!moving) {
-			if (bs->sess.playerType == PC_FIELDOPS) {
-				if( bs->enemy > -1 && (bs->inventory[ENEMY_HORIZONTAL_DIST] < 400) ) {
-					if(BG_GetSkyHeightAtPoint( BotGetOrigin( bs->enemy ) ) == MAX_MAP_SIZE) {
+		case WP_CARBINE:
+		case WP_GARAND:
+		case WP_FG42:
+		case WP_KAR98:
+		case WP_K43:
+			return 0.6;
+
+		case WP_MOBILE_MG42:
+			if (!moving && bs->inventory[ENEMY_HORIZONTAL_DIST] > 500) {
+				return 3.0;
+			}
+			return 0.3;
+		case WP_GARAND_SCOPE:
+		case WP_K43_SCOPE:
+		case WP_FG42SCOPE:
+			if((!moving && bs->enemy > -1) && (bs->inventory[ENEMY_HORIZONTAL_DIST] > 300)) {
+				return 1.0;
+			}
+			return 0.1;
+		case WP_FLAMETHROWER:
+			if ((!moving || bs->enemy > -1) && bs->inventory[ENEMY_HORIZONTAL_DIST] < 800) {
+				return 1.0;
+			}
+			return 0.1;
+		case WP_PANZERFAUST:
+			if(!moving || bs->enemy > -1) {
+				if(bs->enemy >= 0) {
+					if(BotTeamMatesNearEnemy( bs ) > 1) {
 						return 0.f;
 					}
-					return 1.f;
 				}
-				return 0.f;
-			} else if ( bs->sess.playerType == PC_COVERTOPS ) {
+
+				if(bs->inventory[INVENTORY_HEALTH] < 15 || bs->inventory[ENEMY_HORIZONTAL_DIST] > 400) {
+					return 1.0;
+				}
+			}
+			return 0.1;
+		case WP_GRENADE_LAUNCHER:
+		case WP_GRENADE_PINEAPPLE:
+
+			if(bs->enemy > -1 && bs->inventory[ENEMY_HORIZONTAL_DIST] < 300) {
+				if(BotHealthScale(bs->client) < 0.3 && (bs->enemy < 0 || !BotCarryingFlag(bs->enemy)))  {
+					return 2.0 * (1.0 - (float)bs->inventory[INVENTORY_HEALTH]/40.0);	// try and get a grenade off before death
+				}
+				if(bs->inventory[ENEMY_HORIZONTAL_DIST] > 200)
+					return 0.5;
+				else
+					return 0.3;
+			} else {
+				return 0.1;
+			}
+			break;
+		case WP_SMOKE_MARKER:
+			if(bs->sess.playerType == PC_FIELDOPS && bs->enemy > -1 && (bs->inventory[ENEMY_HORIZONTAL_DIST] < 400)) {
+				if(BG_GetSkyHeightAtPoint( BotGetOrigin( bs->enemy ) ) == MAX_MAP_SIZE) {
+					return 0.f;
+				}
+
 				return 1.f;
 			}
-		} else {
-			return 0.01;
-		}
+			break;
+		case WP_BINOCULARS:
+			if (!moving) {
+				if (bs->sess.playerType == PC_FIELDOPS) {
+					if( bs->enemy > -1 && (bs->inventory[ENEMY_HORIZONTAL_DIST] < 400) ) {
+						if(BG_GetSkyHeightAtPoint( BotGetOrigin( bs->enemy ) ) == MAX_MAP_SIZE) {
+							return 0.f;
+						}
+						return 1.f;
+					}
+					return 0.f;
+				} else if ( bs->sess.playerType == PC_COVERTOPS ) {
+					return 1.f;
+				}
+			} else {
+				return 0.01;
+			}
+			break;
+		default:
+			break;
 	}
 
 	// anything else must be non-combat
@@ -1134,7 +1138,7 @@ void BotChooseWeapon(bot_state_t *bs) {
 		bs->cur_ps.weaponDelay) {
 		trap_EA_SelectWeapon(bs->client, bs->weaponnum);
 	} else {
-		if(newweaponnum = BotBestFightWeapon(bs)) {
+		if ((newweaponnum = BotBestFightWeapon(bs))) {
 
 			if (bs->weaponnum != newweaponnum) {
 				bs->weaponchange_time = trap_AAS_Time();
@@ -2072,7 +2076,7 @@ qboolean BotEntInvisibleBySmokeBomb(vec3_t start, vec3_t end) {
 		return qfalse;
 	}
 
-	while( ent = G_FindSmokeBomb( ent )) {
+	while ((ent = G_FindSmokeBomb( ent ))) {
 		if (ent->s.effect1Time == 16)
 			// xkan, the smoke has not really started yet, see weapon_smokeBombExplode
 			// and CG_RenderSmokeGrenadeSmoke
@@ -2787,7 +2791,7 @@ BotDangerousGoal
 qboolean BotDangerousGoal( bot_state_t *bs, bot_goal_t *goal ) {
 	int i, j;
 	vec3_t bangPos;
-	float	radius;
+	float	radius = 0.0;
 
 	gentity_t *trav;
 	int dangerEnts[MAX_DANGER_ENTS];
@@ -2931,7 +2935,13 @@ qboolean BotDangerousGoal( bot_state_t *bs, bot_goal_t *goal ) {
 					case MOD_GRENADE_LAUNCHER:
 						radius = trav->splashRadius;
 						break;
+					default: // rain - default
+						radius = 0;
+						break;
 				}
+				break;
+			default: // rain - default
+				radius = 0;
 				break;
 		}
 
@@ -3332,7 +3342,6 @@ float BotWeaponRange( bot_state_t *bs, int weaponnum ) {
 		
 	// low-mid range  
 	case WP_MP40:  
-	case WP_AK5:
 	case WP_THOMPSON:  
 	case WP_STEN: 
 		
@@ -3406,7 +3415,7 @@ BotSortClientsByDistance
 ==================
 */
 void BotSortClientsByDistance( vec3_t srcpos, int *sorted, qboolean hasPanzer ) {
-	int i, j, best;
+	int i, j, best = 0;
 	float distances[MAX_CLIENTS];
 	int	indexes[MAX_CLIENTS];
 	float closest;
@@ -3461,7 +3470,7 @@ int BotFindEnemyMP(bot_state_t *bs, int curenemy, qboolean ignoreViewRestriction
 	vec3_t dir, ang;
 	int heardShooting, heardFootSteps;
 	int	distanceSorted[MAX_CLIENTS];
-	int startTime;
+	int startTime = 0;
 	if (bot_profile.integer == 1) startTime = trap_Milliseconds();
 	
 	if (bs->last_findenemy == level.time) {
@@ -4075,7 +4084,7 @@ BotCheckAttack
 ==================
 */
 qboolean BotCheckAttack(bot_state_t *bs) {
-	float reactiontime, fov, firethrottle, dist, aimskill;
+	float reactiontime, fov, firethrottle, dist, aimskill = 0.0;
 	bsp_trace_t bsptrace;
 	//float selfpreservation;
 	vec3_t forward, right, start, end, dir, angles;
@@ -4608,7 +4617,7 @@ void BotAIBlocked(bot_state_t *bs, bot_moveresult_t *moveresult, int activate) {
 #ifdef OBSTACLEDEBUG
 	ClientName(bs->client, netname, sizeof(netname));
 	BotAI_Print(PRT_MESSAGE, "%s: I'm blocked by model %d\n", netname, entinfo.modelindex);
-#endif OBSTACLEDEBUG
+#endif /* OBSTACLEDEBUG */
 	ent = 0;
 	//if blocked by a bsp model and the bot wants to activate it if possible
 	if (entinfo.modelindex > 0 && entinfo.modelindex <= max_bspmodelindex && activate) {
@@ -4643,12 +4652,12 @@ void BotAIBlocked(bot_state_t *bs, bot_moveresult_t *moveresult, int activate) {
 #ifdef OBSTACLEDEBUG
 			ClientName(bs->client, netname, sizeof(netname));
 			BotAI_Print(PRT_MESSAGE, "%s: I should activate %s\n", netname, classname);
-#endif OBSTACLEDEBUG
+#endif /* OBSTACLEDEBUG */
 		}
 #ifdef OBSTACLEDEBUG
 //		ClientName(bs->client, netname, sizeof(netname));
 //		BotAI_Print(PRT_MESSAGE, "%s: I've got no brain cells for activating entities\n", netname);
-#endif OBSTACLEDEBUG
+#endif /* OBSTACLEDEBUG */
 		//if it is an explosive we should shoot it
 		if (!strcmp(classname, "func_explosive"))
 		{
@@ -5606,7 +5615,7 @@ int BotBestSniperSpot( bot_state_t *bs ) {
 	trav = NULL;
 	bestSpot = NULL;
 	bestTime = 99999;
-	while(trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_BOT_SNIPERSPOT)) {
+	while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_BOT_SNIPERSPOT))) {
 		// is it disabled?
 		if(trav->aiInactive & (1<<bs->sess.sessionTeam)) {
 			continue;
@@ -5664,7 +5673,7 @@ int BotBestLandmineSpotingSpot( bot_state_t *bs ) {
 	trav = NULL;
 	bestSpot = NULL;
 	bestTime = 99999;
-	while(trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_BOT_LANDMINESPOTINGSPOT)) {
+	while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_BOT_LANDMINESPOTINGSPOT))) {
 		// is it disabled?
 		if(trav->aiInactive & (1<<bs->sess.sessionTeam)) {
 			continue;
@@ -5723,7 +5732,7 @@ int BotBestMG42Spot( bot_state_t *bs, qboolean force ) {
 	mg42 = NULL;
 	bestSpot = NULL;
 	bestTime = 99999;
-	while (mg42 = BotFindNextStaticEntity( mg42, BOTSTATICENTITY_MG42 )) {
+	while ((mg42 = BotFindNextStaticEntity( mg42, BOTSTATICENTITY_MG42 ))) {
 	//while (trav = BotFindEntity( trav, FOFS(classname), "bot_mg42_spot" )) {
 		if (!mg42->melee) continue;	// it doesnt have a "mg42 spot"
 		trav = mg42->melee;
@@ -5778,7 +5787,7 @@ int BotGetNumVisibleSniperSpots( bot_state_t *bs ) {
 	// count the spots first
 	trav = NULL;
 	cnt = 0;
-	while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_SNIPERSPOT )) {
+	while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_SNIPERSPOT ))) {
 		// if this is not for the other team
 		if(trav->aiTeam && trav->aiTeam == bs->sess.sessionTeam) {
 			continue;
@@ -5811,7 +5820,7 @@ int BotGetRandomVisibleSniperSpot( bot_state_t *bs ) {
 	// count the spots first
 	trav = NULL;
 	cnt = 0;
-	while (trav = BotFindEntity( trav, FOFS(classname), "bot_sniper_spot" )) {
+	while ((trav = BotFindEntity( trav, FOFS(classname), "bot_sniper_spot" ))) {
 		// if this is not for the other team
 		if (trav->aiTeam && trav->aiTeam == bs->sess.sessionTeam) continue;
 		// is this spot visible?
@@ -5904,7 +5913,7 @@ void BotCalculateMg42Spots(void) {
 
 	trav = NULL;
 	// loop through all the constructible markers
-	while (trav = G_Find(trav, FOFS(classname), "misc_constructiblemarker"))
+	while ((trav = G_Find(trav, FOFS(classname), "misc_constructiblemarker")))
 	{
 		// if it's linked
 		if (trav->r.linked)
@@ -5924,7 +5933,7 @@ void BotCalculateMg42Spots(void) {
 	VectorCopy( playerMaxs, maxs );
 
 	trav = NULL;
-	while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_MG42 )) {
+	while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_MG42 ))) {
 		//
 		// RF, if this entity already has an mg42 spot, then skip it
 		if (trav->melee) continue;
@@ -6006,7 +6015,7 @@ void BotCalculateMg42Spots(void) {
 		// is this pointing to an axis or allied spawn point
 		// BLUE
 		sptrav = NULL;
-		while (sptrav = G_Find( sptrav, FOFS(classname), "team_CTF_bluespawn" )) {
+		while ((sptrav = G_Find( sptrav, FOFS(classname), "team_CTF_bluespawn" ))) {
 			if (!(sptrav->spawnflags & 2)) continue;	// ignore NON-STARTACTIVE spawns
 			VectorSubtract( sptrav->s.origin, trav->r.currentOrigin, v );
 			VectorNormalize( v );
@@ -6014,7 +6023,7 @@ void BotCalculateMg42Spots(void) {
 		}
 		// RED
 		sptrav = NULL;
-		while (sptrav = G_Find( sptrav, FOFS(classname), "team_CTF_redspawn" )) {
+		while ((sptrav = G_Find( sptrav, FOFS(classname), "team_CTF_redspawn" ))) {
 			if (!(sptrav->spawnflags & 2)) continue;	// ignore NON-STARTACTIVE spawns
 			VectorSubtract( sptrav->s.origin, trav->r.currentOrigin, v );
 			VectorNormalize( v );
@@ -6135,7 +6144,7 @@ BotCheckEmergencyTargets()
 */
 qboolean BotCheckEmergencyTargets( bot_state_t *bs ) {
 	qboolean retval;
-	int startTime;
+	int startTime = 0;
 	if (bot_profile.integer == 1) startTime = trap_Milliseconds();
 
 	retval = BotMP_CheckEmergencyGoals( bs );
@@ -6152,7 +6161,7 @@ BotFindSpecialGoals()
 */
 qboolean BotFindSpecialGoals( bot_state_t *bs ) {
 	qboolean retval;
-	int startTime;
+	int startTime = 0;
 	if (bot_profile.integer == 1) startTime = trap_Milliseconds();
 
 	trap_Cvar_Update( &bot_findgoal );
@@ -6689,7 +6698,7 @@ qboolean BotGetReachableEntityArea( bot_state_t *bs, int entityNum, bot_goal_t *
 {
 	vec3_t brushPos, vec, center, mins, maxs;
 	//int list[256], numList;
-	int oldestTime, i, oldest;
+	int oldestTime = 0, i, oldest = 0;
 	//float bestDist, dist;
 	gentity_t *ent;
 	trace_t tr;
@@ -6983,7 +6992,6 @@ int BotBestTargetWeapon( bot_state_t *bs, int targetNum )
 			if (!(ent->spawnflags & 4)) {	// allow other weapons
 				// use any of these
 				COM_BitSet( validWeapons, WP_MP40 );
-				COM_BitSet( validWeapons, WP_AK5 );
 				COM_BitSet( validWeapons, WP_THOMPSON );
 				COM_BitSet( validWeapons, WP_KAR98 );
 				COM_BitSet( validWeapons, WP_CARBINE );
@@ -7146,20 +7154,20 @@ void BotCountLandMines(void)
 
 	// reset counts
 	trav = NULL;
-	while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA )) {
+	while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA ))) {
 		trav->count2 = 0;
 		VectorClear( trav->pos3 );
 	}
 
 	mine = g_entities + level.maxclients;
-	while(mine = G_FindLandmine( mine )) {
+	while ((mine = G_FindLandmine( mine ))) {
 		// doesn't matter if it's not armed, so that we dont drop too many landmines at once
 
 		VectorCopy( mine->r.currentOrigin, org );
 		org[2] += 16;
 
 		trav = NULL;
-		while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA )) {
+		while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA ))) {
 			// are we within range?
 			if (PointInBounds( org, trav->r.absmin, trav->r.absmax )) {
 				trav->count2++;
@@ -7172,7 +7180,7 @@ void BotCountLandMines(void)
 
 	// finalize average points
 	trav = NULL;
-	while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA )) {
+	while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA ))) {
 		if (trav->count2) {
 			VectorSubtract( trav->pos3, BotGetOrigin( trav->s.number ), trav->pos3 );
 			VectorScale( trav->pos3, -1.0f / trav->count2, trav->pos3 );

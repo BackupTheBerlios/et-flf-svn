@@ -657,7 +657,7 @@ If targets, they will be killed when this is fired
 void G_KillEnts( const char* target, gentity_t* ignore, gentity_t* killer, meansOfDeath_t mod ) {
 	gentity_t *targ = NULL;
 
-	while(targ = G_FindByTargetname( targ, target )) {
+	while ((targ = G_FindByTargetname( targ, target ))) {
 		
 		// make sure it isn't going to respawn or show any events
 		targ->nextthink = 0;

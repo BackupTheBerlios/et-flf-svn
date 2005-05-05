@@ -285,8 +285,6 @@ typedef struct {
 	qboolean				isFullscreen;
 	qboolean				stereoEnabled;
 	qboolean				smpActive;		// dual processor
-	
-	qboolean				textureFilterAnisotropicAvailable;	//DAJ 
 } glconfig_t;
 
 

@@ -107,7 +107,7 @@ void CG_UpdatePMLists( void ) {
 	pmListItem_t* lastItem;
 	pmListItemBig_t* listItem2;
 
-	if( listItem = cg_pmWaitingList ) {
+	if ((listItem = cg_pmWaitingList)) {
 		int t = (CG_TimeForPopup( listItem->type ) + listItem->time);
 		if( cg.time > t ) {
 			if( listItem->next ) {
@@ -150,7 +150,7 @@ void CG_UpdatePMLists( void ) {
 				listItem->next = NULL;
 				listItem->inuse = qfalse;
 
-			} while( listItem = next );
+			} while ((listItem = next));
 			
 
 			break;
@@ -161,7 +161,7 @@ void CG_UpdatePMLists( void ) {
 	}
 
 
-	if( listItem2 = cg_pmWaitingListBig ) {
+	if ((listItem2 = cg_pmWaitingListBig)) {
 		int t = CG_TimeForBigPopup( listItem2->type ) + listItem2->time;
 		if( cg.time > t ) {
 			if( listItem2->next ) {
@@ -210,7 +210,7 @@ pmListItem_t* CG_FindFreePMItem( void ) {
 	}
 
 	// no totally free items, so just grab the last item in the oldlist
-	if( lastItem = listItem = cg_pmOldList ) {
+	if ((lastItem = listItem = cg_pmOldList)) {
 		while( listItem->next ) {
 			lastItem = listItem;
 			listItem = listItem->next;			
@@ -231,12 +231,15 @@ pmListItem_t* CG_FindFreePMItem( void ) {
 	}
 }
 
-
 void CG_AddPMItem( popupMessageType_t type, const char* message, qhandle_t shader ) {
 	pmListItem_t* listItem;
 	char* end;
 
 	if( !message || !*message ) {
+		return;
+	}
+	if (type < 0 || type >= PM_NUM_TYPES) {
+		CG_Printf("Invalid popup type: %d\n", type);
 		return;
 	}
 
@@ -256,14 +259,22 @@ void CG_AddPMItem( popupMessageType_t type, const char* message, qhandle_t shade
 	listItem->type = type;
 	Q_strncpyz( listItem->message, message, sizeof( cg_pmStack[0].message ) );
 
-
-	
-	while( end = strchr( listItem->message, '\n' ) ) {
-		*end = '\0';
-	}
+	// rain - moved this: print and THEN chop off the newline, as the
+	// console deals with newlines perfectly.  We do chop off the newline
+	// at the end, if any, though.
+	if (listItem->message[strlen(listItem->message) - 1] == '\n')
+		listItem->message[strlen(listItem->message) - 1] = 0;
 
 	trap_Print( va( "%s\n", listItem->message ) );
 
+	// rain - added parens
+	while ((end = strchr(listItem->message, '\n'))) {
+		*end = '\0';
+	}
+
+	// rain - don't eat popups for empty lines
+	if (*listItem->message == '\0')
+		return;
 
 	if( !cg_pmWaitingList ) {
 		cg_pmWaitingList = listItem;
@@ -289,6 +300,8 @@ void CG_PMItemBigSound( pmListItemBig_t* item ) {
 			break;
 		case PM_SKILL:
 			trap_S_StartSound( NULL, cg.snap->ps.clientNum, CHAN_AUTO, cgs.media.sndSkillUp );
+			break;
+		default:
 			break;
 	}
 }
@@ -500,7 +513,6 @@ void CG_PlayPMItemSound( centity_t *cent )
 			break;
 		case PM_OBJECTIVE:
 			switch( cent->currentState.density ) {
-					break;
 				case 0:
 					if( cent->currentState.effect2Time == TEAM_AXIS )
 						CG_SoundPlaySoundScript( "axis_hq_objective_taken", NULL, -1, qtrue );

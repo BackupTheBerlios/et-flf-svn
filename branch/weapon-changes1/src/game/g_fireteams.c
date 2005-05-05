@@ -65,11 +65,11 @@ team_t G_GetFireteamTeam( fireteamData_t* ft ) {
 		return -1;
 	}
 
-	if(ft->joinOrder[0] == -1 || !g_entities[ft->joinOrder[0]].client) {
+	if(ft->joinOrder[0] == -1 || !g_entities[(int)ft->joinOrder[0]].client) {
 		G_Error("G_GetFireteamTeam: Fireteam leader is invalid\n");
 	}
 
-	return g_entities[ft->joinOrder[0]].client->sess.sessionTeam;
+	return g_entities[(int)ft->joinOrder[0]].client->sess.sessionTeam;
 }
 
 int G_CountTeamFireteams( team_t team ) {
@@ -175,7 +175,7 @@ int G_FindFreeFireteamIdent(team_t team) {
 			continue;
 		}
 
-		if(g_entities[level.fireTeams[i].joinOrder[0]].client->sess.sessionTeam == team) {
+		if(g_entities[(int)level.fireTeams[i].joinOrder[0]].client->sess.sessionTeam == team) {
 			freeIdent[level.fireTeams[i].ident - 1] = qfalse;
 		}
 	}
@@ -327,7 +327,7 @@ void G_RemoveClientFromFireteams( int entityNum, qboolean update, qboolean print
 	}
 
 	if( ft->joinOrder[0] != -1 ) {
-		if( g_entities[ft->joinOrder[0]].r.svFlags & SVF_BOT ) {
+		if( g_entities[(int)ft->joinOrder[0]].r.svFlags & SVF_BOT ) {
 			G_RemoveClientFromFireteams( ft->joinOrder[0], qfalse, qfalse );
 		}
 	}
@@ -481,7 +481,7 @@ void G_ApplyToFireTeam( int entityNum, int fireteamNum ) {
 		G_Error("G_ApplyToFireTeam: Fireteam leader is invalid\n");
 	}
 
-	leader = &g_entities[ft->joinOrder[0]];
+	leader = &g_entities[(int)ft->joinOrder[0]];
 	if(!leader->client) {
 		G_Error("G_ApplyToFireTeam: Fireteam leader client is NULL\n");
 	}
@@ -525,7 +525,7 @@ void G_ProposeFireTeamPlayer( int entityNum, int otherEntityNum ) {
 		return;
 	}
 
-	leader = &g_entities[ft->joinOrder[0]];
+	leader = &g_entities[(int)ft->joinOrder[0]];
 	if(!leader->client) {
 		G_Error("G_ProposeFireTeamPlayer: invalid client");
 	}
@@ -546,7 +546,7 @@ int G_FireteamNumberForString(const char* name, team_t team) {
 			continue;
 		}
 
-		if(g_entities[level.fireTeams[i].joinOrder[0]].client->sess.sessionTeam != team) {
+		if(g_entities[(int)level.fireTeams[i].joinOrder[0]].client->sess.sessionTeam != team) {
 			continue;
 		}
 
@@ -574,7 +574,7 @@ fireteamData_t* G_FindFreePublicFireteam( team_t team ) {
 			continue;
 		}
 
-		if( g_entities[ level.fireTeams[i].joinOrder[0] ].client->sess.sessionTeam != team ) {
+		if( g_entities[ (int)level.fireTeams[i].joinOrder[0] ].client->sess.sessionTeam != team ) {
 			continue;
 		}
 

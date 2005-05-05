@@ -331,8 +331,6 @@ void CG_mvTransitionPlayerState(playerState_t* ps)
 	int x, mult, pID = (cg.mvCurrentMainview->mvInfo & MV_PID);
 	centity_t* cent = &cg_entities[pID];
 	clientInfo_t *ci = &cgs.clientinfo[pID];
-	static int last_weapState = 0, grenadeTimeLeft = 0;
-
 
 	cg.predictedPlayerEntity.currentState = cent->currentState;
 	ps->clientNum = pID;

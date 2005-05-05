@@ -424,8 +424,12 @@ typedef enum {
 	BOTLIB_PC_SOURCE_FILE_AND_LINE,
 	BOTLIB_PC_UNREAD_TOKEN,
 
-	PB_STAT_REPORT
+	PB_STAT_REPORT,
 
+	// zinx
+	G_SENDMESSAGE,
+	G_MESSAGESTATUS,
+	// -zinx
 } gameImport_t;
 
 
@@ -464,11 +468,15 @@ typedef enum {
 
 	GAME_SNAPSHOT_CALLBACK,			// ( int entityNum, int clientNum ); // return qfalse if you don't want it to be added
 
-	BOTAI_START_FRAME				// ( int time );
+	BOTAI_START_FRAME,				// ( int time );
 
 	// Ridah, Cast AI
-	,BOT_VISIBLEFROMPOS
-	,BOT_CHECKATTACKATPOS
+	BOT_VISIBLEFROMPOS,
+	BOT_CHECKATTACKATPOS,
 	// done.
+
+	// zinx
+	GAME_MESSAGERECEIVED,			// ( int cno, const char *buf, int buflen, int commandTime );
+	// -zinx
 } gameExport_t;
 

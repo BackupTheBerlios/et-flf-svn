@@ -971,7 +971,10 @@ static void CG_Missile( centity_t *cent ) {
 	if( s1->weapon == WP_SMOKE_BOMB ) {
 		// Arnout: the smoke effect
 		CG_RenderSmokeGrenadeSmoke( cent, weapon );
-	} else if( s1->weapon == WP_SATCHEL && s1->clientNum == cg.clientNum ) {
+	} else if( s1->weapon == WP_SATCHEL && s1->clientNum == cg.snap->ps.clientNum ) {
+		// rain - use snap client number so that the detonator works
+		// right when spectating (#218)
+
 		cg.satchelCharge = cent;
 	} else if( s1->weapon == WP_ARTY && s1->otherEntityNum2 && s1->teamNum == cgs.clientinfo[ cg.clientNum ].team ) {
 		VectorCopy( cent->lerpOrigin, cg.artilleryRequestPos[s1->clientNum] );

@@ -105,7 +105,7 @@ void Weapon_Knife( gentity_t *ent ) {
 	AngleVectors (ent->client->ps.viewangles, forward, right, up);
 	CalcMuzzlePoint ( ent, ent->s.weapon, forward, right, up, muzzleTrace );
 	VectorMA (muzzleTrace, KNIFE_DIST, forward, end);
-	trap_Trace (&tr, muzzleTrace, NULL, NULL, end, ent->s.number, MASK_SHOT);
+	G_HistoricalTrace(ent, &tr, muzzleTrace, NULL, NULL, end, ent->s.number, MASK_SHOT);
 
 	if ( tr.surfaceFlags & SURF_NOIMPACT )
 		return;
@@ -149,9 +149,10 @@ void Weapon_Knife( gentity_t *ent ) {
 			damage = 100;	// enough to drop a 'normal' (100 health) human with one jab
 			mod = MOD_KNIFE;
 
-			if ( ent->client->sess.skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 4 )
+			// rain - only do this if they have a positive health
+			if ( traceEnt->health > 0 && ent->client->sess.skill[SK_MILITARY_INTELLIGENCE_AND_SCOPED_WEAPONS] >= 4 ) {
 				damage = traceEnt->health;
-
+			}
 		}
 	}
 
@@ -1449,7 +1450,6 @@ void Weapon_Engineer( gentity_t *ent ) {
 	trace_t		tr;
 	gentity_t	*traceEnt, *hit;
 	vec3_t		mins, maxs; // JPW NERVE
-	static vec3_t	range = { 40, 40, 52 }; // JPW NERVE
 	int			i, num, touch[MAX_GENTITIES], scored = 0; // JPW NERVE
 	int			dynamiteDropTeam;
 	vec3_t		end;
@@ -1558,22 +1558,42 @@ void Weapon_Engineer( gentity_t *ent ) {
 				G_FreeEntity( traceEnt );
 
 				Add_Ammo(ent, WP_LANDMINE, 1, qfalse);
-				ent->client->ps.classWeaponTime -= .5f * level.engineerChargeTime[ent->client->sess.sessionTeam-1];
+
+				// rain - #202 - give back the correct charge amount
+				if (ent->client->sess.skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 3) {
+					ent->client->ps.classWeaponTime -= .33f * level.engineerChargeTime[ent->client->sess.sessionTeam-1];
+				} else {
+					ent->client->ps.classWeaponTime -= .5f * level.engineerChargeTime[ent->client->sess.sessionTeam-1];
+				}
 				ent->client->sess.aWeaponStats[WS_LANDMINE].atts--;
 				return;
-			} else if(G_CountTeamLandmines(ent->client->sess.sessionTeam) >= MAX_TEAM_LANDMINES ) {
+//bani
+// rain - #384 - check landmine team so that enemy mines can be disarmed
+// even if you're using all of yours :x
+			} else if ( G_CountTeamLandmines(ent->client->sess.sessionTeam) >= MAX_TEAM_LANDMINES && G_LandmineTeam(traceEnt) == ent->client->sess.sessionTeam) {
+
 				if(G_LandmineUnarmed(traceEnt)) {
-					if ( G_LandmineTeam( traceEnt ) != ent->client->sess.sessionTeam )
-						return;
+// rain - should be impossible now
+//					if ( G_LandmineTeam( traceEnt ) != ent->client->sess.sessionTeam )
+//						return;
 
 					trap_SendServerCommand(ent-g_entities, "cp \"Your team has too many landmines placed...\" 1");
 
 					G_FreeEntity( traceEnt );
 
 					Add_Ammo(ent, WP_LANDMINE, 1, qfalse);
-					ent->client->ps.classWeaponTime -= .5f * level.engineerChargeTime[ent->client->sess.sessionTeam-1];
+					// rain - #202 - give back the correct charge amount
+					if (ent->client->sess.skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 3)
+						ent->client->ps.classWeaponTime -= .33f * level.engineerChargeTime[ent->client->sess.sessionTeam-1];
+					else
+						ent->client->ps.classWeaponTime -= .5f * level.engineerChargeTime[ent->client->sess.sessionTeam-1];
+
 					ent->client->sess.aWeaponStats[WS_LANDMINE].atts--;
 					return;
+				}
+//bani - #471
+				else {
+					goto evilbanigoto;
 				}
 			} else {
 
@@ -1611,15 +1631,18 @@ void Weapon_Engineer( gentity_t *ent ) {
 					traceEnt->nextthink = level.time + 2000;
 					traceEnt->think = G_LandminePrime;
 				} else {
+//bani - #471
+evilbanigoto:
 					if (traceEnt->timestamp > level.time)
 						return;
 					if (traceEnt->health >= 250) // have to do this so we don't score multiple times
 						return;
 
-					if( ent->client->sess.skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 2 )
+					if( ent->client->sess.skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 2 ) {
 						traceEnt->health += 6;
-					else
+					} else {
 						traceEnt->health += 3;
+					}
 
 					G_PrintClientSpammyCenterPrint(ent-g_entities, "Defusing landmine");
 
@@ -1694,11 +1717,16 @@ void Weapon_Engineer( gentity_t *ent ) {
 				traceEnt->think = G_FreeEntity;
 				traceEnt->nextthink = level.time + FRAMETIME;
 
+				//bani - consistency with dynamite defusing
+				G_PrintClientSpammyCenterPrint(ent-g_entities, "Satchel charge disarmed...");
+
 				G_AddSkillPoints( ent, SK_EXPLOSIVES_AND_CONSTRUCTION, 6.f );
 				G_DebugAddSkillPoints( ent, SK_EXPLOSIVES_AND_CONSTRUCTION, 6.f, "disarming satchel charge" );
 			} else {
 				return;
 			}
+//bani - no tripmine...
+#if 0
 		} else if ( traceEnt->methodOfDeath == MOD_TRIPMINE ) {
 			// Give health until it is full, don't continue
 			traceEnt->health += 3;
@@ -1714,11 +1742,15 @@ void Weapon_Engineer( gentity_t *ent ) {
 			} else {
 				return;
 			}
+#endif
 		} else
 		if ( traceEnt->methodOfDeath == MOD_DYNAMITE ) {
 
 			// Not armed
 			if ( traceEnt->s.teamNum >= 4 ) {
+				//bani
+				qboolean friendlyObj = qfalse;
+				qboolean enemyObj = qfalse;
 
 				// Opposing team cannot accidentally arm it
 				if ( (traceEnt->s.teamNum - 4) != ent->client->sess.sessionTeam )
@@ -1763,9 +1795,11 @@ void Weapon_Engineer( gentity_t *ent ) {
 
 						// is it a friendly constructible
 						if( hit->s.teamNum == traceEnt->s.teamNum - 4 ) {
-							G_FreeEntity( traceEnt );
-							trap_SendServerCommand( ent-g_entities, "cp \"You cannot arm dynamite near a friendly construction!\" 1");
-							return;
+//bani
+//							G_FreeEntity( traceEnt );
+//							trap_SendServerCommand( ent-g_entities, "cp \"You cannot arm dynamite near a friendly construction!\" 1");
+//							return;
+							friendlyObj = qtrue;
 						}
 					}
 				}
@@ -1795,11 +1829,26 @@ void Weapon_Engineer( gentity_t *ent ) {
 
 						if ( ((hit->spawnflags & AXIS_OBJECTIVE) && (ent->client->sess.sessionTeam == TEAM_AXIS)) || 
 							 ((hit->spawnflags & ALLIED_OBJECTIVE) && (ent->client->sess.sessionTeam == TEAM_ALLIES)) ) {
-							G_FreeEntity( traceEnt );
-							trap_SendServerCommand( ent-g_entities, "cp \"You cannot arm dynamite near a friendly objective!\" 1");
-							return;
+//bani
+//							G_FreeEntity( traceEnt );
+//							trap_SendServerCommand( ent-g_entities, "cp \"You cannot arm dynamite near a friendly objective!\" 1");
+//							return;
+							friendlyObj = qtrue;
+						}
+
+						//bani
+						if ( ((hit->spawnflags & AXIS_OBJECTIVE) && (ent->client->sess.sessionTeam == TEAM_ALLIES)) ||
+							 ((hit->spawnflags & ALLIED_OBJECTIVE) && (ent->client->sess.sessionTeam == TEAM_AXIS)) ) {
+							enemyObj = qtrue;
 						}
 					}
+				}
+
+				//bani
+				if( friendlyObj && !enemyObj ) {
+					G_FreeEntity( traceEnt );
+					trap_SendServerCommand( ent-g_entities, "cp \"You cannot arm dynamite near a friendly objective!\" 1");
+					return;
 				}
 
 				if ( traceEnt->health >= 250 ) {
@@ -1820,6 +1869,10 @@ void Weapon_Engineer( gentity_t *ent ) {
 				// ARM IT!
 				traceEnt->nextthink = level.time + 30000;
 				traceEnt->think = G_ExplodeMissile;
+
+				// Gordon: moved down here to prevent two prints when dynamite IS near objective
+
+				trap_SendServerCommand( ent-g_entities, "cp \"Dynamite is now armed with a 30 second timer!\" 1");
 
 				// check if player is in trigger objective field
 				// NERVE - SMF - made this the actual bounding box of dynamite instead of range, also must snap origin to line up properly
@@ -1854,8 +1907,9 @@ void Weapon_Engineer( gentity_t *ent ) {
 							}
 						}
 
-						if ( ((hit->spawnflags & AXIS_OBJECTIVE) && (ent->client->sess.sessionTeam == TEAM_ALLIES)) ||
-							 ((hit->spawnflags & ALLIED_OBJECTIVE) && (ent->client->sess.sessionTeam == TEAM_AXIS)) ) {
+						// rain - spawnflags 128 = disabled (#309)
+						if (!(hit->spawnflags & 128) && (((hit->spawnflags & AXIS_OBJECTIVE) && (ent->client->sess.sessionTeam == TEAM_ALLIES)) ||
+							 ((hit->spawnflags & ALLIED_OBJECTIVE) && (ent->client->sess.sessionTeam == TEAM_AXIS))) ) {
 
 							gentity_t* pm = G_PopupMessage( PM_DYNAMITE );
 							pm->s.effect2Time = 0;
@@ -1864,18 +1918,23 @@ void Weapon_Engineer( gentity_t *ent ) {
 
 							G_Script_ScriptEvent( hit, "dynamited", "" );
 
-							AddScore(traceEnt->parent, WOLF_DYNAMITE_PLANT); // give drop score to guy who dropped it
-							if(traceEnt->parent && traceEnt->parent->client) {
-								G_LogPrintf("Dynamite_Plant: %d\n", traceEnt->parent - g_entities);	// OSP
+							if ( !(hit->spawnflags & OBJECTIVE_DESTROYED) ) {
+								AddScore(traceEnt->parent, WOLF_DYNAMITE_PLANT); // give drop score to guy who dropped it
+								if(traceEnt->parent && traceEnt->parent->client) {
+									G_LogPrintf("Dynamite_Plant: %d\n", traceEnt->parent - g_entities);	// OSP
+								}
+								traceEnt->parent = ent; // give explode score to guy who armed it
 							}
-							traceEnt->parent = ent; // give explode score to guy who armed it
-
-							return;
+							//bani - fix #238
+							traceEnt->etpro_misc_1 |= 1;
 						}
-						i = num;
+//bani
+//						i = num;
+						return;	//bani - bail out here because primary obj's take precendence over constructibles
 					}		
 				}
 
+//bani - reordered this check so its AFTER the primary obj check
 				// Arnout - first see if the dynamite is planted near a constructable object that can be destroyed
 				{
 					int		entityList[MAX_GENTITIES];
@@ -1906,9 +1965,11 @@ void Weapon_Engineer( gentity_t *ent ) {
 
 						// is it a friendly constructible
 						if( hit->s.teamNum == traceEnt->s.teamNum ) {
-							G_FreeEntity( traceEnt );
-							trap_SendServerCommand( ent-g_entities, "cp \"You cannot arm dynamite near a friendly construction!\" 1");
-							return;
+//bani - er, didnt we just pass this check earlier?
+//							G_FreeEntity( traceEnt );
+//							trap_SendServerCommand( ent-g_entities, "cp \"You cannot arm dynamite near a friendly construction!\" 1");
+//							return;
+							continue;
 						}
 
 						// not dynamite-able
@@ -1924,20 +1985,20 @@ void Weapon_Engineer( gentity_t *ent ) {
 
 							G_Script_ScriptEvent( hit, "dynamited", "" );
 	
-							if( hit->s.teamNum && (hit->s.teamNum == ent->client->sess.sessionTeam) ) {	// ==, as it's inverse
+							if( (!(hit->parent->spawnflags & OBJECTIVE_DESTROYED)) && 
+								hit->s.teamNum && (hit->s.teamNum == ent->client->sess.sessionTeam) ) {	// ==, as it's inverse
 								AddScore(traceEnt->parent, WOLF_DYNAMITE_PLANT); // give drop score to guy who dropped it
 								if( traceEnt->parent && traceEnt->parent->client ) {
 									G_LogPrintf("Dynamite_Plant: %d\n", traceEnt->parent - g_entities);	// OSP
 								}
 								traceEnt->parent = ent; // give explode score to guy who armed it
 							}
+							//bani - fix #238
+							traceEnt->etpro_misc_1 |= 1;
 						}
 						return;
 					}
 				}
-
-				// Gordon: moved down here to prevent two prints when dynamite IS near objective
-				trap_SendServerCommand( ent-g_entities, "cp \"Dynamite is now armed with a 30 second timer!\" 1");
 			} else {
 				if (traceEnt->timestamp > level.time)
 					return;
@@ -1945,15 +2006,17 @@ void Weapon_Engineer( gentity_t *ent ) {
 					return;
 				dynamiteDropTeam = traceEnt->s.teamNum; // set this here since we wack traceent later but want teamnum for scoring
 				
-				if( ent->client->sess.skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 2 ) {
+				if( ent->client->sess.skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 2 )
 					traceEnt->health += 6;
-				} else {
+				else
 					traceEnt->health += 3;
-				}
 
 				G_PrintClientSpammyCenterPrint(ent-g_entities, "Defusing dynamite...");
 
 				if ( traceEnt->health >= 248 ) {
+//bani
+					qboolean defusedObj = qfalse;
+
 					traceEnt->health = 255;
 					// Need some kind of event/announcement here
 
@@ -1962,7 +2025,6 @@ void Weapon_Engineer( gentity_t *ent ) {
 					traceEnt->think = G_FreeEntity;
 					traceEnt->nextthink = level.time + FRAMETIME;
 
-
 					VectorCopy( traceEnt->r.currentOrigin, origin );
 					SnapVector( origin );
 					VectorAdd( origin, traceEnt->r.mins, mins );
@@ -1970,9 +2032,12 @@ void Weapon_Engineer( gentity_t *ent ) {
 					num = trap_EntitiesInBox( mins, maxs, touch, MAX_GENTITIES );
 
 					// don't report if not disarming *enemy* dynamite in field
-/*					if( dynamiteDropTeam == ent->client->sess.sessionTeam ) {
+/*					if (dynamiteDropTeam == ent->client->sess.sessionTeam)
+						return;*/
+
+					//bani - eh, why was this commented out? it makes sense, and prevents a sploit.
+					if (dynamiteDropTeam == ent->client->sess.sessionTeam)
 						return;
-					}*/
 
 					for ( i=0 ; i<num ; i++ ) {
 						hit = &g_entities[touch[i]];
@@ -1985,6 +2050,11 @@ void Weapon_Engineer( gentity_t *ent ) {
 							if ( !(hit->spawnflags & (AXIS_OBJECTIVE | ALLIED_OBJECTIVE)) )
 								continue;
 
+							// rain - spawnflags 128 = disabled (#309)
+							if (hit->spawnflags & 128)
+								continue;
+
+							//bani - prevent plant/defuse exploit near a/h cabinets or non-destroyable locations (bank doors on goldrush)
 							if( !hit->target_ent || hit->target_ent->s.eType != ET_EXPLOSIVE ) {
 								continue;
 							}
@@ -2006,12 +2076,17 @@ void Weapon_Engineer( gentity_t *ent ) {
 									pm->s.effect3Time = hit->s.teamNum;
 									pm->s.teamNum = ent->client->sess.sessionTeam;
 								}
+
+//								trap_SendServerCommand(-1, "cp \"Axis engineer disarmed the Dynamite!\n\"");
+								//bani
+								defusedObj = qtrue;
 							} else { // TEAM_ALLIES
 								if ((hit->spawnflags & ALLIED_OBJECTIVE) && (!scored)) {
 									AddScore(ent,WOLF_DYNAMITE_DIFFUSE);
 									G_AddSkillPoints( ent, SK_EXPLOSIVES_AND_CONSTRUCTION, 6.f );
 									G_DebugAddSkillPoints( ent, SK_EXPLOSIVES_AND_CONSTRUCTION, 6.f, "defusing enemy dynamite" );
 									scored++; 
+									hit->spawnflags &= ~OBJECTIVE_DESTROYED; // "re-activate" objective since it wasn't destroyed
 								}
 								if(hit->target_ent) {
 									G_Script_ScriptEvent( hit->target_ent, "defused", "" );
@@ -2023,13 +2098,19 @@ void Weapon_Engineer( gentity_t *ent ) {
 									pm->s.effect3Time = hit->s.teamNum;
 									pm->s.teamNum = ent->client->sess.sessionTeam;
 								}
-							}
 
-							return;
+//								trap_SendServerCommand(-1, "cp \"Allied engineer disarmed the Dynamite!\n\"");
+								//bani
+								defusedObj = qtrue;
+							}
 						}
 					}
+//bani - prevent multiple messages here
+					if( defusedObj )
+						return;
 
-					// Gordon - now see if the dynamite was planted near a constructable object that would have been destroyed
+//bani - reordered this check so its AFTER the primary obj check
+					// Gordon - first see if the dynamite was planted near a constructable object that would have been destroyed
 					{
 						int		entityList[MAX_GENTITIES];
 						int		numListedEntities;
@@ -2039,9 +2120,7 @@ void Weapon_Engineer( gentity_t *ent ) {
 						VectorCopy( traceEnt->r.currentOrigin, org );
 						org[2] += 4;	// move out of ground
 
-						G_TempTraceIgnorePlayersAndBodies();
 						numListedEntities = EntsThatRadiusCanDamage( org, traceEnt->splashRadius, entityList );
-						G_ResetTempTraceIgnoreEnts();
 
 						for( e = 0; e < numListedEntities; e++ ) {
 							hit = &g_entities[entityList[ e ]];
@@ -2080,7 +2159,7 @@ void Weapon_Engineer( gentity_t *ent ) {
 									pm->s.teamNum = ent->client->sess.sessionTeam;
 								}
 
-	//							trap_SendServerCommand(-1, "cp \"Axis engineer disarmed the Dynamite!\" 2");
+//								trap_SendServerCommand(-1, "cp \"Axis engineer disarmed the Dynamite!\" 2");
 							} else { // TEAM_ALLIES
 								if ( hit->s.teamNum == TEAM_ALLIES && (!scored)) {
 									AddScore(ent,WOLF_DYNAMITE_DIFFUSE);
@@ -2098,14 +2177,14 @@ void Weapon_Engineer( gentity_t *ent ) {
 									pm->s.teamNum = ent->client->sess.sessionTeam;
 								}
 
-	//							trap_SendServerCommand(-1, "cp \"Allied engineer disarmed the Dynamite!\" 2");
+//								trap_SendServerCommand(-1, "cp \"Allied engineer disarmed the Dynamite!\" 2");
 							}
 
 							return;
 						}
 					}
-
 				}
+	// jpw
 			}
 		}
 	}
@@ -3079,7 +3158,11 @@ void Bullet_Fire (gentity_t *ent, float spread, int damage, qboolean distance_fa
 
 	Bullet_Endpos(ent, spread, &end);
 
+	G_HistoricalTraceBegin( ent );
+
 	Bullet_Fire_Extended(ent, ent, muzzleTrace, end, spread, damage, distance_falloff);
+
+	G_HistoricalTraceEnd( ent );
 }
 
 
@@ -3100,7 +3183,20 @@ qboolean Bullet_Fire_Extended(gentity_t *source, gentity_t *attacker, vec3_t sta
 
 	qboolean reducedDamage = qfalse;
 
-	G_HistoricalTrace(source, &tr, start, NULL, NULL, end, source->s.number, MASK_SHOT);
+	qboolean waslinked = qfalse;
+
+	//bani - prevent shooting ourselves in the head when prone, firing through a breakable
+	if( g_entities[ attacker->s.number ].client && g_entities[ attacker->s.number ].r.linked == qtrue ) {
+		g_entities[ attacker->s.number ].r.linked = qfalse;
+		waslinked = qtrue;
+	}
+
+	G_Trace(source, &tr, start, NULL, NULL, end, source->s.number, MASK_SHOT);
+
+	//bani - prevent shooting ourselves in the head when prone, firing through a breakable
+	if( waslinked == qtrue ) {
+		g_entities[ attacker->s.number ].r.linked = qtrue;
+	}
 
 	// bullet debugging using Q3A's railtrail
 	if(g_debugBullets.integer & 1) {
@@ -3121,11 +3217,14 @@ qboolean Bullet_Fire_Extended(gentity_t *source, gentity_t *attacker, vec3_t sta
 	if( distance_falloff ) {
 		vec_t dist;
 		vec3_t shotvec;
+		float scale;
 
 		//VectorSubtract( tr.endpos, start, shotvec );
 		VectorSubtract( tr.endpos, muzzleTrace, shotvec );		
 		dist = VectorLengthSquared( shotvec );
 
+#if DO_BROKEN_DISTANCEFALLOFF
+		// ~~~___---___
 		if( dist > Square(1500.f) ) {
 			reducedDamage = qtrue;
 
@@ -3137,6 +3236,25 @@ qboolean Bullet_Fire_Extended(gentity_t *source, gentity_t *attacker, vec3_t sta
 				damage *= scale;
 			}
 		}
+#else
+		// ~~~---______
+		// zinx - start at 100% at 1500 units (and before),
+		// and go to 50% at 2500 units (and after)
+
+		// Square(1500) to Square(2500) -> 0.0 to 1.0
+		scale = (dist - Square(1500.f)) / (Square(2500.f) - Square(1500.f));
+		// 0.0 to 1.0 -> 0.0 to 0.5
+		scale *= 0.5f;
+		// 0.0 to 0.5 -> 1.0 to 0.5
+		scale = 1.0f - scale;
+
+		// And, finally, cap it.
+		reducedDamage = qtrue;
+		if (scale >= 1.0f) { scale = 1.0f; reducedDamage = qfalse; }
+		else if (scale < 0.5f) scale = 0.5f;
+
+		damage *= scale;
+#endif
 	}
 
 	// send bullet impact
@@ -3179,7 +3297,7 @@ qboolean Bullet_Fire_Extended(gentity_t *source, gentity_t *attacker, vec3_t sta
 
 		tent = G_TempEntity( tr.endpos, EV_BULLET_HIT_WALL );
 
-		G_HistoricalTrace(source, &tr2, start, NULL, NULL, end, source->s.number, MASK_WATER | MASK_SHOT);
+		G_Trace(source, &tr2, start, NULL, NULL, end, source->s.number, MASK_WATER | MASK_SHOT);
 
 		if((tr.entityNum != tr2.entityNum && tr2.fraction != 1)) {
 			vec3_t v;
@@ -3234,6 +3352,8 @@ gentity_t *weapon_gpg40_fire (gentity_t *ent, int grenType) {
 	vec3_t		viewpos;
 //	float		upangle = 0, pitch;			//	start with level throwing and adjust based on angle
 	vec3_t		tosspos;
+	//bani - to prevent nade-through-teamdoor sploit
+	vec3_t	orig_viewpos;
 
 	AngleVectors(ent->client->ps.viewangles, forward, NULL, NULL);
 
@@ -3242,16 +3362,23 @@ gentity_t *weapon_gpg40_fire (gentity_t *ent, int grenType) {
 	// check for valid start spot (so you don't throw through or get stuck in a wall)
 	VectorCopy( ent->s.pos.trBase, viewpos );
 	viewpos[2] += ent->client->ps.viewheight;
+	VectorCopy( viewpos, orig_viewpos );	//bani - to prevent nade-through-teamdoor sploit
 	VectorMA( viewpos, 32, forward, viewpos);
 
-	VectorScale(forward, 2000, forward);
-
-	trap_Trace (&tr, viewpos, tv(-4.f, -4.f, 0.f), tv(4.f, 4.f, 6.f), tosspos, ent->s.number, MASK_MISSILESHOT);
-
-	if( tr.fraction < 1 ) {	// oops, bad launch spot
-		VectorCopy(tr.endpos, tosspos);
-		SnapVectorTowards( tosspos, viewpos );
+	//bani - to prevent nade-through-teamdoor sploit
+	trap_Trace( &tr, orig_viewpos, tv( -4.f, -4.f, 0.f ), tv( 4.f, 4.f, 6.f ), viewpos, ent->s.number, MASK_MISSILESHOT );
+	if( tr.fraction < 1 ) { // oops, bad launch spot ) {
+		VectorCopy( tr.endpos, tosspos );
+		SnapVectorTowards( tosspos, orig_viewpos );
+	} else {
+		trap_Trace (&tr, viewpos, tv(-4.f, -4.f, 0.f), tv(4.f, 4.f, 6.f), tosspos, ent->s.number, MASK_MISSILESHOT );
+		if( tr.fraction < 1 ) { // oops, bad launch spot
+			VectorCopy(tr.endpos, tosspos);
+			SnapVectorTowards( tosspos, viewpos );
+		}
 	}
+
+	VectorScale(forward, 2000, forward);
 
 	m = fire_grenade (ent, tosspos, forward, grenType);
 
@@ -4007,7 +4134,9 @@ void FireWeapon( gentity_t *ent ) {
 			}
 
 			if( ent->client->sess.skill[SK_EXPLOSIVES_AND_CONSTRUCTION] >= 3 ) {
-				ent->client->ps.classWeaponTime += .66f * level.engineerChargeTime[ent->client->sess.sessionTeam-1];
+				// rain - bug #202 - use 33%, not 66%, when upgraded.
+				// do not penalize the happy fun engineer.
+				ent->client->ps.classWeaponTime += .33f * level.engineerChargeTime[ent->client->sess.sessionTeam-1];
 			} else {
 				ent->client->ps.classWeaponTime += .5f * level.engineerChargeTime[ent->client->sess.sessionTeam-1];
 			}

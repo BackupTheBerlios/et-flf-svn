@@ -218,6 +218,25 @@ typedef enum {
 	CG_GETHUNKDATA,
 
 	CG_PUMPEVENTLOOP,
+
+	// zinx
+	CG_SENDMESSAGE,
+	CG_MESSAGESTATUS,
+	// -zinx
+
+	// bani
+	CG_R_LOADDYNAMICSHADER,
+	// -bani
+
+	// fretn
+	CG_R_RENDERTOTEXTURE,
+	// -fretn
+	// bani
+	CG_R_GETTEXTUREID,
+	// -bani
+	// bani
+	CG_R_FINISH,
+	// -bani
 } cgameImport_t;
 
 
@@ -275,6 +294,11 @@ typedef enum {
 	CG_CHECKEXECKEY,
 
 	CG_WANTSBINDKEYS,
+
+	// zinx
+	CG_MESSAGERECEIVED,
+//	void (*CG_MessageReceived)( const char *buf, int buflen, int serverTime );
+	// -zinx
 
 } cgameExport_t;
 

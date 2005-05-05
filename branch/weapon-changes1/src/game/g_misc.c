@@ -1169,7 +1169,9 @@ void Fire_Lead_Ext( gentity_t *ent, gentity_t *activator, float spread, int dama
 	VectorMA( end, r, right, end );
 	VectorMA( end, u, up, end );
 
-	G_HistoricalTrace( ent, &tr, muzzle, NULL, NULL, end, ent->s.number, MASK_SHOT );
+	// rain - use activator for historicaltrace, not ent which may be
+	// the weapon itself (e.g. for mg42s)
+	G_HistoricalTrace( activator, &tr, muzzle, NULL, NULL, end, ent->s.number, MASK_SHOT );
 
 	// bullet debugging using Q3A's railtrail
 	if( g_debugBullets.integer & 1 ) {

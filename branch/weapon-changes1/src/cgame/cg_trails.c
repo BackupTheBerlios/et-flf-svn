@@ -8,6 +8,7 @@ typedef struct trailJunc_s
 	struct trailJunc_s *nextJunc;					// next junction in the trail
 	struct trailJunc_s *nextHead, *prevHead;		// next head junc in the world
 
+	void		*usedby; // rain - zinx's trail fix
 	qboolean	inuse, freed;
 	int			ownerIndex;
 	qhandle_t	shader;
@@ -142,7 +143,7 @@ CG_AddTrailJunc
   Used for generic trails
 ===============
 */
-int CG_AddTrailJunc(int headJuncIndex, qhandle_t shader, int spawnTime, int sType, vec3_t pos, int trailLife, float alphaStart, float alphaEnd, float startWidth, float endWidth, int flags, vec3_t colorStart, vec3_t colorEnd, float sRatio, float animSpeed)
+int CG_AddTrailJunc(int headJuncIndex, void *usedby, qhandle_t shader, int spawnTime, int sType, vec3_t pos, int trailLife, float alphaStart, float alphaEnd, float startWidth, float endWidth, int flags, vec3_t colorStart, vec3_t colorEnd, float sRatio, float animSpeed)
 {
 	trailJunc_t	*j, *headJunc;
 
@@ -153,7 +154,8 @@ int CG_AddTrailJunc(int headJuncIndex, qhandle_t shader, int spawnTime, int sTyp
 	if (headJuncIndex > 0) {
 		headJunc = &trailJuncs[headJuncIndex-1];
 
-		if (!headJunc->inuse)
+		// rain - zinx's trail fix
+		if (!headJunc->inuse || headJunc->usedby != usedby)
 			headJunc = NULL;
 	}
 	else
@@ -164,6 +166,10 @@ int CG_AddTrailJunc(int headJuncIndex, qhandle_t shader, int spawnTime, int sTyp
 //		CG_Printf("couldnt spawn trail junc\n");
 		return 0;
 	}
+
+	// rain - zinx's trail fix - mark who's using this trail so that
+	// we can handle the someone-else-stole-our-trail case
+	j->usedby = usedby;
 
 	if (alphaStart > 1.0) alphaStart = 1.0;
 	if (alphaStart < 0.0) alphaStart = 0.0;
@@ -208,7 +214,7 @@ CG_AddSparkJunc
   returns the index of the trail junction created
 ===============
 */
-int CG_AddSparkJunc(int headJuncIndex, qhandle_t shader, vec3_t pos, int trailLife, float alphaStart, float alphaEnd, float startWidth, float endWidth)
+int CG_AddSparkJunc(int headJuncIndex, void *usedby, qhandle_t shader, vec3_t pos, int trailLife, float alphaStart, float alphaEnd, float startWidth, float endWidth)
 {
 	trailJunc_t	*j, *headJunc;
 
@@ -219,7 +225,8 @@ int CG_AddSparkJunc(int headJuncIndex, qhandle_t shader, vec3_t pos, int trailLi
 	if (headJuncIndex > 0) {
 		headJunc = &trailJuncs[headJuncIndex-1];
 
-		if (!headJunc->inuse)
+		// rain - zinx's trail fix
+		if (!headJunc->inuse || headJunc->usedby != usedby)
 			headJunc = NULL;
 	}
 	else
@@ -228,6 +235,8 @@ int CG_AddSparkJunc(int headJuncIndex, qhandle_t shader, vec3_t pos, int trailLi
 	j = CG_SpawnTrailJunc(headJunc);
 	if (!j)
 		return 0;
+
+	j->usedby = usedby;
 
 	// setup the trail junction
 	j->shader = shader;
@@ -261,7 +270,7 @@ CG_AddSmokeJunc
   returns the index of the trail junction created
 ===============
 */
-int CG_AddSmokeJunc(int headJuncIndex, qhandle_t shader, vec3_t pos, int trailLife, float alpha, float startWidth, float endWidth)
+int CG_AddSmokeJunc(int headJuncIndex, void *usedby, qhandle_t shader, vec3_t pos, int trailLife, float alpha, float startWidth, float endWidth)
 {
 #define	ST_RATIO	4.0		// sprite image: width / height
 	trailJunc_t	*j, *headJunc;
@@ -273,7 +282,8 @@ int CG_AddSmokeJunc(int headJuncIndex, qhandle_t shader, vec3_t pos, int trailLi
 	if (headJuncIndex > 0) {
 		headJunc = &trailJuncs[headJuncIndex-1];
 
-		if (!headJunc->inuse)
+		// rain - zinx's trail fix
+		if (!headJunc->inuse || headJunc->usedby != usedby)
 			headJunc = NULL;
 	}
 	else
@@ -282,6 +292,8 @@ int CG_AddSmokeJunc(int headJuncIndex, qhandle_t shader, vec3_t pos, int trailLi
 	j = CG_SpawnTrailJunc(headJunc);
 	if (!j)
 		return 0;
+
+	j->usedby = usedby;
 
 	// setup the trail junction
 	j->shader = shader;

@@ -578,6 +578,7 @@ G_AddBot
 Find the next free slot number (for allies bot)
 =================================
 */
+#if 0 // rain - unused
 static void G_AssignBotSlot(gentity_t *bot)
 {
 	int i;
@@ -609,6 +610,7 @@ static void G_AssignBotSlot(gentity_t *bot)
 	}
 	G_Error("Maximum number of allies buddies exceeded");
 }
+#endif
 
 static void G_AddBot( const char *name, int skill, const char *team, const char *spawnPoint, int playerClass, int playerWeapon, int characerIndex, const char *respawn, const char *scriptName, int rank, int skills[], qboolean pow ) {
 #define	MAX_BOTNAMES 1024
@@ -696,7 +698,7 @@ static void G_AddBot( const char *name, int skill, const char *team, const char 
 
 		if (len >= 0) {
 			if (len > sizeof(botnames)) {
-				G_Error( "botfiles/botnames.txt is too big (max = %i)", sizeof(botnames) );
+				G_Error( "botfiles/botnames.txt is too big (max = %i)", (int)sizeof(botnames) );
 			}
 			memset( botnames, 0, sizeof(botnames) );
 			trap_FS_Read( botnames, len, f );
@@ -704,7 +706,7 @@ static void G_AddBot( const char *name, int skill, const char *team, const char 
 			// read them in
 			i = 0;
 			oldpbotnames = pbotnames;
-			while (token = COM_Parse( &pbotnames )) {
+			while ((token = COM_Parse( &pbotnames ))) {
 				if (!token[0]) break;
 				listbotnames[i] = strstr( oldpbotnames, token );
 				lengthbotnames[i] = strlen(token);
@@ -763,7 +765,7 @@ static void G_AddBot( const char *name, int skill, const char *team, const char 
 	trap_SetUserinfo( clientNum, userinfo );
 
 	// have it connect to the game as a normal client
-	if( s = ClientConnect( clientNum, qtrue, qtrue ) ) {
+	if ((s = ClientConnect( clientNum, qtrue, qtrue ))) {
 		G_Printf( S_COLOR_RED "Unable to add bot: %s\n", s );
 		return;
 	}
@@ -1577,7 +1579,7 @@ void bot_seek_cover_spot_think( g_serverEntity_t *ent )
 	{
 		// find our parent
 		trav = NULL;
-		while (trav = FindServerEntity( trav, SE_FOFS(target), ent->name ))
+		while ((trav = FindServerEntity( trav, SE_FOFS(target), ent->name )))
 		{
 			if (!Q_stricmp( trav->classname, ent->classname ))
 			{
@@ -1593,7 +1595,7 @@ void bot_seek_cover_spot_think( g_serverEntity_t *ent )
 	// now find our ->target_ent, if we have multiple targets, then use ->chain
 	trav = NULL;
 	lastTrav = NULL;
-	while (trav = FindServerEntity( trav, SE_FOFS( name ), ent->target ))
+	while ((trav = FindServerEntity( trav, SE_FOFS( name ), ent->target )))
 	{
 		if (Q_stricmp( trav->classname, ent->classname ))
 		{
@@ -1715,7 +1717,7 @@ void bot_seek_cover_sequence_init( gentity_t *ent )
 
 	// now we just want serverentities pointing at each other
 	lastTrav = trav;
-	while (trav = FindServerEntity( trav, SE_FOFS(name), ent->target))
+	while ((trav = FindServerEntity( trav, SE_FOFS(name), ent->target)))
 	{
 		lastTrav->nextServerEntity = trav;
 		lastTrav = trav;

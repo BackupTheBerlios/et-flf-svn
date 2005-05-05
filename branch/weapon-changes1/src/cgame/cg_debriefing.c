@@ -2164,7 +2164,7 @@ void CG_TeamDebriefingOutcome_Draw( panel_button_t* button ) {
 	}
 
 	Q_strncpyz( buffer, cs, sizeof(buffer) );
-	while( s = strchr(buffer, '*') ) {
+	while ((s = strchr(buffer, '*'))) {
 		*s = '\n';
 	}
 
@@ -2424,7 +2424,7 @@ void CG_Debreifing2_Awards_Parse( void ) {
 	Q_strncpyz( buffer, cs, sizeof( cgs.dbAwardNamesBuffer ) );
 	cs = buffer;
 
-	while( s = strchr( cs, ';' ) ) {
+	while ((s = strchr( cs, ';' ))) {
 		*s = '"';
 	}
 
@@ -2573,6 +2573,8 @@ void CG_Debreifing2_Mission_Draw( panel_button_t* button ) {
 						break;
 					case TEAM_ALLIES:
 						CG_DrawPic( x - 12, y - 12, 24, 24, trap_R_RegisterShaderNoMip( "gfx/loading/pin_allied" ) );					
+						break;
+					default:
 						break;
 				}
 			}

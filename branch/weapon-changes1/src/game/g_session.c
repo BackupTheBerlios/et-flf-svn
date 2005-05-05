@@ -27,7 +27,7 @@ void G_WriteClientSessionData( gclient_t *client, qboolean restart )
 	// OSP -- stats reset check
 	if(level.fResetStats) G_deleteStats(client - level.clients);
 
-	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	s = va("%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 		client->sess.sessionTeam,
 		client->sess.spectatorTime,
 		client->sess.spectatorState,
@@ -55,16 +55,10 @@ void G_WriteClientSessionData( gclient_t *client, qboolean restart )
 		// OSP
 
 		, 
-		(int)client->sess.buddyClients[0],
-		(int)client->sess.buddyClients[1],
-		(int)client->sess.buddyClients[2],
-		(int)client->sess.buddyClients[3],
 //		client->sess.experience,
 		client->sess.muted,
-		(int)client->sess.ignoreClients[0],
-		(int)client->sess.ignoreClients[1],
-		(int)client->sess.ignoreClients[2],
-		(int)client->sess.ignoreClients[3],
+		client->sess.ignoreClients[0],
+		client->sess.ignoreClients[1],
 		client->pers.enterTime,
 		restart ? client->sess.spawnObjectiveIndex : 0
 		);
@@ -172,11 +166,10 @@ void G_ReadSessionData( gclient_t *client )
 	int mvc_l, mvc_h;
 	char s[MAX_STRING_CHARS];
 	qboolean test;
-	int dummy[8];
 
 	trap_Cvar_VariableStringBuffer( va( "session%i", client - level.clients ), s, sizeof(s) );
 
-	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
+	sscanf( s, "%i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i %i",
 		(int *)&client->sess.sessionTeam,
 		&client->sess.spectatorTime,
 		(int *)&client->sess.spectatorState,
@@ -204,16 +197,10 @@ void G_ReadSessionData( gclient_t *client )
 		// OSP
 
 		, 
-		&dummy[0],
-		&dummy[1],
-		&dummy[2],
-		&dummy[3],
 //		&client->sess.experience,
 		(int *)&client->sess.muted,
-		&dummy[4],
-		&dummy[5],
-		&dummy[6],
-		&dummy[7],
+		&client->sess.ignoreClients[0],
+		&client->sess.ignoreClients[1],
 		&client->pers.enterTime,
 		&client->sess.spawnObjectiveIndex
 		);
@@ -230,16 +217,6 @@ void G_ReadSessionData( gclient_t *client )
 		if(g_gamestate.integer == GS_PLAYING) client->sess.rounds++;
 	}
 	// OSP
-
-	client->sess.buddyClients[0] = dummy[0];
-	client->sess.buddyClients[1] = dummy[1];
-	client->sess.buddyClients[2] = dummy[2];
-	client->sess.buddyClients[3] = dummy[3];
-
-	client->sess.ignoreClients[0] = dummy[4];
-	client->sess.ignoreClients[1] = dummy[5];
-	client->sess.ignoreClients[2] = dummy[6];
-	client->sess.ignoreClients[3] = dummy[7];
 
 	// Arnout: likely there are more cases in which we don't want this
 	if( g_gametype.integer != GT_SINGLE_PLAYER &&
@@ -323,7 +300,6 @@ void G_InitSessionData( gclient_t *client, char *userinfo ) {
 	sess->spawnObjectiveIndex = 0;
 	// dhm - end
 
-	memset( sess->buddyClients, 0, sizeof(sess->buddyClients) );
 	memset( sess->ignoreClients, 0, sizeof(sess->ignoreClients) );
 //	sess->experience = 0;
 	sess->muted = qfalse;

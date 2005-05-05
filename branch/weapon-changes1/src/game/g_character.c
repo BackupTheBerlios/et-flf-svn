@@ -150,6 +150,10 @@ void G_UpdateCharacter( gclient_t *client )
 	s = Info_ValueForKey( infostring, "ch" );
 	if( *s ) {
 		characterIndex = atoi(s);
+		if( characterIndex < 0 || characterIndex >= MAX_CHARACTERS ) {
+			goto set_default_character;
+		}
+
 		if( client->pers.characterIndex != characterIndex ) {
 			client->pers.characterIndex = characterIndex;
 			trap_GetConfigstring( CS_CHARACTERS + characterIndex, infostring, MAX_INFO_STRING );
@@ -157,11 +161,17 @@ void G_UpdateCharacter( gclient_t *client )
 				// not found - create it (this should never happen as we should have everything precached)
 				client->pers.character = BG_FindFreeCharacter( infostring );
 
+				if ( !client->pers.character ) {
+					goto set_default_character;
+				}
+
 				Q_strncpyz( client->pers.character->characterFile, infostring, sizeof(client->pers.character->characterFile) );
 
 				if( !G_RegisterCharacter( infostring, client->pers.character ) ) {
-					G_Error( "ERROR: G_UpdateCharacter: failed to load character file '%s' for %s\n", infostring,
+					G_Printf( S_COLOR_YELLOW "WARNING: G_UpdateCharacter: failed to load character file '%s' for %s\n", infostring,
 						client->pers.netname);
+
+					goto set_default_character;
 				}
 			}
 
@@ -175,19 +185,21 @@ void G_UpdateCharacter( gclient_t *client )
 			client->ps.legsAnim = 0;
 			client->ps.torsoAnim = 0;
 			client->ps.legsTimer = 0;
-			client->ps.torsoTimer = 0;			            
-		}
-	} else {
-		// set default character
-		character = BG_GetCharacter( client->sess.sessionTeam, client->sess.playerType );
-		if( client->pers.character != character ) {
-			client->pers.characterIndex = -1;
-			client->pers.character = character;
-
-			client->ps.legsAnim = 0;
-			client->ps.torsoAnim = 0;
-			client->ps.legsTimer = 0;
 			client->ps.torsoTimer = 0;
 		}
+		return;
+	}
+
+  set_default_character:
+	// set default character
+	character = BG_GetCharacter( client->sess.sessionTeam, client->sess.playerType );
+	if( client->pers.character != character ) {
+		client->pers.characterIndex = -1;
+		client->pers.character = character;
+
+		client->ps.legsAnim = 0;
+		client->ps.torsoAnim = 0;
+		client->ps.legsTimer = 0;
+		client->ps.torsoTimer = 0;
 	}
 }

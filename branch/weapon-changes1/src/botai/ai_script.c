@@ -2,7 +2,8 @@
 //
 // Name:			ai_script.c
 // Function:		Wolfenstein BOT Scripting
-//
+// Programmer:		Ridah
+// Tab Size:		4 (real tabs)
 //===========================================================================
 
 #include "../game/g_local.h"
@@ -639,7 +640,7 @@ qboolean Bot_ScriptInitBot( int entnum )
 	char	userinfo[MAX_INFO_STRING];
 	bot_script_global_data_t *bsgd;
 	char	*token, *p, *pBackup;
-	int		i, val;
+	int		i, val = 0;
 	int		weapons[2];
 	gitem_t	*item=NULL;
 	char	*name;
@@ -673,7 +674,7 @@ qboolean Bot_ScriptInitBot( int entnum )
 			}
 			//
 			if (token[0] != '/') {
-				G_Error( "BotScript, line %i: condition identifier expected, %s found: SetAccumToPlayerCount %s", bsgd->lineNum, token );
+				G_Error( "BotScript, line %i: condition identifier expected, '%s' found\n", bsgd->lineNum, token );
 			}
 			//
 			if (!Q_stricmp( token, "/team" )) {
@@ -720,7 +721,7 @@ qboolean Bot_ScriptInitBot( int entnum )
 						G_Error( "BotScript, line %i: unexpected end of /weapon parameter", bsgd->lineNum );
 					}
 					//
-					if (item = BG_FindItem( token )) {
+					if ((item = BG_FindItem( token ))) {
 						if (!item->giTag) {
 							G_Error( "BotScript, line %i: unknown weapon \"%s\"", bsgd->lineNum, token );
 						}
@@ -792,7 +793,7 @@ char *Bot_LineText( char *text )
 	//
 	len = strstr( text, "\n" ) - text;
 	if (len <= 0) return "";
-	if (len >= sizeof(lineText)-1) G_Error( "Bot_LineText: max line length exceed (%i)", sizeof(lineText) );
+	if (len >= sizeof(lineText)-1) G_Error( "Bot_LineText: max line length exceed (%i)", (int)sizeof(lineText) );
 	//
 	memset( lineText, 0, sizeof(lineText) );
 	Q_strncpyz( lineText, text, len );

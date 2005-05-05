@@ -1105,6 +1105,11 @@ static qboolean G_LoadCampaignsFromFile( const char *filename ) {
 		if( *token.string == '}' ) {
 			level.campaignCount++;
 
+			// zinx - can't handle any more.
+			if( level.campaignCount >= MAX_CAMPAIGNS ) {
+				break;
+			}
+
 			if( !trap_PC_ReadToken( handle, &token ) ) {
 				// eof
 				trap_PC_FreeSource( handle );
@@ -1201,8 +1206,24 @@ static qboolean G_LoadCampaignsFromFile( const char *filename ) {
 						level.currentCampaign = level.campaignCount;
 					}
 				}
-				Q_strncpyz( g_campaigns[level.campaignCount].mapnames[g_campaigns[level.campaignCount].mapCount], mapname, MAX_QPATH );
-				g_campaigns[level.campaignCount].mapCount++;
+				// rain - don't stomp out of bounds
+				if (g_campaigns[level.campaignCount].mapCount < MAX_MAPS_PER_CAMPAIGN) {
+					Q_strncpyz( g_campaigns[level.campaignCount].mapnames[g_campaigns[level.campaignCount].mapCount], mapname, MAX_QPATH );
+					g_campaigns[level.campaignCount].mapCount++;
+				} else {
+					// rain - yell if there are too many maps in this campaign,
+					// and then skip it
+
+					G_Printf("^1Error: Campaign %s (%s) has too many maps\n", g_campaigns[level.campaignCount].shortname, filename);
+					// rain - hack - end of campaign will increment this
+					// again, so this one will be overwritten
+					// rain - clear out this campaign so that everything's
+					// okay when when we add the next
+					memset(&g_campaigns[level.campaignCount], 0, sizeof(g_campaigns[0]));
+					level.campaignCount--;
+					
+					break;
+				}
 			}
 		}
 	}
@@ -1271,8 +1292,22 @@ void G_ParseCampaigns( void ) {
 		}
 
 		if( i == level.campaignCount ) {
-			// not found at all, invalid map
-			G_Error( "Map '%s' isn't a valid campaign starting map. Set your gametype to %i to load it directly.\n", level.rawmapname, GT_WOLF );
+			char buf[MAX_STRING_CHARS]; // fretn
+
+			if (trap_Argc() < 1) { // command not found, throw error
+				G_Error("Usage 'map <mapname>\n'");
+			}
+
+			trap_Argv(0, buf, sizeof(buf));
+
+			if (!buf) { // command not found, throw error
+				G_Error("Usage 'map <mapname>\n'");
+			}
+
+			// no campaign found, fallback to GT_WOLF
+			// and reload the map
+			trap_Cvar_Set( "g_gametype", "2");
+			trap_SendConsoleCommand( EXEC_APPEND, va("%s %s", buf, level.rawmapname));
 		}
 	}
 }
@@ -1322,6 +1357,11 @@ team_t G_GetTeamFromEntity( gentity_t *ent ) {
 							break;
 		case ET_CONSTRUCTIBLE:	return ent->s.teamNum;
 								break;
+		case ET_MG42_BARREL: // zinx - fix for #470
+			return G_GetTeamFromEntity( &g_entities[ent->r.ownerNum] );
+
+		default:
+			break;
 	}
 
 	return TEAM_FREE;

@@ -973,6 +973,8 @@ void SetWolfSpawnWeapons( gclient_t *client )
 						break;
 					}
 					break;
+				default:
+					break;
 			}
 		} else if( pc == PC_COVERTOPS ) {
 			switch( client->sess.playerWeapon ) {				
@@ -1632,6 +1634,11 @@ int G_ComputeMaxLives(gclient_t *cl, int maxRespawns)
 	float scaled = (float)(maxRespawns - 1) * (1.0f - ((float)(level.time - level.startTime) / (g_timelimit.value * 60000.0f)));
 	int val = (int)scaled;
 
+	// rain - #102 - don't scale of the timelimit is 0
+	if (g_timelimit.value == 0.0) {
+		return maxRespawns - 1;
+	}
+
 	val += ((scaled - (float)val) < 0.5f) ? 0 : 1;
 	return(val);
 }
@@ -1675,7 +1682,12 @@ void ClientBegin( int clientNum )
 	// world to the new position
 	// DHM - Nerve :: Also save PERS_SPAWN_COUNT, so that CG_Respawn happens
 	spawn_count = client->ps.persistant[PERS_SPAWN_COUNT];
-	lives_left = client->ps.persistant[PERS_RESPAWNS_LEFT] - 1;
+	//bani - proper fix for #328
+	if( client->ps.persistant[PERS_RESPAWNS_LEFT] > 0 ) {
+		lives_left = client->ps.persistant[PERS_RESPAWNS_LEFT] - 1;
+	} else {
+		lives_left = client->ps.persistant[PERS_RESPAWNS_LEFT];
+	}
 	flags = client->ps.eFlags;
 	memset( &client->ps, 0, sizeof( client->ps ) );
 	client->ps.eFlags = flags;
@@ -1826,6 +1838,7 @@ gentity_t *SelectSpawnPointFromList( char *list, vec3_t spawn_origin, vec3_t spa
 // TAT 1/14/2003 - init the bot's movement autonomy pos to it's current position
 void BotInitMovementAutonomyPos(gentity_t *bot);
 
+#if 0 // rain - not used
 static char *G_CheckVersion( gentity_t *ent )
 {
 	// Prevent nasty version mismatches (or people sticking in Q3Aimbot cgames)
@@ -1839,6 +1852,7 @@ static char *G_CheckVersion( gentity_t *ent )
 		return( s );
 	return( NULL );
 }
+#endif
 
 /*
 ===========
@@ -2108,7 +2122,14 @@ void ClientSpawn( gentity_t *ent, qboolean revived )
 	if( !revived ) {
 		SetClientViewAngle( ent, spawn_angles );
 	} else {
-		SetClientViewAnglePitch( ent, 0 );
+		//bani - #245 - we try to orient them in the freelook direction when revived
+		vec3_t	newangle;
+
+		newangle[YAW] = SHORT2ANGLE( ent->client->pers.cmd.angles[YAW] + ent->client->ps.delta_angles[YAW] );
+		newangle[PITCH] = 0;
+		newangle[ROLL] = 0;
+
+		SetClientViewAngle( ent, newangle );
 	}
 
 	if( ent->r.svFlags & SVF_BOT ) {
@@ -2237,9 +2258,9 @@ void ClientDisconnect( int clientNum ) {
 
 	// NERVE - SMF - remove complaint client
 	for ( i = 0 ; i < level.numConnectedClients ; i++ ) {
-		if ( flag->client->pers.complaintClient == clientNum ) {
+		if ( flag->client->pers.complaintEndTime > level.time && flag->client->pers.complaintClient == clientNum ) {
 			flag->client->pers.complaintClient = -1;
-			flag->client->pers.complaintEndTime = 0;
+			flag->client->pers.complaintEndTime = -1;
 
 			CPx( level.sortedClients[i], "complaint -2" );
 			break;
@@ -2277,7 +2298,8 @@ void ClientDisconnect( int clientNum ) {
 
 	// send effect if they were completely connected
 	if ( ent->client->pers.connected == CON_CONNECTED 
-		&& ent->client->sess.sessionTeam != TEAM_SPECTATOR ) {
+		&& ent->client->sess.sessionTeam != TEAM_SPECTATOR
+		&& !(ent->client->ps.pm_flags & PMF_LIMBO) ) {
 
 		// They don't get to take powerups with them!
 		// Especially important for stuff like CTF flags

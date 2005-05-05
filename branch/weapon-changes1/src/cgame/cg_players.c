@@ -135,6 +135,7 @@ void CG_NewClientInfo( int clientNum ) {
 	clientInfo_t newInfo;
 	const char	*configstring;
 	const char	*v;
+	int	oldclass;
 
 	ci = &cgs.clientinfo[clientNum];
 
@@ -263,23 +264,35 @@ void CG_NewClientInfo( int clientNum ) {
 
 				if( newInfo.skill[i] == 4 && i == SK_HEAVY_WEAPONS ) {
 					if( cgs.clientinfo[ cg.clientNum ].skill[SK_LIGHT_WEAPONS] == 4 ) {
+						oldclass = cgs.ccSelectedClass;
+						cgs.ccSelectedClass = newInfo.cls;
 						CG_LimboPanel_SetSelectedWeaponNumForSlot( 1, 2 );
 						CG_LimboPanel_SendSetupMsg( qfalse );
+						cgs.ccSelectedClass = oldclass;
 					} else {
+						oldclass = cgs.ccSelectedClass;
+						cgs.ccSelectedClass = newInfo.cls;
 						CG_LimboPanel_SetSelectedWeaponNumForSlot( 1, 1 );
 						CG_LimboPanel_SendSetupMsg( qfalse );
+						cgs.ccSelectedClass = oldclass;
 					}
 				}
 
 				if( newInfo.skill[i] == 4 && i == SK_LIGHT_WEAPONS ) {
 					if( cgs.clientinfo[ cg.clientNum ].skill[SK_HEAVY_WEAPONS] == 4 ) {
 						if( cgs.ccSelectedWeapon2 == 2 ) {
+							oldclass = cgs.ccSelectedClass;
+							cgs.ccSelectedClass = newInfo.cls;
 							CG_LimboPanel_SetSelectedWeaponNumForSlot( 1, 3 );
 							CG_LimboPanel_SendSetupMsg( qfalse );
+							cgs.ccSelectedClass = oldclass;
 						}
 					} else {
+						oldclass = cgs.ccSelectedClass;
+						cgs.ccSelectedClass = newInfo.cls;
 						CG_LimboPanel_SetSelectedWeaponNumForSlot( 1, 1 );
 						CG_LimboPanel_SendSetupMsg( qfalse );
+						cgs.ccSelectedClass = oldclass;
 					}					
 				}
 
@@ -348,7 +361,9 @@ bg_playerclass_t* CG_PlayerClassForClientinfo( clientInfo_t *ci, centity_t* cent
 	if( cent && cent->currentState.powerups & (1 << PW_OPS_DISGUISED) ) {
 		team = ci->team == TEAM_AXIS ? TEAM_ALLIES : TEAM_AXIS;
 
-		cls = (cent->currentState.powerups >> PW_OPS_CLASS_1) & 6;
+		// rain - fixed incorrect class determination (was & 6,
+		// should be & 7)
+		cls = (cent->currentState.powerups >> PW_OPS_CLASS_1) & 7;
 
 		return BG_GetPlayerClassInfo( team, cls );
 	}
@@ -1318,7 +1333,7 @@ static void CG_PlayerSprites( centity_t *cent ) {
 
 	{
 		fireteamData_t* ft;
-		if( ft = CG_IsOnFireteam( cent->currentState.number ) ) {
+		if ((ft = CG_IsOnFireteam( cent->currentState.number ))) {
 			if( ft == CG_IsOnFireteam( cg.clientNum ) && cgs.clientinfo[ cent->currentState.number ].selected ) {
 				CG_PlayerFloatSprite( cent, cgs.media.fireteamicons[ft->ident], 56 );				
 			}
@@ -2463,9 +2478,6 @@ animation_t *CG_GetLimboAnimation( playerInfo_t *pi, const char *name ) {
 int CG_GetSelectedWeapon( void ) {
 	return 0;
 }
-
-static int tempPos = 0;
-static int tempTime = 0;
 
 void CG_DrawPlayer_Limbo( float x, float y, float w, float h, playerInfo_t *pi, int time, clientInfo_t *ci, qboolean animatedHead) {
 	refdef_t		refdef;

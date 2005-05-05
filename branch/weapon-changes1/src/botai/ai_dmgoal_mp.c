@@ -102,7 +102,7 @@ qboolean BotMP_CheckEmergencyGoals( bot_state_t *bs ) {
 	gentity_t *trav, *flag;
 	int i, t;
 	int list[32], numList;
-	int oldest, oldestTime, oldIgnoreTime, areanum, numTeammates;
+	int oldest = 0, oldestTime, oldIgnoreTime, areanum, numTeammates;
 	float dist, bestDist;
 	vec3_t center, brushPos, vec;
 	trace_t tr;
@@ -190,7 +190,7 @@ qboolean BotMP_CheckEmergencyGoals( bot_state_t *bs ) {
 	}
 
 	// if we have a visible & damagable script_mover target, then we should try to blow it up
-	if ( trav = BotGetVisibleDamagableScriptMover( bs ) ) {
+	if ((trav = BotGetVisibleDamagableScriptMover( bs ))) {
 		if (bs->target_goal.entitynum == trav->s.number && bs->ainode == AINode_MP_AttackTarget) {
 			return qfalse;
 		}
@@ -204,7 +204,7 @@ qboolean BotMP_CheckEmergencyGoals( bot_state_t *bs ) {
 
 	// if a checkpoint is nearby, touch it
 	trav = NULL;
-	while ( trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_CHECKPOINT) ) {
+	while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_CHECKPOINT))) {
 		// if the opposition team controls this checkpoint, or it hasnt been captured yet
 		if (trav->count == (bs->sess.sessionTeam == TEAM_AXIS ? TEAM_ALLIES : TEAM_AXIS) || (trav->count < 0)) {
 			// if we can see it
@@ -427,7 +427,7 @@ qboolean BotMP_CheckEmergencyGoals( bot_state_t *bs ) {
 			i = 0;
 			trav = NULL;
 			numList = 0;
-			while ( trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_MG42) ) {
+			while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_MG42))) {
 				if((trav->aiInactive && (1<<team))) {
 					continue;
 				}
@@ -477,7 +477,7 @@ qboolean BotMP_CheckEmergencyGoals( bot_state_t *bs ) {
 	{
 		int list[10], numList;
 		//
-		if (numList = BotGetTargetDynamite( list, 10, NULL )) {
+		if ((numList = BotGetTargetDynamite( list, 10, NULL ))) {
 			for (i = 0; i < numList; i++) {
 				trav = BotGetEntity( list[i] );
 				if(!trav) {
@@ -505,7 +505,7 @@ qboolean BotMP_CheckEmergencyGoals( bot_state_t *bs ) {
 				}
 				VectorAdd( trav->r.absmin, trav->r.absmax, center );
 				VectorScale( center, 0.5, center );
-				if (areanum = BotPointAreaNum( trav->s.number, center )) {
+				if ((areanum = BotPointAreaNum( trav->s.number, center ))) {
 				//if (areanum = BotReachableBBoxAreaNum( bs, trav->r.absmin, trav->r.absmax )) {
 					if (trap_AAS_AreaTravelTimeToGoalArea( bs->areanum, bs->origin, areanum, bs->tfl )) {
 						// make this our goal
@@ -660,7 +660,7 @@ int BotMP_FindGoal_BuildGoalList( bot_state_t* bs, botgoalFind_t* pGoals, int ma
 
 	// trigger_multiples
 	trav = NULL;
-	while(trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_TRIGGER_MULTIPLE )) {
+	while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_TRIGGER_MULTIPLE ))) {
 		// is it disabled?
 		if(BFG_CHECKDISABLED(trav, bs)) {
 			continue;
@@ -685,7 +685,7 @@ int BotMP_FindGoal_BuildGoalList( bot_state_t* bs, botgoalFind_t* pGoals, int ma
 		// Constructibles
 		// find a constructible
 		trav = NULL;
-		while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO )) {			
+		while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO ))) {
 			// is it disabled?
 			if(BFG_CHECKDISABLED(trav, bs)) {
 				continue;
@@ -742,7 +742,7 @@ int BotMP_FindGoal_BuildGoalList( bot_state_t* bs, botgoalFind_t* pGoals, int ma
 
 		// look for a broken MG42 that isnt already being fixed
 		trav = NULL;
-		while(trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_MG42 )) {
+		while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_MG42 ))) {
 			// is it disabled?
 			if (BFG_CHECKDISABLED(trav, bs)) {
 				continue;
@@ -769,7 +769,7 @@ int BotMP_FindGoal_BuildGoalList( bot_state_t* bs, botgoalFind_t* pGoals, int ma
 		if(G_CountTeamLandmines(bs->sess.sessionTeam) < MAX_TEAM_LANDMINES) {
 			// look for a land mine area that isn't full
 			trav = NULL;
-			while(trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA )) {
+			while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA ))) {
 				// is it disabled?
 				if(BFG_CHECKDISABLED(trav, bs)) {
 					continue;
@@ -799,7 +799,7 @@ int BotMP_FindGoal_BuildGoalList( bot_state_t* bs, botgoalFind_t* pGoals, int ma
 	}
 
 	trav = NULL;
-	while (trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_BOT_ATTRACTOR)) {
+	while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_BOT_ATTRACTOR))) {
 		if(BFG_CHECKDISABLED(trav, bs)) {
 			continue;
 		}
@@ -955,6 +955,8 @@ int BotMP_FindGoal_ClassForGoalType( botgoalFindType_t type ) {
 		case BFG_SCANFORMINES:
 		case BFG_DESTRUCTION_SATCHEL:
 			return PC_COVERTOPS;
+		default:
+			break;
 	}
 
 	return -1;
@@ -1068,7 +1070,7 @@ botMPpg_t BotMP_FindGoal_ProcessGoal( bot_state_t* bs, botgoalFind_t* bg, bot_go
 			if(numList) {
 				int oldestTime =	-1;
 				int bestDist =		-1;
-				int oldest;
+				int oldest =		0;
 
 				for( i = 0; i < numList; i++ ) {
 					if(!trap_AAS_AreaReachability(list[i])) {
@@ -1141,7 +1143,7 @@ botMPpg_t BotMP_FindGoal_ProcessGoal( bot_state_t* bs, botgoalFind_t* bg, bot_go
 			if(numList) {
 				int oldestTime = -1;
 				int bestDist = -1;
-				int oldest;
+				int oldest = 0;
 
 				for(i = 0; i < numList; i++) {
 					if (!trap_AAS_AreaReachability(list[i])) {
@@ -1302,6 +1304,8 @@ botMPpg_t BotMP_FindGoal_ProcessGoal( bot_state_t* bs, botgoalFind_t* bg, bot_go
 			VectorCopy( bs->cur_ps.maxs, target_goal->maxs );
 
 			BFG_RETURN_SUCCESS;
+		default:
+			break;
 	}
 
 	BFG_RETURN_FAILURE;
@@ -1350,6 +1354,8 @@ void BotMP_FindGoal_PostProcessGoal( bot_state_t* bs, botgoalFind_t* bg, bot_goa
 		case BFG_MG42:
 			AIEnter_MP_MG42Mount(bs);
 			break;
+		default:
+			break;
 	}
 }
 
@@ -1379,7 +1385,7 @@ qboolean BotMP_AlreadyDoing_FastOut( bot_state_t *bs, botgoalFind_t *bg ) {
 qboolean BotMP_FindGoal_New( bot_state_t* bs ) {
 	int numGoals, i, numCloser;
 	botgoalFind_t findGoals[MAX_FIND_BOTGOALS];
-	botMPpg_t res, bestGoal_result;
+	botMPpg_t res, bestGoal_result = 0;
 	bot_goal_t goal, bestGoal;
 	int bestGoal_numCloser, bestGoal_InList;
 
@@ -1491,11 +1497,13 @@ qboolean BotMP_FindGoal_New( bot_state_t* bs ) {
 
 	if (bestGoal_numCloser >= 0) {
 		switch (bestGoal_result) {
-		case BPG_NEWGOAL:
-			BotMP_FindGoal_PostProcessGoal( bs, &findGoals[bestGoal_InList], &bestGoal );
-			return qtrue;
-		case BPG_ALREADYDOING:
-			return qfalse;
+			case BPG_NEWGOAL:
+				BotMP_FindGoal_PostProcessGoal( bs, &findGoals[bestGoal_InList], &bestGoal );
+				return qtrue;
+			case BPG_ALREADYDOING:
+				return qfalse;
+			default:
+				break;
 		}
 	}
 
@@ -1510,15 +1518,15 @@ BotMP_FindGoal
 ===================
 */
 qboolean BotMP_FindGoal( bot_state_t *bs ) {
-	int i, k, t, c;
-	int oldest, oldestTime, closestTime=-1;
+	int i, k, t  = 0, c;
+	int oldest = -1, oldestTime = -1, closestTime = -1;
 	int	tlist[10], numTargets;
 	int	teamlist[64], numTeammates;
-	float dist, bestDist, targetTime, f;
+	float dist, bestDist = -1, targetTime = 0, f = 0.0;
 	gentity_t *ent, *trav;
 	trace_t	tr;
 	vec3_t center, end, brushPos, vec;
-	int gotTarget, defendTarget;
+	qboolean gotTarget, defendTarget = qfalse;
 	bot_goal_t bestTarget, secondary;
 	aas_altroutegoal_t	altroutegoals[40];
 	vec3_t mins, maxs;
@@ -1574,7 +1582,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 			trav = NULL;
 			ent = NULL;
 			closestTime = 0;
-			while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO )) {
+			while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO ))) {
 				// find the constructible
 				// is it disabled?
 				if (trav->aiInactive & (1<<bs->sess.sessionTeam)) {
@@ -1649,7 +1657,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 		trav = NULL;
 		ent = NULL;
 		closestTime = 0;
-		while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_TRIGGER_MULTIPLE )) {
+		while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_TRIGGER_MULTIPLE ))) {
 			// is it disabled?
 			if (trav->aiInactive & (1<<bs->sess.sessionTeam)) continue;
 			// is it active?
@@ -1727,7 +1735,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 			trav = NULL;
 			ent = NULL;
 			closestTime = 0;
-			while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO )) {
+			while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_OBJECTIVE_INFO ))) {
 				// find the constructible
 				// is it disabled?
 				if (trav->aiInactive & (1<<bs->sess.sessionTeam)) {
@@ -1815,7 +1823,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 				// is the target disabled?
 //				if (ent->target_ent && (ent->target_ent->aiInactive & (1<<bs->sess.sessionTeam))) continue;
 				//
-				if (numList = BotNumTeamMatesWithTarget( bs, oldest, list, 10 )) continue;
+				if ((numList = BotNumTeamMatesWithTarget( bs, oldest, list, 10 ))) continue;
 				//
 				if(ent->s.eType == ET_OID_TRIGGER) {
 					VectorAdd( ent->r.absmin, ent->r.absmax, brushPos );
@@ -1949,7 +1957,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 	if (bs->sess.playerType == PC_ENGINEER) {
 		// look for a broken MG42 that isnt already being fixed
 		trav = NULL;
-		while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_MG42 )) {
+		while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_MG42 ))) {
 			// is it disabled?
 			if (trav->aiInactive & (1<<bs->sess.sessionTeam)) continue;
 			if (trav->health <= 0) {
@@ -1980,7 +1988,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 		// look for a land mine area that isn't full
 		closestTime = 0;
 		trav = NULL;
-		while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA )) {
+		while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_BOT_LANDMINE_AREA ))) {
 			// is it disabled?
 			//if (trav->aiInactive & (1<<bs->sess.sessionTeam)) continue;	// FIXME: djbob needs to add the etype of the landmine hint to the filter
 			// is it for us?
@@ -2032,7 +2040,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 		trav = NULL;
 		ent = NULL;
 		closestTime = 0;
-		while (trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_TRIGGER_MULTIPLE )) {
+		while ((trav = BotFindNextStaticEntity( trav, BOTSTATICENTITY_TRIGGER_MULTIPLE ))) {
 			// is it disabled?
 			if (trav->aiInactive & (1<<bs->sess.sessionTeam)) continue;
 			// is it active?
@@ -2132,7 +2140,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 		// count the checkpoints
 		i = 0;
 		trav = NULL;
-		while ( trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_CHECKPOINT) ) {
+		while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_CHECKPOINT))) {
 			// is it disabled?
 			if (trav->aiInactive & (1<<bs->sess.sessionTeam)) continue;
 			i++;
@@ -2148,7 +2156,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 
 		// see if we should get/defend one
 		trav = NULL;
-		while ( trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_CHECKPOINT) ) {
+		while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_CHECKPOINT))) {
 			// is it disabled?
 			if (trav->aiInactive & (1<<bs->sess.sessionTeam)) continue;
 			// if the opposition team controls this checkpoint, or it hasnt been captured yet
@@ -2229,7 +2237,7 @@ qboolean BotMP_FindGoal( bot_state_t *bs ) {
 	// ATTRACTORS
 	if(!gotTarget) {
 		trav = NULL;
-		while (trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_BOT_ATTRACTOR)) {
+		while ((trav = BotFindNextStaticEntity(trav, BOTSTATICENTITY_BOT_ATTRACTOR))) {
 			if (trav->aiInactive & (1<<bs->sess.sessionTeam)) continue;
 			if (BotGoalForEntity( bs, trav->s.number, &target, BGU_MAXIMUM )) {
 				// get the distance, halve it if there is noone one going for this attractor

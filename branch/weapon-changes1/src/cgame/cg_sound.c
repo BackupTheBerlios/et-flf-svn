@@ -231,7 +231,7 @@ static void CG_SoundParseSounds ( char *filename, char *buffer ) {
 	int s;
 	long	hash;
 	soundScript_t		sound;			// the current sound being read
-	soundScriptSound_t	*scriptSound;
+	soundScriptSound_t	*scriptSound = NULL;
 	qboolean	inSound, wantSoundName;
 
 	s = 0;

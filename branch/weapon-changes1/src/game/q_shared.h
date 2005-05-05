@@ -7,10 +7,11 @@
 //#define PRE_RELEASE_DEMO
 
 #ifndef PRE_RELEASE_DEMO
-#define	Q3_VERSION		"ET 2.56"
+#define	Q3_VERSION		"ET 2.60"
 #else
 #define	Q3_VERSION		"ET 2.32"
 #endif // PRE_RELEASE_DEMO
+// 2.6x: Enemy Territory - ETPro team maintenance release
 // 2.5x: Enemy Territory FINAL
 // 2.4x: Enemey Territory RC's
 // 2.3x: Enemey Territory TEST
@@ -30,7 +31,7 @@
 #define NEW_ANIMS
 #define	MAX_TEAMNAME	32
 
-#ifdef _WIN32
+#if defined _WIN32 && !defined __GNUC__
 
 #pragma warning(disable : 4018)     // signed/unsigned mismatch
 #pragma warning(disable : 4032)
@@ -90,6 +91,8 @@
 #include <time.h>
 #include <ctype.h>
 #include <limits.h>
+#include <sys/stat.h> // rain
+#include <float.h>
 
 #endif
 
@@ -110,6 +113,14 @@
 // for windows fastcall option
 
 #define	QDECL
+
+//bani
+//======================= GNUC DEFINES ==================================
+#ifdef __GNUC__
+#define _attribute(x) __attribute__(x)
+#else
+#define _attribute(x)  
+#endif
 
 //======================= WIN32 DEFINES =================================
 
@@ -193,12 +204,11 @@ static inline float idSqrt(float x) {
 
 #ifdef __MACOS__
 
-#include <MacTypes.h>
 #define	MAC_STATIC
 
 #define	CPUSTRING	"MacOS-PPC"
 
-#define	PATH_SEP ':'
+#define	PATH_SEP '/'
 
 void Sys_PumpEvents( void );
 
@@ -283,9 +293,19 @@ typedef int		clipHandle_t;
 #define	MAX_QPATH			64		// max length of a quake game pathname
 #define	MAX_OSPATH			256		// max length of a filesystem pathname
 
-#define	MAX_NAME_LENGTH		32		// max length of a client name
+// rain - increased to 36 to match MAX_NETNAME, fixes #13 - UI stuff breaks
+// with very long names
+#define	MAX_NAME_LENGTH		36		// max length of a client name
 
 #define MAX_SAY_TEXT		150
+
+#define MAX_BINARY_MESSAGE	32768	// max length of binary message
+
+typedef enum {
+	MESSAGE_EMPTY = 0,
+	MESSAGE_WAITING,		// rate/packet limited
+	MESSAGE_WAITING_OVERFLOW,	// packet too large with message
+} messageStatus_t;
 
 // paramters for command buffer stuffing
 typedef enum {
@@ -549,10 +569,13 @@ float Q_rsqrt( float f );		// reciprocal square root
 #define SQRTFAST( x ) ( 1.0f / Q_rsqrt( x ) )
 
 // fast float to int conversion
-#if id386 && !( (defined __linux__ || defined __FreeBSD__ ) && (defined __i386__ ) ) // rb010123
+#if id386 && !( (defined __linux__ || defined __FreeBSD__ || defined __GNUC__ ) && (defined __i386__ ) ) // rb010123
 long myftol( float f );
+#elif defined( __MACOS__ )
+#define	myftol(x) (long)(x)
 #else
-#define	myftol(x) ((int)(x))
+extern long int lrintf(float x);
+#define	myftol(x) lrintf(x)
 #endif
 
 signed char ClampChar( int i );
@@ -714,8 +737,8 @@ int		COM_GetCurrentParseLine( void );
 char	*COM_Parse( char **data_p );
 char	*COM_ParseExt( char **data_p, qboolean allowLineBreak );
 int		COM_Compress( char *data_p );
-void	COM_ParseError( char *format, ... );
-void	COM_ParseWarning( char *format, ... );
+void	COM_ParseError( char *format, ... )_attribute((format(printf,1,2)));
+void	COM_ParseWarning( char *format, ... )_attribute((format(printf,1,2)));
 int		Com_ParseInfos( char *buf, int max, char infos[][MAX_INFO_STRING] );
 
 qboolean COM_BitCheck( const int array[], int bitNum );
@@ -756,7 +779,7 @@ void Parse1DMatrix (char **buf_p, int x, float *m);
 void Parse2DMatrix (char **buf_p, int y, int x, float *m);
 void Parse3DMatrix (char **buf_p, int z, int y, int x, float *m);
 
-void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...);
+void	QDECL Com_sprintf (char *dest, int size, const char *fmt, ...)_attribute((format(printf,3,4)));
 
 
 // mode parm for FS_FOpenFile
@@ -835,7 +858,7 @@ qint64  BigLong64 (qint64 l);
 float	BigFloat (float l);
 
 void	Swap_Init (void);
-char	* QDECL va(char *format, ...);
+char	* QDECL va(char *format, ...)_attribute((format(printf,1,2)));
 float	*tv( float x, float y, float z );
 
 //=============================================
@@ -852,8 +875,8 @@ qboolean Info_Validate( const char *s );
 void Info_NextPair( const char **s, char *key, char *value );
 
 // this is only here so the functions in q_shared.c and bg_*.c can link
-void	QDECL Com_Error( int level, const char *error, ... );
-void	QDECL Com_Printf( const char *msg, ... );
+void	QDECL Com_Error( int level, const char *error, ... )_attribute((format(printf,2,3)));
+void	QDECL Com_Printf( const char *msg, ... )_attribute((format(printf,1,2)));
 
 /*
 ==========================================================
@@ -1360,7 +1383,9 @@ typedef struct usercmd_s {
 	signed char	forwardmove, rightmove, upmove;
 	byte	doubleTap;			// Arnout: only 3 bits used
 
-	char	identClient;		// NERVE - SMF
+	// rain - in ET, this can be any entity, and it's used as an array
+	// index, so make sure it's unsigned
+	byte	identClient;		// NERVE - SMF
 } usercmd_t;
 
 //===================================================================
@@ -1645,7 +1670,7 @@ typedef enum _flag_status {
 
 
 
-#define	MAX_GLOBAL_SERVERS			2048
+#define	MAX_GLOBAL_SERVERS			4096
 #define	MAX_OTHER_SERVERS			128
 #define MAX_PINGREQUESTS			16
 #define MAX_SERVERSTATUSREQUESTS	16

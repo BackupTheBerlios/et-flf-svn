@@ -882,6 +882,7 @@ void CG_AddFlameToScene( flameChunk_t *fHead ) {
 					shader = nozzleShaders[(cg.time/50 + (cg.time/50 >> 1))%NUM_NOZZLE_SPRITES];
 
 					blueTrailHead = CG_AddTrailJunc(	blueTrailHead,
+														NULL, // rain - zinx's trail fix
 														shader,
 														cg.time,
 														STYPE_STRETCH,
@@ -924,6 +925,7 @@ void CG_AddFlameToScene( flameChunk_t *fHead ) {
 						droppedTrail = qtrue;
 
 						fuelTrailHead = CG_AddTrailJunc(	fuelTrailHead,
+															NULL, // rain - zinx's trail fix
 															cgs.media.flamethrowerFireStream,
 															cg.time,
 															(f->ignitionOnly ? STYPE_STRETCH : STYPE_REPEAT),

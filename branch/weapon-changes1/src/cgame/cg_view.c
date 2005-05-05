@@ -251,11 +251,15 @@ void CG_OffsetThirdPersonView( void ) {
 
 	VectorCopy( cg.refdefViewAngles, focusAngles );
 
-	// if dead, look at killer
-/*	if ( cg.predictedPlayerState.stats[STAT_HEALTH] <= 0 ) {
-		focusAngles[YAW] = cg.predictedPlayerState.stats[STAT_DEAD_YAW];
-		cg.refdefViewAngles[YAW] = cg.predictedPlayerState.stats[STAT_DEAD_YAW];
-	}*/
+	// rain - if dead, look at medic or allow freelook if none in range
+	if( cg.predictedPlayerState.stats[STAT_HEALTH] <= 0 ) {
+		// rain - #254 - force yaw to 0 if we're tracking a medic
+		if( cg.snap->ps.viewlocked != 7 ) {
+			// rain - do short2angle AFTER the network part
+			focusAngles[YAW] = SHORT2ANGLE(cg.predictedPlayerState.stats[STAT_DEAD_YAW]);
+			cg.refdefViewAngles[YAW] = SHORT2ANGLE(cg.predictedPlayerState.stats[STAT_DEAD_YAW]);
+		}
+	}
 
 	if ( focusAngles[PITCH] > 45 ) {
 		focusAngles[PITCH] = 45;		// don't go too far overhead
@@ -570,7 +574,16 @@ static void CG_OffsetFirstPersonView( void ) {
 	if ( !(cg.snap->ps.pm_flags & PMF_LIMBO) && cg.snap->ps.stats[STAT_HEALTH] <= 0 ) {
 		angles[ROLL] = 40;
 		angles[PITCH] = -15;
-		angles[YAW] = cg.snap->ps.stats[STAT_DEAD_YAW];
+
+		// rain - #254 - force yaw to 0 if we're tracking a medic
+		// rain - medic tracking doesn't seem to happen in this case?
+		if( cg.snap->ps.viewlocked == 7 ) {
+			angles[YAW] = 0;
+		} else {
+			// rain - do short2angle AFTER the network part
+			angles[YAW] = SHORT2ANGLE(cg.snap->ps.stats[STAT_DEAD_YAW]);
+		}
+
 		origin[2] += cg.predictedPlayerState.viewheight;
 		return;
 	}
@@ -816,20 +829,34 @@ void CG_Zoom( void )
 		cg.zoomval = cg_zoomDefaultSniper.value; // JPW NERVE was DefaultBinoc, changed per atvi req
 	}
 	else {
-		if ( !cg.zoomedBinoc )
-			return;
-		cg.zoomedBinoc	= qfalse;
-		cg.zoomTime	= cg.time;
+		if (cg.zoomedBinoc) {
+			cg.zoomedBinoc	= qfalse;
+			cg.zoomTime	= cg.time;
 
-		// check for scope weapon in use, and switch to if necessary
-		if( cg.weaponSelect == WP_FG42SCOPE ) {
-			cg.zoomval = cg_zoomDefaultSniper.value; // JPW NERVE was DefaultFG, changed per atvi req
-		} else if( cg.weaponSelect == WP_GARAND_SCOPE ) {
-			cg.zoomval = cg_zoomDefaultSniper.value;
-		} else if( cg.weaponSelect == WP_K43_SCOPE ) {
-			cg.zoomval = cg_zoomDefaultSniper.value;
+			// check for scope weapon in use, and switch to if necessary
+			if( cg.weaponSelect == WP_FG42SCOPE ) {
+				cg.zoomval = cg_zoomDefaultSniper.value; // JPW NERVE was DefaultFG, changed per atvi req
+			} else if( cg.weaponSelect == WP_GARAND_SCOPE ) {
+				cg.zoomval = cg_zoomDefaultSniper.value;
+			} else if( cg.weaponSelect == WP_K43_SCOPE ) {
+				cg.zoomval = cg_zoomDefaultSniper.value;
+			} else {
+				cg.zoomval = 0;
+			}
 		} else {
-			cg.zoomval = 0;
+//bani - we now sanity check to make sure we can't zoom non-zoomable weapons
+//zinx - fix for #423 - don't sanity check while following
+			if (!((cg.snap->ps.pm_flags & PMF_FOLLOW) || cg.demoPlayback)) {
+				switch( cg.weaponSelect ) {
+					case WP_FG42SCOPE:
+					case WP_GARAND_SCOPE:
+					case WP_K43_SCOPE:
+						break;
+					default:
+						cg.zoomval = 0;
+						break;
+				}
+			}
 		}
 	}
 }
@@ -961,7 +988,8 @@ static int CG_CalcFov( void ) {
 		cg.zoomSensitivity = cg.refdef.fov_y / 500.0;
 	} else
 */
-	if( cg.snap->ps.pm_type == PM_FREEZE || cg.snap->ps.pm_type == PM_DEAD || cg.snap->ps.pm_flags & PMF_TIME_LOCKPLAYER ) {
+	// rain - allow freelook when dead until we tap out into limbo
+	if( cg.snap->ps.pm_type == PM_FREEZE || (cg.snap->ps.pm_type == PM_DEAD && (cg.snap->ps.pm_flags & PMF_LIMBO)) || cg.snap->ps.pm_flags & PMF_TIME_LOCKPLAYER ) {
 		// No movement for pauses
 		cg.zoomSensitivity = 0;
 	} else if ( !cg.zoomedBinoc ) {

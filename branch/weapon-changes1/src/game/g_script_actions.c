@@ -2,7 +2,8 @@
 //
 // Name:			g_script_actions.c
 // Function:		Wolfenstein Entity Scripting
-//
+// Programmer:		Ridah
+// Tab Size:		4 (real tabs)
 //===========================================================================
 
 #include "../game/g_local.h"
@@ -77,7 +78,7 @@ qboolean G_ScriptAction_SetPosition( gentity_t *ent, char *params ) {
 		G_Error( "G_Scripting: setposition must have an targetname\n" );
 	}
 
-	if(pPathCorner = BG_Find_PathCorner( token )) {
+	if ((pPathCorner = BG_Find_PathCorner( token ))) {
 		G_SetOrigin( ent, pPathCorner->origin );
 	} else  {
 		// find the entity with the given "targetname"
@@ -969,7 +970,7 @@ qboolean G_ScriptAction_DisableMessage( gentity_t *ent, char *params ) {
 	}
 
 	// find the entity with the given "targetname"
-	while( target = G_FindByTargetname( target, token ) ) {
+	while ((target = G_FindByTargetname( target, token ))) {
 		target->s.aiState = 1;
 	}
 
@@ -1108,7 +1109,7 @@ qboolean G_ScriptAction_GotoMarker( gentity_t *ent, char *params )
 			G_Error( "G_Scripting: gotomarker must have an targetname\n" );
 		}
 
-		if(pPathCorner = BG_Find_PathCorner( token )) {
+		if ((pPathCorner = BG_Find_PathCorner( token ))) {
 			VectorSubtract( pPathCorner->origin, ent->r.currentOrigin, vec );
 		} else {
 			// find the entity with the given "targetname"
@@ -1147,9 +1148,9 @@ qboolean G_ScriptAction_GotoMarker( gentity_t *ent, char *params )
 
 					token = COM_ParseExt( &pString, qfalse );
 
-					if(pPathCorner2 = BG_Find_PathCorner( token )) {
+					if ((pPathCorner2 = BG_Find_PathCorner( token ))) {
 						VectorCopy( pPathCorner2->origin, vec2 );
-					} else if( target2 = G_FindByTargetname( NULL, token )) {
+					} else if ((target2 = G_FindByTargetname( NULL, token ))) {
 						VectorCopy( target2->r.currentOrigin, vec2 );
 					} else {
 						G_Error( "Target for relative gotomarker not found: %s\n", token );
@@ -1395,7 +1396,7 @@ qboolean G_ScriptAction_Trigger( gentity_t *ent, char *params )
 		found = qfalse;
 		// for all entities/bots with this scriptName
 		trent = NULL;
-		while (trent = G_Find( trent, FOFS(scriptName), name )) {
+		while ((trent = G_Find( trent, FOFS(scriptName), name ))) {
 			found = qtrue;
 			if (!(trent->r.svFlags & SVF_BOT)) {
 				oldId = trent->scriptStatus.scriptId;
@@ -2061,7 +2062,7 @@ qboolean G_ScriptAction_Accum( gentity_t *ent, char *params )
 			found = qfalse;
 			// for all entities/bots with this scriptName
 			trent = NULL;
-			while (trent = G_Find( trent, FOFS(scriptName), lastToken )) {
+			while ((trent = G_Find( trent, FOFS(scriptName), lastToken ))) {
 				found = qtrue;
 				oldId = trent->scriptStatus.scriptId;
 				G_Script_ScriptEvent( trent, "trigger", name );
@@ -2255,7 +2256,7 @@ qboolean G_ScriptAction_GlobalAccum( gentity_t *ent, char *params )
 			found = qfalse;
 			// for all entities/bots with this scriptName
 			trent = NULL;
-			while (trent = G_Find( trent, FOFS(scriptName), lastToken )) {
+			while ((trent = G_Find( trent, FOFS(scriptName), lastToken ))) {
 				found = qtrue;
 				oldId = trent->scriptStatus.scriptId;
 				G_Script_ScriptEvent( trent, "trigger", name );
@@ -3181,7 +3182,7 @@ qboolean G_ScriptAction_SetDamagable( gentity_t *ent, char *params )
 
 	// look for entities
 	target = &g_entities[MAX_CLIENTS-1];
-	while(target = G_FindByTargetname( target, name )) {
+	while ((target = G_FindByTargetname( target, name ))) {
 		target->takedamage = canDamage;
 	}
 
@@ -3355,7 +3356,7 @@ qboolean G_ScriptAction_RepairMG42( gentity_t *ent, char *params ) {
 
 	// look for entities
 	target = &g_entities[MAX_CLIENTS-1];
-	while( target = G_FindByTargetname( target, name ) ) {
+	while ((target = G_FindByTargetname( target, name ))) {
 		if( target->takedamage ) {
 			continue;
 		}
@@ -3573,22 +3574,24 @@ qboolean G_ScriptAction_BotDebugging(gentity_t *ent, char *params )
 
 qboolean G_IsValidBotStateGoal( gentity_t* ent ) {
 	switch( ent->s.eType ) {
-	case ET_MOVER:
-		if(!Q_stricmp( ent->classname, "func_static" )) {
-			return qfalse;
-		}
-		return qtrue;
-	case ET_TRIGGER_MULTIPLE:
-	case ET_CONSTRUCTIBLE:
-	case ET_OID_TRIGGER:
-	case ET_ATTRACTOR_HINT:
-	case ET_LANDMINE_HINT:
-	case ET_SNIPER_HINT:
-	case ET_LANDMINESPOT_HINT:
-	case ET_EXPLOSIVE:
-		return qtrue;
-	case ET_MG42_BARREL:
-		return qtrue;
+		case ET_MOVER:
+			if(!Q_stricmp( ent->classname, "func_static" )) {
+				return qfalse;
+			}
+			return qtrue;
+		case ET_TRIGGER_MULTIPLE:
+		case ET_CONSTRUCTIBLE:
+		case ET_OID_TRIGGER:
+		case ET_ATTRACTOR_HINT:
+		case ET_LANDMINE_HINT:
+		case ET_SNIPER_HINT:
+		case ET_LANDMINESPOT_HINT:
+		case ET_EXPLOSIVE:
+			return qtrue;
+		case ET_MG42_BARREL:
+			return qtrue;
+		default:
+			break;
 	}
 	return qfalse;
 }
@@ -3636,7 +3639,7 @@ qboolean G_ScriptAction_SetBotGoalState( gentity_t *ent, char *params ) {
 	// look for an entities
 	target = &g_entities[MAX_CLIENTS-1];
 	hash = BG_StringHashValue( name );
-	while(target = G_FindByTargetnameFast( target, name, hash )) {
+	while ((target = G_FindByTargetnameFast( target, name, hash ))) {
 		if(!G_IsValidBotStateGoal( target )) {
 			continue;
 		}
@@ -3696,7 +3699,7 @@ qboolean G_ScriptAction_SetAASState( gentity_t *ent, char *params ) {
 	}
 
 	hash = BG_StringHashValue( targetname );
-	while( target = G_FindByTargetnameFast( target, targetname, hash ) ) {
+	while ((target = G_FindByTargetnameFast( target, targetname, hash ))) {
 		if( target->r.linked ) {
 			G_SetAASBlockingEntity( target, flags );
 		} else {
@@ -3756,7 +3759,7 @@ qboolean G_ScriptAction_SetBotGoalPriority( gentity_t *ent, char *params ) {
 	// look for an entities
 	target = &g_entities[MAX_CLIENTS-1];
 	hash = BG_StringHashValue( name );	
-	while(target = G_FindByTargetnameFast( target, name, hash )) {
+	while ((target = G_FindByTargetnameFast( target, name, hash ))) {
 		if (teamFlags[0]) {
 			target->goalPriority[0] = priority;
 		}
@@ -4132,7 +4135,7 @@ qboolean G_ScriptAction_Cvar( gentity_t *ent, char *params )
 			found = qfalse;
 			// for all entities/bots with this scriptName
 			trent = NULL;
-			while (trent = G_Find( trent, FOFS(scriptName), lastToken )) {
+			while ((trent = G_Find( trent, FOFS(scriptName), lastToken ))) {
 				found = qtrue;
 				oldId = trent->scriptStatus.scriptId;
 				G_Script_ScriptEvent( trent, "trigger", name );
@@ -4190,5 +4193,91 @@ qboolean G_ScriptAction_AbortIfNotSinglePlayer( gentity_t *ent, char *params )
 		ent->scriptStatus.scriptStackHead = ent->scriptEvents[ent->scriptStatus.scriptEventIndex].stack.numItems;
 	}
 	//
+	return qtrue;
+}
+
+/*
+===================     
+etpro_ScriptAction_SetValues
+
+Ikkyo - change key/value pairs of any entity
+
+syntax (example):
+set
+{
+	origin "3510 -960 1280"
+	classname "ookblat"
+	etc etc
+}
+available fields can be found in field_t of g_spawn.c, it is quite simple to add new ones
+===================
+*/
+qboolean etpro_ScriptAction_SetValues( gentity_t *ent, char *params ) {
+	char	*token;
+	char	*p;
+	char	key[MAX_TOKEN_CHARS], value[MAX_TOKEN_CHARS];
+	int		classchanged = 0;
+
+	// rain - reset and fill in the spawnVars info so that spawn
+	// functions can use them
+	level.numSpawnVars = 0;
+	level.numSpawnVarChars = 0;
+
+	p = params;
+
+	// Get each key/value pair
+	while( 1 ) {
+		token = COM_ParseExt( &p, qfalse );
+		if( !token[0] )
+			break;
+ 
+		strcpy( key, token );
+
+		token = COM_ParseExt( &p, qfalse );
+		if( !token[0] ) {
+			G_Error("key \"%s\" has no value", key);
+			break;
+		}
+
+		strcpy(value, token);
+
+		if( g_scriptDebug.integer )
+			G_Printf( "%d : (%s) %s: set [%s] [%s] [%s]\n", level.time, ent->scriptName, GAMEVERSION, ent->scriptName, key, value );
+
+		if (!Q_stricmp(key, "classname")) {
+			if (Q_stricmp(value, ent->classname))
+				classchanged = 1;
+		}
+
+		// rain - add spawn var so that spawn functions can use them
+		if ( level.numSpawnVars == MAX_SPAWN_VARS ) {
+			G_Error( "G_ParseSpawnVars: MAX_SPAWN_VARS" );
+		}
+		level.spawnVars[ level.numSpawnVars ][0] = G_AddSpawnVarToken( key );
+		level.spawnVars[ level.numSpawnVars ][1] = G_AddSpawnVarToken( value );
+		level.numSpawnVars++;
+
+		G_ParseField( key, value, ent );
+
+		if( !Q_stricmp( key, "targetname" ) ) {
+			//need to hash this ent targetname for setstate script targets...
+			ent->targetnamehash = BG_StringHashValue( ent->targetname );
+		}
+	}
+
+	// move editor origin to pos
+	VectorCopy( ent->s.origin, ent->s.pos.trBase );
+	VectorCopy( ent->s.origin, ent->r.currentOrigin );
+
+	// rain - if the classname was changed, call the spawn func again
+	if (classchanged) {
+		G_CallSpawn( ent );
+		trap_LinkEntity( ent );
+	}
+
+	// relink if once linked
+	if( ent->r.linked )
+		trap_LinkEntity( ent );
+
 	return qtrue;
 }

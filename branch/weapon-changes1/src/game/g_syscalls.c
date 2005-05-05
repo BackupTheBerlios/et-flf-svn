@@ -8,13 +8,17 @@
 static int (QDECL *syscall)( int arg, ... ) = (int (QDECL *)( int, ...))-1;
 
 #if defined(__MACOS__)
+#ifndef __GNUC__
 #pragma export on
+#endif
 #endif
 void dllEntry( int (QDECL *syscallptr)( int arg,... ) ) {
 	syscall = syscallptr;
 }
 #if defined(__MACOS__)
+#ifndef __GNUC__
 #pragma export off
+#endif
 #endif
 
 int PASSFLOAT( float x ) {
@@ -104,6 +108,13 @@ void trap_DropClient( int clientNum, const char *reason, int length ) {
 }
 
 void trap_SendServerCommand( int clientNum, const char *text ) {
+	// rain - #433 - commands over 1022 chars will crash the
+	// client engine upon receipt, so ignore them
+	if( strlen( text ) > 1022 ) {
+		G_LogPrintf( "%s: trap_SendServerCommand( %d, ... ) length exceeds 1022.\n", GAMEVERSION, clientNum );
+		G_LogPrintf( "%s: text [%s]\n", GAMEVERSION, text );
+		return;
+	}
 	syscall( G_SEND_SERVER_COMMAND, clientNum, text );
 }
 
@@ -941,4 +952,12 @@ int trap_GeneticParentsAndChildSelection(int numranks, float *ranks, int *parent
 
 void trap_PbStat ( int clientNum , char *category , char *values ) {
 	syscall ( PB_STAT_REPORT , clientNum , category , values ) ;
+}
+
+void trap_SendMessage( int clientNum, char *buf, int buflen ) {
+	syscall( G_SENDMESSAGE, clientNum, buf, buflen );
+}
+
+messageStatus_t trap_MessageStatus( int clientNum ) {
+	return syscall( G_MESSAGESTATUS, clientNum );
 }

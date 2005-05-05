@@ -445,8 +445,25 @@ SpectatorThink
 void SpectatorThink( gentity_t *ent, usercmd_t *ucmd ) {
 	pmove_t	pm;
 	gclient_t	*client;
+	gentity_t *crosshairEnt = NULL; // rain - #480
 
 	client = ent->client;
+
+	// rain - #480 - sanity check - check .active in case the client sends us
+	// something completely bogus
+	crosshairEnt = &g_entities[ent->client->ps.identifyClient];
+
+	if (crosshairEnt->inuse && crosshairEnt->client &&
+		(ent->client->sess.sessionTeam == crosshairEnt->client->sess.sessionTeam ||
+		crosshairEnt->client->ps.powerups[PW_OPS_DISGUISED])) {
+
+		// rain - identifyClientHealth sent as unsigned char, so we
+		// can't transmit negative numbers
+		if (crosshairEnt->health >= 0)
+			ent->client->ps.identifyClientHealth = crosshairEnt->health;
+		else
+			ent->client->ps.identifyClientHealth = 0;
+	}
 
 	if ( client->sess.spectatorState != SPECTATOR_FOLLOW ) {
 		client->ps.pm_type = PM_SPECTATOR;
@@ -673,6 +690,9 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 		//case EV_FALL_DMG_30:
 		case EV_FALL_DMG_50:
 		//case EV_FALL_DMG_75:
+		
+			// rain - VectorClear() used to be done here whenever falling
+			// damage occured, but I moved it to bg_pmove where it belongs.
 			
 			if ( ent->s.eType != ET_PLAYER ) {
 				break;		// not in the player model
@@ -686,28 +706,24 @@ void ClientEvents( gentity_t *ent, int oldEventSequence ) {
 				damage = 50;
 				ent->client->ps.pm_time = 1000;
 				ent->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
-				VectorClear (ent->client->ps.velocity);
 			}
 			else if (event == EV_FALL_DMG_25)
 			{
 				damage = 25;
 				ent->client->ps.pm_time = 250;
 				ent->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
-				VectorClear (ent->client->ps.velocity);
 			}
 			else if (event == EV_FALL_DMG_15)
 			{
 				damage = 15;
 				ent->client->ps.pm_time = 1000;
 				ent->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
-				VectorClear (ent->client->ps.velocity);
 			}
 			else if (event == EV_FALL_DMG_10)
 			{
 				damage = 10;
 				ent->client->ps.pm_time = 1000;
 				ent->client->ps.pm_flags |= PMF_TIME_KNOCKBACK;
-				VectorClear (ent->client->ps.velocity);
 			}
 			else
 				damage = 5; // never used
@@ -805,7 +821,8 @@ void SendPendingPredictableEvents( playerState_t *ps ) {
 void WolfFindMedic( gentity_t *self ) {
 	int i, medic=-1;
 	gclient_t	*cl;
-	vec3_t	start, end, temp;
+	vec3_t	start, end;
+//	vec3_t	temp;	// rain - unused
 	trace_t	tr;
 	float	bestdist=1024, dist;
 
@@ -831,6 +848,13 @@ void WolfFindMedic( gentity_t *self ) {
 			continue;
 		}
 
+		// zinx - limbo'd players are not PM_DEAD or STAT_HEALTH <= 0.
+		// and we certainly don't want to lock to them
+		// fix for bug #345
+		if( cl->ps.pm_flags & PMF_LIMBO ) {
+			continue;
+		}
+
 		if( cl->ps.stats[ STAT_HEALTH ] <= 0 ) {
 			continue;
 		}
@@ -852,8 +876,10 @@ void WolfFindMedic( gentity_t *self ) {
 
 		if ( dist < bestdist ) {
 			medic = cl->ps.clientNum;
+#if 0 // rain - not sure what the point of this is
 			vectoangles( end, temp );
 			self->client->ps.stats[STAT_DEAD_YAW] = temp[YAW];
+#endif
 			bestdist = dist;
 		}
 	}
@@ -1154,10 +1180,9 @@ void ClientThink_real( gentity_t *ent ) {
 
 	// Ridah, fixes jittery zombie movement
 	if (g_smoothClients.integer) {
-		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
-	}
-	else {
-		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
+		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, level.time, qfalse );
+	} else {
+		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qfalse );
 	}
 
 	if ( !( ent->client->ps.eFlags & EF_FIRING ) ) {
@@ -1190,9 +1215,6 @@ void ClientThink_real( gentity_t *ent ) {
 
 	// NOTE: now copy the exact origin over otherwise clients can be snapped into solid
 	VectorCopy( ent->client->ps.origin, ent->r.currentOrigin );
-
-	// store the client's current position for antilag traces
-	G_StoreClientPosition( ent );
 
 	// touch other objects
 	ClientImpacts( ent, &pm );
@@ -1707,9 +1729,9 @@ void ClientEndFrame( gentity_t *ent ) {
 
 	// Ridah, fixes jittery zombie movement
 	if (g_smoothClients.integer) {
-		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, ent->client->ps.commandTime, qtrue );
+		BG_PlayerStateToEntityStateExtraPolate( &ent->client->ps, &ent->s, level.time, qfalse );
 	} else {
-		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qtrue );
+		BG_PlayerStateToEntityState( &ent->client->ps, &ent->s, qfalse );
 	}
 
 	//SendPendingPredictableEvents( &ent->client->ps );
@@ -1733,6 +1755,14 @@ void ClientEndFrame( gentity_t *ent ) {
 		ent->count2 = 0;
 	// dhm
 
+	// zinx - #280 - run touch functions here too, so movers don't have to wait
+	// until the next ClientThink, which will be too late for some map
+	// scripts (railgun)
+	G_TouchTriggers( ent );
+
 	// run entity scripting
 	G_Script_ScriptRun( ent );
+
+	// store the client's current position for antilag traces
+	G_StoreClientPosition( ent );
 }

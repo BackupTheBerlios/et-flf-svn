@@ -27,6 +27,8 @@ static tracemap_t tracemap;
 
 static vec2_t one_over_mapgrid_factor;
 
+void etpro_FinalizeTracemapClamp(int *x, int *y);
+
 #ifdef CGAMEDLL
 void CG_GenerateTracemap( void ) {
 	trace_t tr;
@@ -262,25 +264,41 @@ void CG_GenerateTracemap( void ) {
 
 	// min is 0
 	// max is 255
-	scalefactor = 255.f / ( topdownmax - topdownmin );
+	// rain - etmain REALLY expects 1 to 255, so I'm changing this to
+	// generate that instead, so that etpro tracemaps can be used with
+	// etmain
+	scalefactor = 254.f / ( topdownmax - topdownmin );
 	if( scalefactor == 0.f )
 		scalefactor = 1.f;
 	for( i = 0; i < TRACEMAP_SIZE; i++ ) {
 		for( j = 0; j < TRACEMAP_SIZE; j++ ) {
 			if( tracemap.ground[i][j] >= topdownmin )
-				tracemap.ground[i][j] = (tracemap.ground[i][j] - topdownmin) * scalefactor;
+				tracemap.ground[i][j] = 1.0 + (tracemap.ground[i][j] - topdownmin) * scalefactor;
+			
+			// rain - hard clamp because *min and *max are rounded :(
+			if (tracemap.ground[i][j] < 1.0)
+				tracemap.ground[i][j] = 1.0;
+			else if (tracemap.ground[i][j] > 255.0)
+				tracemap.ground[i][j] = 255.0;
 		}
 	}
 
 	// min is 0
 	// max is 255
-	scalefactor = 255.f / ( skygroundmax - skygroundmin );
+	// rain - this is d&l, min=1 max=255
+	scalefactor = 254.f / ( skygroundmax - skygroundmin );
 	if( scalefactor == 0.f )
 		scalefactor = 1.f;
 	for( i = 0; i < TRACEMAP_SIZE; i++ ) {
 		for( j = 0; j < TRACEMAP_SIZE; j++ ) {
 			if( tracemap.skyground[i][j] >= skygroundmin )
-				tracemap.skyground[i][j] = (tracemap.skyground[i][j] - skygroundmin) * scalefactor;
+				tracemap.skyground[i][j] = 1.0 + (tracemap.skyground[i][j] - skygroundmin) * scalefactor;
+
+			// rain - hard clamp because *min and *max are rounded :(
+			if (tracemap.skyground[i][j] < 1.0)
+				tracemap.skyground[i][j] = 1.0;
+			else if (tracemap.skyground[i][j] > 255.0)
+				tracemap.skyground[i][j] = 255.0;
 		}
 	}
 
@@ -299,6 +317,12 @@ void CG_GenerateTracemap( void ) {
 			} else {
 				tracemap.sky[i][j] = 1.f + (tracemap.sky[i][j] - min) * scalefactor;
 			}
+
+			// rain - hard clamp because *min and *max are rounded :(
+			if (tracemap.sky[i][j] < 0.0)
+				tracemap.sky[i][j] = 0.0;
+			else if (tracemap.sky[i][j] > 255.0)
+				tracemap.sky[i][j] = 255.0;
 		}
 	}
 
@@ -414,14 +438,12 @@ qboolean BG_LoadTraceMap( char *rawmapname, vec2_t world_mins, vec2_t world_maxs
 					tracemap.sky[TRACEMAP_SIZE - 1 - i][j] = MAX_WORLD_HEIGHT;
 
 				tracemap.skyground[TRACEMAP_SIZE - 1 - i][j] = (float)datablock[j][1];	// FIXME: swap
-				// This wasn't commented out in the official ET release, fixes bug where the lowest area of a map doesn't get any rain or snow
-				/*if( tracemap.skyground[TRACEMAP_SIZE - 1 - i][j] == 0 )
-					tracemap.skyground[TRACEMAP_SIZE - 1 - i][j] = MAX_WORLD_HEIGHT;*/
+				if( tracemap.skyground[TRACEMAP_SIZE - 1 - i][j] == 0 )
+					tracemap.skyground[TRACEMAP_SIZE - 1 - i][j] = MAX_WORLD_HEIGHT;
 
 				tracemap.ground[TRACEMAP_SIZE - 1 - i][j] = (float)datablock[j][2];	// FIXME: swap
-				// This wasn't commented out in the official ET release, fixes bug where the lowest area of a map doesn't get any rain or snow 
-				/*if( tracemap.ground[TRACEMAP_SIZE - 1 - i][j] == 0 )
-					tracemap.ground[TRACEMAP_SIZE - 1 - i][j] = MIN_WORLD_HEIGHT;*/
+				if( tracemap.ground[TRACEMAP_SIZE - 1 - i][j] == 0 )
+					tracemap.ground[TRACEMAP_SIZE - 1 - i][j] = MIN_WORLD_HEIGHT;
 
 				if( datablock[j][3] == 0 ) {
 					// just in case
@@ -478,7 +500,8 @@ qboolean BG_LoadTraceMap( char *rawmapname, vec2_t world_mins, vec2_t world_maxs
 		if( ground_max - ground_min == 0 )
 			scalefactor = 1.f;
 		else {
-			scalefactor = 255.f / ( ground_max - ground_min );
+			// rain - scalefactor 254 to compensate for broken etmain behavior
+			scalefactor = 254.f / ( ground_max - ground_min );
 		}
 
 		// scale properly
@@ -495,7 +518,8 @@ qboolean BG_LoadTraceMap( char *rawmapname, vec2_t world_mins, vec2_t world_maxs
 		if( skyground_max - skyground_min == 0 )
 			scalefactor = 1.f;
 		else {
-			scalefactor = 255.f / ( skyground_max - skyground_min );
+			// rain - scalefactor 254 to compensate for broken etmain behavior
+			scalefactor = 254.f / ( skyground_max - skyground_min );
 		}
 
 		// scale properly
@@ -512,7 +536,8 @@ qboolean BG_LoadTraceMap( char *rawmapname, vec2_t world_mins, vec2_t world_maxs
 		if( sky_max - sky_min == 0 )
 			scalefactor = 1.f;
 		else {
-			scalefactor = 255.f / ( sky_max - sky_min );
+			// rain - scalefactor 254 to compensate for broken etmain behavior
+			scalefactor = 254.f / ( sky_max - sky_min );
 		}
 
 		// scale properly
@@ -577,6 +602,10 @@ float BG_GetSkyHeightAtPoint( vec3_t pos ) {
 	i = myftol(( point[0] - tracemap.world_mins[0] ) * one_over_mapgrid_factor[0]);
 	j = myftol(( point[1] - tracemap.world_mins[1] ) * one_over_mapgrid_factor[1]);
 
+	// rain - re-clamp the points, because a rounding error can cause
+	// them to go outside the array
+	etpro_FinalizeTracemapClamp(&i, &j);
+
 //	getskytime += trap_Milliseconds() - msec;
 	return( tracemap.sky[j][i] );	
 }
@@ -597,6 +626,10 @@ float BG_GetSkyGroundHeightAtPoint( vec3_t pos ) {
 
 	i = myftol(( point[0] - tracemap.world_mins[0] ) * one_over_mapgrid_factor[0]);
 	j = myftol(( point[1] - tracemap.world_mins[1] ) * one_over_mapgrid_factor[1]);
+
+	// rain - re-clamp the points, because a rounding error can cause
+	// them to go outside the array
+	etpro_FinalizeTracemapClamp(&i, &j);
 
 //	getgroundtime += trap_Milliseconds() - msec;
 	return( tracemap.skyground[j][i] );
@@ -619,6 +652,10 @@ float BG_GetGroundHeightAtPoint( vec3_t pos ) {
 	i = myftol(( point[0] - tracemap.world_mins[0] ) * one_over_mapgrid_factor[0]);
 	j = myftol(( point[1] - tracemap.world_mins[1] ) * one_over_mapgrid_factor[1]);
 
+	// rain - re-clamp the points, because a rounding error can cause
+	// them to go outside the array
+	etpro_FinalizeTracemapClamp(&i, &j);
+
 //	getgroundtime += trap_Milliseconds() - msec;
 	return( tracemap.ground[j][i] );
 }
@@ -635,4 +672,19 @@ int BG_GetTracemapGroundCeil( void ) {
 		return MAX_WORLD_HEIGHT;
 	}
 	return tracemap.groundceil;
+}
+
+// rain - re-clamp the points, because a rounding error can cause
+// them to go outside the array
+void etpro_FinalizeTracemapClamp(int *x, int *y)
+{
+	if (*x < 0)
+		*x = 0;
+	else if (*x > TRACEMAP_SIZE - 1)
+		*x = TRACEMAP_SIZE - 1;
+
+	if (*y < 0)
+		*y = 0;
+	else if (*y > TRACEMAP_SIZE - 1)
+		*y = TRACEMAP_SIZE - 1;
 }

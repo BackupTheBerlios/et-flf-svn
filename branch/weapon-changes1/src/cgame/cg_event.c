@@ -60,10 +60,15 @@ static void CG_Obituary( entityState_t *ent ) {
 		message = "died by toxic materials";
 		break;
 	case MOD_TRIGGER_HURT:
+	case MOD_TELEFRAG: // rain - added TELEFRAG and TARGET_LASER, just in case
+	case MOD_TARGET_LASER:
 		message = "was killed";
 		break;
 	case MOD_CRUSH_CONSTRUCTIONDEATH_NOATTACKER:
 		message = "got buried under a pile of rubble";
+		break;
+	case MOD_LAVA: // rain
+		message = "was incinerated";
 		break;
 	default:
 		message = NULL;
@@ -76,10 +81,14 @@ static void CG_Obituary( entityState_t *ent ) {
 			message = "dynamited himself to pieces";
 			break;
 		case MOD_GRENADE_LAUNCHER:
+		case MOD_GRENADE_PINEAPPLE: // rain - added PINEAPPLE
 			message = "dove on his own grenade";
 			break;
 		case MOD_PANZERFAUST:
 			message = "vaporized himself";
+			break;
+		case MOD_FLAMETHROWER: // rain
+			message = "played with fire";
 			break;
 		case MOD_AIRSTRIKE:
 			message = "obliterated himself";
@@ -89,6 +98,37 @@ static void CG_Obituary( entityState_t *ent ) {
 			break;
 		case MOD_EXPLOSIVE:
 			message = "died in his own explosion";
+			break;
+		// rain - everything from this point on is sorted by MOD, didn't
+		// resort existing messages to avoid differences between pre
+		// and post-patch code (for source patching)
+		case MOD_GPG40:
+		case MOD_M7: // rain
+			//bani - more amusing, less wordy
+			message = "ate his own rifle grenade";
+			break;
+		case MOD_LANDMINE: // rain
+			//bani - slightly more amusing
+			message = "failed to spot his own landmine";
+			break;
+		case MOD_SATCHEL: // rain
+			message = "embraced his own satchel explosion";
+			break;
+		case MOD_TRIPMINE: // rain - dormant code
+			message = "forgot where his tripmine was";
+			break;
+		case MOD_CRUSH_CONSTRUCTION: // rain
+			message = "engineered himself into oblivion";
+			break;
+		case MOD_CRUSH_CONSTRUCTIONDEATH: // rain
+			message = "buried himself alive";
+			break;
+		case MOD_MORTAR: // rain
+			message = "never saw his own mortar round coming";
+			break;
+		case MOD_SMOKEGRENADE: // rain
+			// bani - more amusing
+			message = "danced on his airstrike marker";
 			break;
 		// no obituary message if changing teams
 		case MOD_SWITCHTEAM:
@@ -306,6 +346,16 @@ static void CG_Obituary( entityState_t *ent ) {
 		case MOD_SATCHEL:
 			message = "was blasted by";
 			message2 = "'s Satchel Charge";
+			break;
+		
+		case MOD_TRIPMINE: // rain - dormant code
+			message = "was detonated by";
+			message2 = "'s trip mine";
+			break;
+		
+		case MOD_SMOKEGRENADE: // rain
+			message = "stood on";
+			message2 = "'s airstrike marker";
 			break;
 
 		default:
@@ -2708,6 +2758,8 @@ void CG_EntityEvent( centity_t *cent, vec3_t position ) {
 				break;
 			case TEAM_ALLIES:
 				trap_S_StartSound( NULL, cent->currentState.number, CHAN_AUTO, cgs.media.sndMedicCall[1] );
+				break;
+			default: // shouldn't happen
 				break;
 		}
 

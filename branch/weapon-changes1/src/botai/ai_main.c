@@ -30,7 +30,9 @@
 #include "inv.h"
 #include "syn.h"
 
+#ifndef MAX_PATH // LBO 1/26/05
 #define MAX_PATH		144
+#endif
 
 //bot states
 bot_state_t	botstates[MAX_CLIENTS];
@@ -2183,7 +2185,7 @@ void BotBuildStaticEntityCache(void) {
 	//
 	for(i = 0; i < NUM_BOTSTATICENTITY; i++) {
 		trav = NULL;
-		while (trav = G_Find( trav, FOFS(classname), botStaticEntityStrings[i] )) {
+		while ((trav = G_Find( trav, FOFS(classname), botStaticEntityStrings[i] ))) {
 			trav->botNextStaticEntity = NULL;
 			p = botStaticEntityList[i];
 			if (!p) {

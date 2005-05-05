@@ -143,7 +143,7 @@ qboolean CG_FindCampaignInFile( char *filename, char *campaignShortName, cg_camp
 qboolean CG_FindArenaInfo( char* filename, char* mapname, arenaInfo_t* info ) {
 	int handle;
 	pc_token_t token;
-	char* dummy;
+	const char* dummy;
 	qboolean found = qfalse;
 	
 	handle = trap_PC_LoadSource( filename );

@@ -389,6 +389,8 @@ qboolean G_TryPushingEntity( gentity_t *check, gentity_t *pusher, vec3_t move, v
  	return qfalse;
 }
 
+//bani - referenced in G_MoverPush()
+extern	void LandMineTrigger(gentity_t* self);
 
 /*
 ============
@@ -471,20 +473,8 @@ qboolean G_MoverPush( gentity_t *pusher, vec3_t move, vec3_t amove, gentity_t **
 
 		if( check->s.eType == ET_MISSILE && check->s.groundEntityNum != pusher->s.number ) {
 			if ( check->methodOfDeath == MOD_LANDMINE ) {
-				mapEntityData_t	*mEnt;
-
 				if(check->s.teamNum >= 0 && check->s.teamNum < 4) {
-					if((mEnt = G_FindMapEntityData(&mapEntityData[0], check-g_entities)) != NULL) {
-						G_FreeMapEntityData( &mapEntityData[0], mEnt );
-					}
-
-					if((mEnt = G_FindMapEntityData(&mapEntityData[1], check-g_entities)) != NULL) {
-						G_FreeMapEntityData( &mapEntityData[1], mEnt );
-					}
-
-					G_ExplodeMissile( check );				
-				} else if(check->s.teamNum >= 4 && check->s.teamNum < 8) {
-					G_FreeEntity( check );
+					LandMineTrigger( check );
 				}
 			}
 			continue;
@@ -5134,7 +5124,7 @@ void SP_func_constructible( gentity_t *ent ) {
 	if( i > 0 && i <= NUM_CONSTRUCTIBLE_CLASSES ) {
 		ent->constructibleStats = g_constructible_classes[i];
 
-		G_SpawnFloat( "constructible_chargebarreq", va( "%i", ent->constructibleStats.chargebarreq ), &ent->constructibleStats.chargebarreq );
+		G_SpawnFloat( "constructible_chargebarreq", va( "%f", ent->constructibleStats.chargebarreq ), &ent->constructibleStats.chargebarreq );
 		G_SpawnFloat( "constructible_constructxpbonus", va( "%f", ent->constructibleStats.constructxpbonus ), &ent->constructibleStats.constructxpbonus );
 		G_SpawnFloat( "constructible_destructxpbonus", va( "%f", ent->constructibleStats.destructxpbonus ), &ent->constructibleStats.destructxpbonus );
 		G_SpawnInt( "constructible_health", va( "%i", ent->constructibleStats.health ), &ent->constructibleStats.health );

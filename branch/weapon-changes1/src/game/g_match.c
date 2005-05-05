@@ -336,6 +336,7 @@ static const weap_ws_convert_t aWeapMOD[MOD_NUM_MODS] = {
 	{ MOD_SATCHEL,				WS_SATCHEL },
 	{ MOD_TRIPMINE,				WS_LANDMINE },
 	{ MOD_SMOKEBOMB,			WS_SMOKE },	// ??
+	{ MOD_SMOKEGRENADE,			WS_AIRSTRIKE }, // rain - airstrike tag
 	{ MOD_MOBILE_MG42,			WS_MG42},
 	{ MOD_SILENCED_COLT,		WS_COLT },	// where is silencer? // Gordon: up top^
 	{ MOD_GARAND_SCOPE,			WS_GARAND },

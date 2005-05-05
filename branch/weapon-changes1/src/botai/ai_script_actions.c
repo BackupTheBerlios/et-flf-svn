@@ -2,7 +2,8 @@
 //
 // Name:			ai_script_actions.c
 // Function:		Wolfenstein Bot Scripting
-//
+// Programmer:		Ridah
+// Tab Size:		4 (real tabs)
 //===========================================================================
 
 #include "../game/g_local.h"
@@ -220,7 +221,7 @@ qboolean Bot_ScriptAction_SetAccumToPlayerCount( bot_state_t *bs, char *params )
 					Bot_ScriptError( bs, "unexpected end of command: SetAccumToPlayerCount %s", params );
 				}
 				//
-				if (item = BG_FindItem( token )) {
+				if ((item = BG_FindItem( token ))) {
 					if (!item->giTag) {
 						Bot_ScriptError( bs, "unknown weapon \"%s\": SetAccumToPlayerCount %s", token, params );
 					}
@@ -626,7 +627,7 @@ qboolean Bot_ScriptAction_Trigger( bot_state_t *bs, char *params )
 		found = qfalse;
 		// for all entities/bots with this scriptName
 		trent = NULL;
-		while (trent = BotFindEntity( trent, FOFS(scriptName), name )) {
+		while ((trent = BotFindEntity( trent, FOFS(scriptName), name ))) {
 			found = qtrue;
 			if (!(trent->r.svFlags & SVF_BOT)) {
 				oldId = trent->scriptStatus.scriptId;
@@ -786,7 +787,7 @@ qboolean Bot_ScriptAction_MountMG42( bot_state_t *bs, char *params )
 	}
 	// find the mg42
 	mg42 = NULL;
-	while (mg42 = BotFindNextStaticEntity( mg42, BOTSTATICENTITY_MG42 )) {
+	while ((mg42 = BotFindNextStaticEntity( mg42, BOTSTATICENTITY_MG42 ))) {
 		if (!Q_stricmp( mg42->targetname, params )) {
 			break;
 		}
@@ -936,7 +937,7 @@ Bot_ScriptAction_SetClass
 */
 qboolean Bot_ScriptAction_SetClass( bot_state_t *bs, char *params )
 {
-	int		val;
+	int		val = -1;
 	char	userinfo[MAX_INFO_STRING];
 	//
 	if (!params || !params[0]) {
@@ -1284,7 +1285,7 @@ qboolean Bot_ScriptAction_Cvar( bot_state_t *bs, char *params )
 			terminate = qfalse;
 			found = qfalse;
 			trent = NULL;
-			while (trent = BotFindEntity( trent, FOFS(scriptName), lastToken )) {
+			while ((trent = BotFindEntity( trent, FOFS(scriptName), lastToken ))) {
 				found = qtrue;
 				oldId = trent->scriptStatus.scriptId;
 				G_Script_ScriptEvent( trent, "trigger", name );

@@ -1643,6 +1643,73 @@ void Script_SetMenuFocus(itemDef_t *item, qboolean *bAbort, char **args) {
 	}
 }
 
+qboolean FileExists( char *filename ) {
+	fileHandle_t    f;
+
+	if ( trap_FS_FOpenFile( filename, &f, FS_READ ) < 0 ) {
+		trap_FS_FCloseFile( f );
+		return qfalse;
+	} else {
+		trap_FS_FCloseFile( f );
+		return qtrue;
+	}
+}
+
+qboolean Script_CheckProfile( char *profile_path ) {
+	fileHandle_t    f;
+	char f_data[32];
+	int f_pid;
+	char com_pid[256];
+	int pid;
+
+	if( trap_FS_FOpenFile( profile_path, &f, FS_READ ) < 0 ) {
+		//no profile found, we're ok
+		return qtrue;
+	}
+
+	trap_FS_Read( &f_data, sizeof(f_data)-1, f );
+
+	DC->getCVarString( "com_pid", com_pid, sizeof(com_pid) );
+	pid = atoi( com_pid );
+
+	f_pid = atoi( f_data );
+	if( f_pid != pid ) {
+		//pid doesn't match
+		trap_FS_FCloseFile( f );
+		return qfalse;
+	}
+
+	//we're all ok
+	trap_FS_FCloseFile( f );
+	return qtrue;
+}
+
+qboolean Script_WriteProfile( char *profile_path ) {
+	fileHandle_t    f;
+	char com_pid[256];
+
+	if( FileExists( profile_path ) ) {
+		trap_FS_Delete( profile_path );
+	}
+
+	if( trap_FS_FOpenFile( profile_path, &f, FS_WRITE ) < 0 ) {
+		Com_Printf( "Script_WriteProfile: Can't write %s.\n", profile_path );
+		return qfalse;
+	}
+	if ( f < 0 ) {
+		Com_Printf( "Script_WriteProfile: Can't write %s.\n", profile_path );
+		return qfalse;
+	}
+
+	DC->getCVarString( "com_pid", com_pid, sizeof(com_pid) );
+
+	trap_FS_Write( com_pid, strlen( com_pid ), f );
+
+	trap_FS_FCloseFile( f );  
+
+	return qtrue;
+}
+
 void Script_ExecWolfConfig(itemDef_t *item, qboolean *bAbort, char **args) {
 	char cl_profileStr[256];
 	int useprofile = 1;
@@ -1652,20 +1719,17 @@ void Script_ExecWolfConfig(itemDef_t *item, qboolean *bAbort, char **args) {
 		DC->getCVarString( "cl_profile", cl_profileStr, sizeof(cl_profileStr) );
 
 		if( useprofile && cl_profileStr[0] ) {
-			fileHandle_t f;
-			if( trap_FS_FOpenFile( va( "profiles/%s/profile.pid", cl_profileStr ), &f, FS_READ ) >= 0 ) {
+			if( !Script_CheckProfile( va( "profiles/%s/profile.pid", cl_profileStr ) ) ) {
 #ifndef _DEBUG
 				Com_Printf( "^3WARNING: profile.pid found for profile '%s' - not executing %s\n", cl_profileStr, CONFIG_NAME);
 #else
 				DC->executeText(EXEC_NOW, va( "exec profiles/%s/%s\n", cl_profileStr, CONFIG_NAME ) );
 #endif // _DEBUG
-				trap_FS_FCloseFile( f );
-				trap_FS_Delete( va( "profiles/%s/profile.pid", cl_profileStr ) );
 			} else {
 				DC->executeText(EXEC_NOW, va( "exec profiles/%s/%s\n", cl_profileStr, CONFIG_NAME ) );
 
-				if( trap_FS_FOpenFile( va( "profiles/%s/profile.pid", cl_profileStr ), &f, FS_WRITE ) >= 0 ) {
-					trap_FS_FCloseFile( f );
+				if( !Script_WriteProfile( va( "profiles/%s/profile.pid", cl_profileStr ) ) ) {
+					Com_Printf( "^3WARNING: couldn't write profiles/%s/profile.pid\n", cl_profileStr );
 				}
 			}
 		} else {

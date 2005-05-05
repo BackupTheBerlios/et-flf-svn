@@ -963,7 +963,10 @@ static qboolean UI_RegisterClientSkin( playerInfo_t *pi, const char *modelName, 
 return a hash value for the given string
 ================
 */
-static long BG_StringHashValue( const char *fname ) {
+// rain - renamed from BG_StringHashValue to UI_StringHashValue, so that
+// it doesn't conflict with the BG_ version (which is prototyped, but
+// not linked in to save space from all the extra bg_ baggage.)
+static long UI_StringHashValue( const char *fname ) {
 	int		i;
 	long	hash;
 	char	letter;
@@ -1167,7 +1170,7 @@ static qboolean AnimParseAnimConfig( playerInfo_t *animModelInfo, const char *fi
 									+ animations[i].animBlend;
 
 		// get the nameHash
-		animations[i].nameHash = BG_StringHashValue( animations[i].name );
+		animations[i].nameHash = UI_StringHashValue( animations[i].name );
 
 		if (!Q_strncmp(animations[i].name, "climb", 5)) {
 			animations[i].flags |= ANIMFL_LADDERANIM;

@@ -5,13 +5,17 @@
 static int (QDECL *syscall)( int arg, ... ) = (int (QDECL *)( int, ...))-1;
 
 #if defined(__MACOS__)
+#ifndef __GNUC__
 #pragma export on
+#endif
 #endif
 void dllEntry( int (QDECL  *syscallptr)( int arg,... ) ) {
 	syscall = syscallptr;
 }
 #if defined(__MACOS__)
+#ifndef __GNUC__
 #pragma export off
+#endif
 #endif
 
 
@@ -690,18 +694,8 @@ void trap_Key_KeynumToStringBuf( int keynum, char *buf, int buflen ) {
 	syscall( CG_KEY_KEYNUMTOSTRINGBUF, keynum, buf, buflen );
 }
 
-#define	MAX_VA_STRING		32000
-
-char* trap_TranslateString( const char *string ) {
-	static char staticbuf[2][MAX_VA_STRING];
-	static int bufcount = 0;
-	char *buf;
-
-	buf = staticbuf[bufcount++ % 2];
-
+void trap_TranslateString( const char *string, char *buf ) {
 	syscall( CG_TRANSLATE_STRING, string, buf );
-
-	return buf;
 }
 // -NERVE - SMF
 
@@ -761,6 +755,7 @@ qhandle_t trap_R_RegisterShaderNoMip( const char *name ) {
 	CG_DrawInformation( qtrue );
 	handle = syscall( CG_R_REGISTERSHADERNOMIP, name );
 	trap_PumpEventLoop();
+	DEBUG_REGISTERPROFILE_EXEC("trap_R_RegisterShaderNpMip", name);
 	return handle;
 }
 
@@ -844,3 +839,32 @@ qboolean trap_R_inPVS( const vec3_t p1, const vec3_t p2 ) {
 void trap_GetHunkData( int* hunkused, int* hunkexpected ) {
 	syscall( CG_GETHUNKDATA, hunkused, hunkexpected );
 }
+
+//zinx - binary message channel
+void trap_SendMessage( char *buf, int buflen ) {
+	syscall( CG_SENDMESSAGE, buf, buflen );
+}
+
+messageStatus_t trap_MessageStatus( void ) {
+	return syscall( CG_MESSAGESTATUS );
+}
+
+//bani - dynamic shaders
+qboolean trap_R_LoadDynamicShader( const char *shadername, const char *shadertext ) {
+	return syscall( CG_R_LOADDYNAMICSHADER, shadername, shadertext );
+}
+
+// fretn - render to texture
+void trap_R_RenderToTexture( int textureid, int x, int y, int w, int h ) {
+	syscall( CG_R_RENDERTOTEXTURE, textureid, x, y, w, h );
+}
+
+int trap_R_GetTextureId( const char *name ) {
+	return syscall( CG_R_GETTEXTUREID, name );
+}
+
+// bani - sync rendering
+void trap_R_Finish( void ) {
+	syscall( CG_R_FINISH );
+}
+

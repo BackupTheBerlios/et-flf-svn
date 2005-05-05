@@ -764,11 +764,6 @@ void CG_wStatsUp_f(void)
 	cg.statsWindow = NULL;
 }
 
-void CG_toggleSwing_f(void)
-{
-	trap_Cvar_Set("cg_specSwing", (cg_specSwing.integer > 0) ? "0" : "1");
-}
-
 void CG_toggleSpecHelp_f(void)
 {
 	if(cg.mvTotalClients > 0 && !cg.demoPlayback) {
@@ -1004,7 +999,6 @@ static consoleCommand_t	commands[] =
 	{ "spechelp",		CG_toggleSpecHelp_f },
 #endif
 	{ "statsdump",		CG_dumpStats_f },
-	{ "toggleswing",	CG_toggleSwing_f },
 	{ "+vstr",			CG_vstrDown_f },
 	{ "-vstr",			CG_vstrUp_f },
 	// OSP

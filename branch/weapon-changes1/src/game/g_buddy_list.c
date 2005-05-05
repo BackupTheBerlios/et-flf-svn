@@ -99,6 +99,6 @@ void G_RemoveFromAllIgnoreLists( int clientNum ) {
 	int i;
 
 	for( i = 0; i < MAX_CLIENTS; i++) {
-		level.clients[i].sess.ignoreClients[clientNum / 8] &= ~(1 << (clientNum % 8));
+		COM_BitClear( level.clients[i].sess.ignoreClients, clientNum );
 	}
 }

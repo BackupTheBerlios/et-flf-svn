@@ -484,7 +484,7 @@ void G_DropWeapon( gentity_t *ent, weapon_t weapon )
 	}
 
 	if( weapon == WP_KAR98 || weapon == WP_CARBINE ) {
-		ent2->delay = client->ps.ammo[BG_FindAmmoForWeapon(weapAlts[weapon])] + client->ps.ammoclip[BG_FindClipForWeapon(weapAlts[weapon])];
+		ent2->delay = client->ps.ammo[BG_FindAmmoForWeapon(weapAlts[weapon])];
 	} else {
 		ent2->delay = 0;
 	}
@@ -577,8 +577,9 @@ int Pickup_Weapon( gentity_t *ent, gentity_t *other ) {
 		if( G_CanPickupWeapon( ent->item->giTag, other ) ) {
 			weapon_t primaryWeapon = G_GetPrimaryWeaponForClient( other->client );
 
+			// rain - added parens around ambiguous &&
 			if( primaryWeapon || 
-				other->client->sess.playerType == PC_SOLDIER && other->client->sess.skill[SK_HEAVY_WEAPONS] >= 4 ) {
+				(other->client->sess.playerType == PC_SOLDIER && other->client->sess.skill[SK_HEAVY_WEAPONS] >= 4) ) {
 
 				if( primaryWeapon ) {
 					// drop our primary weapon
@@ -644,7 +645,7 @@ int Pickup_Weapon( gentity_t *ent, gentity_t *other ) {
 
 int Pickup_Health (gentity_t *ent, gentity_t *other) {
 	int			max;
-	int			quantity = 0;
+//	int			quantity = 0;
 
 	// if medic isn't giving ammo to self or another medic or the enemy, give him some props
 	if( other->client->ps.stats[STAT_PLAYER_CLASS] != PC_MEDIC ) {

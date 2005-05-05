@@ -19,6 +19,7 @@
 	loadMenu { "ui/hostgame_advanced.menu" }
 	loadMenu { "ui/hostgame_advanced_default.menu" }
 	loadMenu { "ui/hostgame_dedicated_warning.menu" }
+	loadMenu { "ui/mods.menu" } // fretn (rain) adding mods menu
 	loadMenu { "ui/viewreplay.menu" }
 	loadMenu { "ui/viewreplay_delete.menu" }
 	loadMenu { "ui/options.menu" }
@@ -32,6 +33,7 @@
 	loadMenu { "ui/credits_idsoftware.menu" }
 	loadMenu { "ui/credits_activision.menu" }
 	loadMenu { "ui/credits_additional.menu" }
+	loadMenu { "ui/credits_et260.menu" }
 	loadMenu { "ui/credits_quit.menu" }
 	loadMenu { "ui/quit.menu" }
 
@@ -41,6 +43,7 @@
 	loadMenu { "ui/popup_hostgameerrormessage.menu" }
 	loadMenu { "ui/popup_autoupdate.menu" }
 	loadMenu { "ui/popup_password.menu" }
+	loadMenu { "ui/popup_serverredirect.menu"}
 
 	// video confirmation
 	loadMenu { "ui/vid_restart.menu" }

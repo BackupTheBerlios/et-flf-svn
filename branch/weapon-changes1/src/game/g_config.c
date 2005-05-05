@@ -42,7 +42,8 @@ static const modeCvarTable_t aCompSettings[] = {
 	{ M_ALL, "sv_allowDownload", "1" },
 	{ M_ALL, "sv_floodProtect", "0" },
 	{ M_ALL, "sv_fps", "20" },
-	{ M_ALL, "vote_limit", "10" }
+	{ M_ALL, "vote_limit", "10" },
+	{ 0, NULL, NULL }	//end of list
 };
 
 static const modeCvarTable_t aPubSettings[] = {
@@ -64,7 +65,8 @@ static const modeCvarTable_t aPubSettings[] = {
 	{ M_ALL, "sv_allowDownload", "1" },
 	{ M_ALL, "sv_floodProtect", "0" },
 	{ M_ALL, "sv_fps", "20" },
-	{ M_ALL, "vote_limit", "5" }
+	{ M_ALL, "vote_limit", "5" },
+	{ 0, NULL, NULL }	//end of list
 };
 
 
@@ -72,17 +74,16 @@ static const modeCvarTable_t aPubSettings[] = {
 // Force settings to predefined state.
 void G_configSet(int dwMode, qboolean doComp)
 {
-	unsigned int i, dwCvarSize, dwGameType;
+	unsigned int dwGameType;
 	const modeCvarTable_t *pModeCvars;
 
 	if(dwMode < 0 || dwMode >= GT_MAX_GAME_TYPE) return;
 
 	dwGameType = 1 << dwMode;
-	dwCvarSize = sizeof(aCompSettings) / sizeof(aCompSettings[0]);
 
 	G_wipeCvars();
 
-	for(i=0, pModeCvars=((doComp)?aCompSettings:aPubSettings); i<dwCvarSize; i++, pModeCvars++) {
+	for(pModeCvars=((doComp)?aCompSettings:aPubSettings); pModeCvars->cvar_name; pModeCvars++) {
 		if(pModeCvars->modes & dwGameType) {
 			trap_Cvar_Set(pModeCvars->cvar_name, pModeCvars->cvar_value);
 			G_Printf("set %s %s\n", pModeCvars->cvar_name, pModeCvars->cvar_value);

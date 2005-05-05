@@ -412,12 +412,20 @@ void CG_DrawCursorhint(rectDef_t *rect) {
 			icon = cgs.media.notUsableHintShader;
 
 			// only show 'pickupable' if you're not armed, or are armed with a single handed weapon
+
+			// rain - WEAPS_ONE_HANDED isn't valid anymore, because
+			// WP_SILENCED_COLT uses a bit >31 (and, therefore, is too large
+			// to be shifted in the way WEAPS_ONE_HANDED does on a 32-bit
+			// system.) If you want to use HINT_CHAIR, you'll need to fix
+			// this.
+#if 0
 			if( !(cg.predictedPlayerState.weapon) ||
 				WEAPS_ONE_HANDED & (1<<(cg.predictedPlayerState.weapon))
 				)
 			{
 				icon = cgs.media.chairHintShader;
 			}
+#endif
 			break;
 		case HINT_ALARM:
 			icon = cgs.media.alarmHintShader;

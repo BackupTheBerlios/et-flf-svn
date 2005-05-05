@@ -10,7 +10,7 @@
 
 displayContextDef_t cgDC;
 
-void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum );
+void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum, qboolean demoPlayback );
 void CG_Shutdown( void );
 qboolean CG_CheckExecKey( int key );
 extern itemDef_t* g_bindItem;
@@ -25,15 +25,19 @@ This must be the very first function compiled into the .q3vm file
 ================
 */
 #if defined(__MACOS__)
+#ifndef __GNUC__
 #pragma export on
+#endif
 #endif
 int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
 #if defined(__MACOS__)
+#ifndef __GNUC__
 #pragma export off
+#endif
 #endif
 	switch ( command ) {
 	case CG_INIT:
-		CG_Init( arg0, arg1, arg2 );
+		CG_Init( arg0, arg1, arg2, arg3 );
 		cgs.initing = qfalse;
 		return 0;
 	case CG_SHUTDOWN:
@@ -65,6 +69,8 @@ int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int a
 		return CG_CheckExecKey( arg0 );
 	case CG_WANTSBINDKEYS:
 		return (g_waitingForKey && g_bindItem) ? qtrue : qfalse;
+	case CG_MESSAGERECEIVED:
+		return -1;
 	default:
 		CG_Error( "vmMain: unknown command %i", command );
 		break;
@@ -233,7 +239,6 @@ vmCvar_t	cg_drawWeaponIconFlash;
 vmCvar_t	cg_noAmmoAutoSwitch;
 vmCvar_t	cg_printObjectiveInfo;
 vmCvar_t	cg_specHelp;
-vmCvar_t	cg_specSwing;
 vmCvar_t	cg_uinfo;
 vmCvar_t	cg_useScreenshotJPEG;
 
@@ -275,6 +280,16 @@ vmCvar_t	cg_debugSkills;
 vmCvar_t	cg_drawFireteamOverlay;
 vmCvar_t	cg_drawSmallPopupIcons;
 
+//bani - demo recording cvars
+vmCvar_t	cl_demorecording;
+vmCvar_t	cl_demofilename;
+vmCvar_t	cl_demooffset;
+//bani - wav recording cvars
+vmCvar_t	cl_waverecording;
+vmCvar_t	cl_wavefilename;
+vmCvar_t	cl_waveoffset;
+vmCvar_t	cg_recording_statusline;
+
 typedef struct {
 	vmCvar_t	*vmCvar;
 	char		*cvarName;
@@ -303,7 +318,9 @@ cvarTable_t		cvarTable[] = {
 	{ &cg_stereoSeparation, "cg_stereoSeparation", "0.4", CVAR_ARCHIVE  },
 	{ &cg_shadows, "cg_shadows", "1", CVAR_ARCHIVE  },
 	{ &cg_gibs, "cg_gibs", "1", CVAR_ARCHIVE  },
-	{ &cg_draw2D, "cg_draw2D", "1", CVAR_CHEAT }, // JPW NERVE changed per atvi req to prevent sniper rifle zoom cheats
+//bani - #127 - we now draw reticles always in non demoplayback
+//	{ &cg_draw2D, "cg_draw2D", "1", CVAR_CHEAT }, // JPW NERVE changed per atvi req to prevent sniper rifle zoom cheats
+	{ &cg_draw2D, "cg_draw2D", "1", CVAR_ARCHIVE },
 	{ &cg_drawSpreadScale, "cg_drawSpreadScale", "1", CVAR_ARCHIVE },
 	{ &cg_drawStatus, "cg_drawStatus", "1", CVAR_ARCHIVE  },
 	{ &cg_drawFPS, "cg_drawFPS", "0", CVAR_ARCHIVE  },
@@ -442,7 +459,6 @@ cvarTable_t		cvarTable[] = {
 	{ &cg_noAmmoAutoSwitch, "cg_noAmmoAutoSwitch", "1", CVAR_ARCHIVE },
 	{ &cg_printObjectiveInfo, "cg_printObjectiveInfo", "1", CVAR_ARCHIVE },
 	{ &cg_specHelp, "cg_specHelp", "1", CVAR_ARCHIVE },
-	{ &cg_specSwing, "cg_specSwing", "1", CVAR_ARCHIVE },
 	{ &cg_uinfo, "cg_uinfo", "0", CVAR_ROM | CVAR_USERINFO },
 	{ &cg_useScreenshotJPEG, "cg_useScreenshotJPEG", "1", CVAR_ARCHIVE },
 
@@ -486,6 +502,16 @@ cvarTable_t		cvarTable[] = {
 	{ NULL,					"cg_etVersion",		"",		CVAR_USERINFO | CVAR_ROM },
 	{ &cg_drawFireteamOverlay, "cg_drawFireteamOverlay", "1", CVAR_ARCHIVE },
 	{ &cg_drawSmallPopupIcons, "cg_drawSmallPopupIcons", "0", CVAR_ARCHIVE },
+
+	//bani - demo recording cvars
+	{ &cl_demorecording, "cl_demorecording", "0", CVAR_ROM },
+	{ &cl_demofilename, "cl_demofilename", "", CVAR_ROM },
+	{ &cl_demooffset, "cl_demooffset", "0", CVAR_ROM },
+	//bani - wav recording cvars
+	{ &cl_waverecording, "cl_waverecording", "0", CVAR_ROM },
+	{ &cl_wavefilename, "cl_wavefilename", "", CVAR_ROM },
+	{ &cl_waveoffset, "cl_waveoffset", "0", CVAR_ROM },
+	{ &cg_recording_statusline, "cg_recording_statusline", "9", CVAR_ARCHIVE },
 };
 
 int		cvarTableSize = sizeof( cvarTable ) / sizeof( cvarTable[0] );
@@ -507,7 +533,14 @@ void CG_RegisterCvars( void ) {
 
 	for ( i = 0, cv = cvarTable ; i < cvarTableSize ; i++, cv++ ) {
 		trap_Cvar_Register( cv->vmCvar, cv->cvarName, cv->defaultString, cv->cvarFlags );
-		if(cv->vmCvar != NULL) cv->modificationCount = cv->vmCvar->modificationCount;
+		if(cv->vmCvar != NULL) {
+			// rain - force the update to range check this cvar on first run
+			if (cv->vmCvar == &cg_errorDecay) {
+				cv->modificationCount = !cv->vmCvar->modificationCount;
+			} else {
+				cv->modificationCount = cv->vmCvar->modificationCount;
+			}
+		}
 	}
 
 	// see if we are also running the server on this machine
@@ -569,6 +602,15 @@ void CG_UpdateCvars( void ) {
 						CG_ShowHelp_On(&cg.demohelpWindow);
 					} else if(demo_infoWindow.integer > 0 && cg.demohelpWindow != SHOW_ON) {
 						CG_ShowHelp_On(&cg.demohelpWindow);
+					}
+				} else if (cv->vmCvar == &cg_errorDecay) {
+					// rain - cap errordecay because
+					// prediction is EXTREMELY broken
+					// right now.
+					if (cg_errorDecay.value < 0.0) {
+						trap_Cvar_Set("cg_errorDecay", "0");
+					} else if (cg_errorDecay.value > 500.0) {
+						trap_Cvar_Set("cg_errorDecay", "500");
 					}
 				}
 			}
@@ -1259,6 +1301,31 @@ static void CG_RegisterGraphics( void ) {
 	CG_LoadingString( "game media" );
 
 	CG_LoadingString( " - textures" );
+
+//bani - dynamic shader api example
+//replaces a fueldump texture with a dynamically generated one.
+#ifdef TEST_API_DYNAMICSHADER
+	trap_R_LoadDynamicShader( "my_terrain1_2",
+"my_terrain1_2\n\
+{\n\
+	qer_editorimage textures/stone/mxsnow3.tga\n\
+	q3map_baseshader textures/fueldump/terrain_base\n\
+	{\n\
+		map textures/stone/mxrock1aa.tga\n\
+		rgbGen identity\n\
+		tcgen environment\n\
+	}\n\
+	{\n\
+		lightmap $lightmap\n\
+		blendFunc GL_DST_COLOR GL_ZERO\n\
+		rgbgen identity\n\
+	}\n\
+}\n\
+" );
+
+	trap_R_RegisterShader( "my_terrain1_2" );
+	trap_R_RemapShader( "textures/fueldump/terrain1_2", "my_terrain1_2", "0" );
+#endif
 
 	for ( i=0 ; i<11 ; i++) {
 		cgs.media.numberShaders[i] = trap_R_RegisterShader( sb_nums[i] );
@@ -2226,7 +2293,7 @@ void CG_LoadMenus(const char *menuFile) {
 		trap_Error( va( S_COLOR_YELLOW "menu file not found: %s, using default\n", menuFile ) );
 		len = trap_FS_FOpenFile( "ui/hud.txt", &f, FS_READ );
 		if (!f) {
-			trap_Error( va( S_COLOR_RED "default menu file not found: ui/hud.txt, unable to continue!\n", menuFile ) );
+			trap_Error( S_COLOR_RED "default menu file not found: ui/hud.txt, unable to continue!\n" );
 		}
 	}
 
@@ -2549,7 +2616,7 @@ Will perform callbacks to make the loading info screen update.
 #define DEBUG_INITPROFILE_INIT int elapsed, dbgTime = trap_Milliseconds();
 #define DEBUG_INITPROFILE_EXEC(f) if( developer.integer ) { CG_Printf("^5%s passed in %i msec\n", f, elapsed = trap_Milliseconds()-dbgTime );  dbgTime += elapsed; }
 #endif // _DEBUG
-void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum ) {
+void CG_Init( int serverMessageNum, int serverCommandSequence, int clientNum, qboolean demoPlayback ) {
 	const char	*s;
 	int			i;
 #ifdef _DEBUG

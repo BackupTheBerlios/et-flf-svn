@@ -213,6 +213,8 @@ const char* CG_LoadPanel_GameTypeName( gametype_t gt ) {
 			return "Campaign";
 		case GT_WOLF_LMS:
 			return "Last Man Standing";
+		default:
+			break;
 	}
 
 	return "Invalid";
@@ -491,7 +493,7 @@ void CG_LoadPanel_RenderMissionDescriptionText( panel_button_t* button ) {
 	}
 
 	Q_strncpyz( buffer, cs, sizeof(buffer) );
-	while( s = strchr(buffer, '*') ) {
+	while ((s = strchr(buffer, '*'))) {
 		*s = '\n';
 	}
 

@@ -323,9 +323,22 @@ void G_ExplodeMissile( gentity_t *ent ) {
 
 		VectorCopy( ent->r.currentOrigin, origin );
 
+		//bani - #560
+		if( ent->s.weapon == WP_DYNAMITE ) {
+			origin[2] += 4;
+		}
+
 		trap_Trace( &tr, origin, vec3_origin, vec3_origin, origin, ENTITYNUM_NONE, MASK_SHOT );
 
-		G_RadiusDamage( origin, ent, ent->parent, ent->splashDamage, ent->splashRadius, ent, ent->splashMethodOfDeath );	//----(SA)	
+		//bani - #512
+		if( ( ent->s.weapon == WP_DYNAMITE && ( ent->etpro_misc_1 & 1 ) ) || ent->s.weapon == WP_SATCHEL ) {
+			etpro_RadiusDamage( origin, ent, ent->parent, ent->splashDamage, ent->splashRadius, ent, ent->splashMethodOfDeath, qtrue );
+			G_TempTraceIgnorePlayersAndBodies();
+			etpro_RadiusDamage( origin, ent, ent->parent, ent->splashDamage, ent->splashRadius, ent, ent->splashMethodOfDeath, qfalse );
+			G_ResetTempTraceIgnoreEnts();
+		} else {
+			G_RadiusDamage( origin, ent, ent->parent, ent->splashDamage, ent->splashRadius, ent, ent->splashMethodOfDeath );	//----(SA)	
+		}
 	}
 
 	BG_EvaluateTrajectory( &ent->s.pos, level.time, origin, qfalse, ent->s.effect2Time );
@@ -367,7 +380,8 @@ void G_ExplodeMissile( gentity_t *ent ) {
 			if((mEnt = G_FindMapEntityData(&mapEntityData[1], ent-g_entities)) != NULL) {
 				G_FreeMapEntityData( &mapEntityData[1], mEnt );
 			}
-		} else if (ent->s.weapon == WP_DYNAMITE) { // do some scoring
+//bani - #238
+		} else if (ent->s.weapon == WP_DYNAMITE && ( ent->etpro_misc_1 & 1 ) ) { // do some scoring
 			// check if dynamite is in trigger_objective_info field
 			vec3_t		mins, maxs; 
 			int			i,num,touch[MAX_GENTITIES];
@@ -1455,6 +1469,8 @@ void LandMineTrigger(gentity_t* self) {
 	self->nextthink = level.time + FRAMETIME;
 	self->think = LandminePostThink;
 	self->s.teamNum += 8;
+	// rain - communicate trigger time to client
+	self->s.time = level.time;
 }
 
 void LandMinePostTrigger(gentity_t* self) {
@@ -1651,6 +1667,11 @@ qboolean G_LandmineSnapshotCallback( int entityNum, int clientNum ) {
 		return qtrue;
 	}
 
+	//bani - fix for covops spotting
+	if( clEnt->client->sess.playerType == PC_COVERTOPS && clEnt->client->ps.eFlags & EF_ZOOMING && ( clEnt->client->ps.stats[STAT_KEYS] & ( 1 << INV_BINOCS ) ) ) {
+		return qtrue;
+	}
+
 	return qfalse;
 }
 
@@ -1746,7 +1767,8 @@ gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t dir, int grenadeW
 			// xkan 11/25/2002, fixed typo, classname used to be "somke_bomb"
 			bolt->classname				= "smoke_bomb";
 			bolt->s.eFlags				= EF_BOUNCE_HALF | EF_BOUNCE;
-			bolt->methodOfDeath			= MOD_SMOKEGRENADE;
+			// rain - this is supposed to be MOD_SMOKEBOMB, not SMOKEGRENADE
+			bolt->methodOfDeath			= MOD_SMOKEBOMB;
 			break;
 		case WP_GRENADE_LAUNCHER:
 			bolt->classname				= "grenade";
@@ -1766,6 +1788,9 @@ gentity_t *fire_grenade (gentity_t *self, vec3_t start, vec3_t dir, int grenadeW
 		case WP_SMOKE_MARKER:
 			bolt->classname				= "grenade";
 			bolt->s.eFlags				= EF_BOUNCE_HALF | EF_BOUNCE;
+			// rain - properly set MOD
+			bolt->methodOfDeath			= MOD_SMOKEGRENADE;
+			bolt->splashMethodOfDeath	= MOD_SMOKEGRENADE;
 			break;
 // jpw
     case WP_MORTAR_SET:

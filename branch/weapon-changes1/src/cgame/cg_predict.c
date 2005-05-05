@@ -45,8 +45,10 @@ void CG_BuildSolidList( void ) {
 		cent = &cg_entities[ snap->entities[ i ].number ];
 		ent = &cent->currentState;
 
-		// RF, dont clip again non-solid bmodels
-		if ( cent->nextState.solid == SOLID_BMODEL && (cent->nextState.eFlags & EF_NONSOLID_BMODEL)) {
+		// rain - don't clip against temporarily non-solid SOLID_BMODELS
+		// (e.g. constructibles); use current state so prediction isn't fubar
+		if( cent->currentState.solid == SOLID_BMODEL &&
+			( cent->currentState.eFlags & EF_NONSOLID_BMODEL ) ) {
 			continue;
 		}
 
@@ -373,7 +375,8 @@ static void CG_InterpolatePlayerState( qboolean grabAngles ) {
 		cmdNum = trap_GetCurrentCmdNumber();
 		trap_GetUserCmd( cmdNum, &cmd );
 
-		PM_UpdateViewAngles( out, &cg.pmext, &cmd, CG_Trace );
+		// rain - added tracemask
+		PM_UpdateViewAngles( out, &cg.pmext, &cmd, CG_Trace, MASK_PLAYERSOLID );
 	}
 
 	// if the next frame is a teleport, we can't lerp to it
@@ -760,6 +763,16 @@ We detect prediction errors and allow them to be decayed off over several frames
 to ease the jerk.
 =================
 */
+
+// rain - we need to keep pmext around for old frames, because Pmove()
+// fills in some values when it does prediction.  This in itself is fine,
+// but the prediction loop starts in the past and predicts from the
+// snapshot time up to the current time, and having things like jumpTime
+// appear to be set for prediction runs where they previously weren't
+// is a Bad Thing.  This is my bugfix for #166.
+
+pmoveExt_t oldpmext[CMD_BACKUP];
+
 void CG_PredictPlayerState( void ) {
 	int			cmdNum, current;
 	playerState_t	oldPlayerState;
@@ -851,6 +864,9 @@ void CG_PredictPlayerState( void ) {
 		cg_pmove.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;		
 		cg_pmove.ps->eFlags |= EF_DEAD; // DHM-Nerve added:: EF_DEAD is checked for in Pmove functions, but wasn't being set until after Pmove
 	} else if( cg_pmove.ps->pm_type == PM_SPECTATOR ) {
+		// rain - fix the spectator can-move-partway-through-world weirdness
+		// bug by actually setting tracemask when spectating :x
+		cg_pmove.tracemask = MASK_PLAYERSOLID & ~CONTENTS_BODY;
 		cg_pmove.trace = CG_TraceCapsule_World;
 	} else {
 		cg_pmove.tracemask = MASK_PLAYERSOLID;
@@ -867,6 +883,10 @@ void CG_PredictPlayerState( void ) {
 	oldPlayerState = cg.predictedPlayerState;
 
 	current = trap_GetCurrentCmdNumber();
+
+	// rain - fill in the current cmd with the latest prediction from
+	// cg.pmext (#166)
+	memcpy(&oldpmext[current & CMD_MASK], &cg.pmext, sizeof(pmoveExt_t));
 
 	// if we don't have the commands right after the snapshot, we
 	// can't accurately predict a current position, so just freeze at
@@ -887,13 +907,18 @@ void CG_PredictPlayerState( void ) {
 	// the server time is beyond our current cg.time,
 	// because predicted player positions are going to 
 	// be ahead of everything else anyway
+	// rain - NEIN - this'll cause us to execute events from the next frame
+	// early, resulting in doubled events and the like.  it seems to be
+	// worse as far as prediction, too, so BLAH at id. (#405)
+#if 0
 	if ( cg.nextSnap && !cg.nextFrameTeleport && !cg.thisFrameTeleport ) {
 		cg.predictedPlayerState = cg.nextSnap->ps;
 		cg.physicsTime = cg.nextSnap->serverTime;
 	} else {
+#endif
 		cg.predictedPlayerState = cg.snap->ps;
 		cg.physicsTime = cg.snap->serverTime;
-	}
+//	}
 
 	if ( pmove_msec.integer < 8 ) {
 		trap_Cvar_Set("pmove_msec", "8");
@@ -914,7 +939,8 @@ void CG_PredictPlayerState( void ) {
 		trap_GetUserCmd( cmdNum-1, &cg_pmove.oldcmd );
 
 		if ( cg_pmove.pmove_fixed ) {
-			PM_UpdateViewAngles( cg_pmove.ps, cg_pmove.pmext, &cg_pmove.cmd, CG_Trace );
+			// rain - added tracemask
+			PM_UpdateViewAngles( cg_pmove.ps, cg_pmove.pmext, &cg_pmove.cmd, CG_Trace, cg_pmove.tracemask );
 		}
 		
 		// don't do anything if the time is before the snapshot player time
@@ -1015,7 +1041,13 @@ void CG_PredictPlayerState( void ) {
 			cg_pmove.reloading = qtrue;
 #endif // SAVEGAME_SUPPORT
 
-		memcpy( &pmext, &cg.pmext, sizeof(pmoveExt_t) );	// grab data, we only want the final result
+//		memcpy( &pmext, &cg.pmext, sizeof(pmoveExt_t) );	// grab data, we only want the final result
+		// rain - copy the pmext as it was just before we
+		// previously ran this cmd (or, this will be the
+		// current predicted data if this is the current cmd)  (#166)
+		memcpy(&pmext, &oldpmext[cmdNum & CMD_MASK], sizeof(pmoveExt_t));
+
+		fflush(stdout);
 
 		Pmove( &cg_pmove );
 

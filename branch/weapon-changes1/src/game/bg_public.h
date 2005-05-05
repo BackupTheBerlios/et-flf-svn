@@ -19,6 +19,13 @@
 	#define	GAME_VERSION_DATED			(GAME_VERSION ", " Q3_VERSION)
 #endif
 
+//bani
+#ifdef __GNUC__
+#define _attribute(x) __attribute__(x)
+#else
+#define _attribute(x)
+#endif
+
 //#define SAVEGAME_SUPPORT	// uncomment to enable savegames
 							// enabling this requires you to run extractfuncs.bat as well before compiling qagame
 
@@ -99,7 +106,7 @@ extern vec3_t	playerlegsProneMaxs;
 #define MG42_SPREAD_MP		100
 
 #define MG42_DAMAGE_MP		20
-#define MG42_RATE_OF_FIRE_MP	50
+#define MG42_RATE_OF_FIRE_MP	66
 
 #define MG42_DAMAGE_SP		40
 #define MG42_RATE_OF_FIRE_SP	100
@@ -224,7 +231,8 @@ typedef struct {
 } mapInfo;
 
 // Campaign saves
-#define MAX_CAMPAIGNS			64
+// rain - 128 -> 512, campaigns are commonplace
+#define MAX_CAMPAIGNS			512
 
 // START Mad Doc - TDF
 // changed this from 6 to 10 
@@ -492,6 +500,8 @@ typedef struct {
 	float		weapRecoilYaw;
 	float		weapRecoilPitch;
 	int			lastRecoilDeltaTime;
+	
+	qboolean	releasedFire;
 } pmoveExt_t;	// data used both in client and server - store it here
 				// instead of playerstate to prevent different engine versions of playerstate between XP and MP
 
@@ -551,7 +561,7 @@ typedef struct {
 } pmove_t;
 
 // if a full pmove isn't done on the client, you can just update the angles
-void PM_UpdateViewAngles( playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void (trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask ) );
+void PM_UpdateViewAngles( playerState_t *ps, pmoveExt_t *pmext, usercmd_t *cmd, void (trace)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask ), int tracemask );
 int Pmove (pmove_t *pmove);
 
 //===================================================================================
@@ -892,6 +902,7 @@ extern int weapAlts[];	// defined in bg_misc.c
 
 // TTimo
 // NOTE: what about WP_VENOM and other XP weapons?
+// rain - #81 - added added akimbo weapons and deployed MG42
 #define IS_AUTORELOAD_WEAPON(weapon) \
 			(	\
 				weapon==WP_LUGER	|| weapon==WP_COLT			|| weapon==WP_MP40			|| \
@@ -899,7 +910,8 @@ extern int weapAlts[];	// defined in bg_misc.c
 				weapon==WP_KAR98	|| weapon==WP_CARBINE		|| weapon==WP_GARAND_SCOPE	|| \
 				weapon==WP_FG42		|| weapon==WP_K43			|| weapon==WP_MOBILE_MG42	|| \
 				weapon==WP_SILENCED_COLT	|| weapon==WP_SILENCER		|| \
-				weapon==WP_GARAND	|| weapon==WP_K43_SCOPE		|| weapon==WP_FG42SCOPE		\
+				weapon==WP_GARAND	|| weapon==WP_K43_SCOPE		|| weapon==WP_FG42SCOPE		|| \
+				BG_IsAkimboWeapon(weapon) || weapon==WP_MOBILE_MG42_SET \
 			)
 
 // entityState_t->event values
@@ -1665,19 +1677,11 @@ typedef enum {
 //==================================================================
 // New Animation Scripting Defines
 
-#if defined(__MACOS__)	//DAJ HOG
-#define	MAX_ANIMSCRIPT_MODELS				32		//DAJ tried 24 // allocated dynamically, so limit is scalable
-#define	MAX_ANIMSCRIPT_ITEMS_PER_MODEL		1024	//512
-#define	MAX_MODEL_ANIMATIONS				256		// animations per model
-#define	MAX_ANIMSCRIPT_ANIMCOMMANDS			8
-#define	MAX_ANIMSCRIPT_ITEMS				64
-#else
 #define	MAX_ANIMSCRIPT_MODELS				32
 #define	MAX_ANIMSCRIPT_ITEMS_PER_MODEL		2048
 #define	MAX_MODEL_ANIMATIONS				512		// animations per model
 #define	MAX_ANIMSCRIPT_ANIMCOMMANDS			8
 #define	MAX_ANIMSCRIPT_ITEMS				128
-#endif
 // NOTE: these must all be in sync with string tables in bg_animation.c
 
 typedef enum
@@ -2220,8 +2224,6 @@ typedef enum {
 	UIMENU_INGAME_MESSAGEMODE,
 } uiMenuCommand_t;
 
-#endif
-
 void BG_AdjustAAGunMuzzleForBarrel( vec_t* origin, vec_t* forward, vec_t* right, vec_t* up, int barrel );
 
 int BG_ClassTextToClass(char *token);
@@ -2386,3 +2388,9 @@ extern weapon_t bg_heavyWeapons[NUM_HEAVY_WEAPONS];
 
 int PM_AltSwitchFromForWeapon ( int weapon );
 int PM_AltSwitchToForWeapon ( int weapon );
+
+void PM_TraceLegs( trace_t *trace, float *legsOffset, vec3_t start, vec3_t end, trace_t *bodytrace, vec3_t viewangles, void (tracefunc)( trace_t *results, const vec3_t start, const vec3_t mins, const vec3_t maxs, const vec3_t end, int passEntityNum, int contentMask ), int ignoreent, int tracemask );
+void PM_TraceAllLegs( trace_t *trace, float *legsOffset, vec3_t start, vec3_t end );
+void PM_TraceAll( trace_t *trace, vec3_t start, vec3_t end );
+
+#endif

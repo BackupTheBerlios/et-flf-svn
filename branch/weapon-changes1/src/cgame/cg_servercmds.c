@@ -1,5 +1,3 @@
-
-
 // cg_servercmds.c -- reliably sequenced text commands sent by the server
 // these are processed at snapshot transition time, so there will definately
 // be a valid snapshot this frame
@@ -298,7 +296,7 @@ void CG_ParseSpawns( void ) {
 		return;
 
 	// first index is for autopicking
-	Q_strncpyz( cg.spawnPoints[0], trap_TranslateString( "Auto Pick" ), MAX_SPAWNDESC );
+	Q_strncpyz( cg.spawnPoints[0], CG_TranslateString( "Auto Pick" ), MAX_SPAWNDESC );
 
 	cg.spawnCount = atoi( s ) + 1;
 
@@ -310,7 +308,7 @@ void CG_ParseSpawns( void ) {
 		if ( !s || !strlen( s ) )
 			return;
 
-		Q_strncpyz( cg.spawnPoints[i], trap_TranslateString( s ), MAX_SPAWNDESC );
+		Q_strncpyz( cg.spawnPoints[i], CG_TranslateString( s ), MAX_SPAWNDESC );
 
 		s = Info_ValueForKey( info, "x" );
 		if ( !s || !strlen( s ) )
@@ -473,6 +471,23 @@ void CG_SetConfigValues( void ) {
 	cgs.levelStartTime = atoi( CG_ConfigString( CS_LEVEL_START_TIME ) );
 	cgs.intermissionStartTime = atoi( CG_ConfigString( CS_INTERMISSION_START_TIME ) );		
 	cg.warmup = atoi( CG_ConfigString( CS_WARMUP ) );
+
+	// rain - set all of this crap in cgs - it won't be set if it doesn't
+	// change, otherwise.  consider:
+	// vote was called 5 minutes ago for 'Match Reset'.  you connect.
+	// you're sent that value for CS_VOTE_STRING, but ignore it, so
+	// you have nothing to use if another 'Match Reset' vote is called
+	// (no update will be sent because the string will be the same.)
+
+	cgs.voteTime = atoi(CG_ConfigString(CS_VOTE_TIME));
+	cgs.voteYes = atoi(CG_ConfigString(CS_VOTE_YES));
+	cgs.voteNo = atoi(CG_ConfigString(CS_VOTE_NO));
+	Q_strncpyz(cgs.voteString, CG_ConfigString(CS_VOTE_STRING), sizeof(cgs.voteString));
+
+	cg.teamFirstBlood = atoi(CG_ConfigString(CS_FIRSTBLOOD));
+	// rain - yes, the order is this way on purpose. not my fault!
+	cg.teamWonRounds[1] = atoi(CG_ConfigString(CS_ROUNDSCORES1));
+	cg.teamWonRounds[0] = atoi(CG_ConfigString(CS_ROUNDSCORES2));
 
 	// OSP
 	CG_ParseServerVersionInfo(CG_ConfigString(CS_VERSIONINFO));
@@ -640,7 +655,7 @@ static void CG_ConfigStringModified( void ) {
 	} else if( num >= CS_PLAYERS && num < CS_PLAYERS+MAX_CLIENTS ) {
 		CG_NewClientInfo( num - CS_PLAYERS );
 	} else if( num >= CS_DLIGHTS && num < CS_DLIGHTS+MAX_DLIGHT_CONFIGSTRINGS) {
-		int bleh = 6;
+		// FIXME - dlight changes ignored!
 	} else if( num == CS_SHADERSTATE ) {
 		CG_ShaderStateChanged();
 	} else if( num == CS_CHARGETIMES ) {
@@ -1306,7 +1321,7 @@ void CG_VoiceChatLocal( int mode, qboolean voiceOnly, int clientNum, int color, 
 	sfxHandle_t snd;
 	qhandle_t	sprite;
 	bufferedVoiceChat_t vchat;
-	const char *loc;			// NERVE - SMF
+	const char *loc = " ";			// NERVE - SMF
 
 /*	// NERVE - SMF - don't do this in wolfMP
 	// if we are going into the intermission, don't start any voices
@@ -1510,9 +1525,13 @@ void CG_topshotsParse_cmd(qboolean doBest)
 		int hits = atoi(CG_Argv(iArg++));
 		int atts = atoi(CG_Argv(iArg++));
 		int kills = atoi(CG_Argv(iArg++));
-		int deaths = atoi(CG_Argv(iArg++));
+		// rain - unused
+		//int deaths = atoi(CG_Argv(iArg++));
 		float acc = (atts > 0) ? (float)(hits * 100) / (float)atts : 0.0f;
 		char name[32];
+
+		// rain - bump up iArg since we didn't push it into deaths, above
+		iArg++;
 
 		if(ts->cWeapons < WS_MAX * 2) {
 			BG_cleanName(cgs.clientinfo[cnum].name, name, 17, qfalse);

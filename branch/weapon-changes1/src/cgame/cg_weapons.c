@@ -655,6 +655,7 @@ void CG_RocketTrail( centity_t *ent, const weaponInfo_t *wi ) {
 	// spawn a smoke junction
 	if ((cg.time - ent->lastTrailTime) >= 50 + rand()%50) {
 		ent->headJuncIndex = CG_AddSmokeJunc( ent->headJuncIndex,
+												ent, // rain - zinx's trail fix
 												cgs.media.smokeTrailShader,
 												origin,
 												4500, 0.4, 20, 80 );
@@ -735,6 +736,7 @@ static void CG_GrenadeTrail( centity_t *ent, const weaponInfo_t *wi ) {
 	for ( ; t <= ent->trailTime ; t += step ) {
 		BG_EvaluateTrajectory( &es->pos, t, origin, qfalse, es->effect2Time );
 		ent->headJuncIndex = CG_AddSmokeJunc( ent->headJuncIndex,
+												ent, // rain - zinx's trail fix
 												cgs.media.smokeTrailShader,
 												origin,
 //												1500, 0.3, 10, 50 );
@@ -2649,7 +2651,8 @@ void CG_AddViewWeapon( playerState_t *ps ) {
 	if( ( !cg_drawGun.integer ) ) {
 		vec3_t		origin;
 
-		if ( cg.predictedPlayerState.eFlags & EF_FIRING ) {
+		//bani - #589
+		if ( cg.predictedPlayerState.eFlags & EF_FIRING && !( cg.predictedPlayerState.eFlags & ( EF_MG42_ACTIVE | EF_MOUNTEDTANK ) ) ) {
 			// special hack for flamethrower...
 			VectorCopy( cg.refdef_current->vieworg, origin );
 
@@ -3343,7 +3346,6 @@ void CG_AltWeapon_f(void)
 
 	// Overload for spec mode when following
 	if((cg.snap->ps.pm_flags & PMF_FOLLOW) || cg.mvTotalClients > 0) {
-		CG_toggleSwing_f();
 		return;
 	}
 
@@ -3495,12 +3497,12 @@ void CG_NextWeap(qboolean switchBanks) {
 				qboolean found = qfalse;
 				switch( num ) {
 					case WP_CARBINE:
-						if( found = CG_WeaponSelectable( WP_M7 ) ) {
+						if ((found = CG_WeaponSelectable( WP_M7 ))) {
 							num = WP_M7;
 						}
 						break;
 					case WP_KAR98:
-						if( found = CG_WeaponSelectable( WP_GPG40 ) ) {
+						if ((found = CG_WeaponSelectable( WP_GPG40 ))) {
 							num = WP_GPG40;
 						}
 						break;
@@ -3539,12 +3541,12 @@ void CG_NextWeap(qboolean switchBanks) {
 				qboolean found = qfalse;
 				switch( num ) {
 					case WP_CARBINE:
-						if( found = CG_WeaponSelectable( WP_M7 ) ) {
+						if ((found = CG_WeaponSelectable( WP_M7 ))) {
 							num = WP_M7;
 						}
 						break;
 					case WP_KAR98:
-						if( found = CG_WeaponSelectable( WP_GPG40 ) ) {
+						if ((found = CG_WeaponSelectable( WP_GPG40 ))) {
 							num = WP_GPG40;
 						}
 						break;
@@ -3570,12 +3572,12 @@ void CG_NextWeap(qboolean switchBanks) {
 					qboolean found = qfalse;
 					switch( num ) {
 						case WP_CARBINE:
-							if( found = CG_WeaponSelectable( WP_M7 ) ) {
+							if ((found = CG_WeaponSelectable( WP_M7 ))) {
 								num = WP_M7;
 							}
 							break;
 						case WP_KAR98:
-							if( found = CG_WeaponSelectable( WP_GPG40 ) ) {
+							if ((found = CG_WeaponSelectable( WP_GPG40 ))) {
 								num = WP_GPG40;
 							}
 							break;
@@ -3675,12 +3677,12 @@ void CG_PrevWeap(qboolean switchBanks) {
 				qboolean found = qfalse;
 				switch( num ) {
 					case WP_CARBINE:
-						if( found = CG_WeaponSelectable( WP_M7 ) ) {
+						if ((found = CG_WeaponSelectable( WP_M7 ))) {
 							num = WP_M7;
 						}
 						break;
 					case WP_KAR98:
-						if( found = CG_WeaponSelectable( WP_GPG40 ) ) {
+						if ((found = CG_WeaponSelectable( WP_GPG40 ))) {
 							num = WP_GPG40;
 						}
 						break;
@@ -3716,12 +3718,12 @@ void CG_PrevWeap(qboolean switchBanks) {
 				qboolean found = qfalse;
 				switch( num ) {
 					case WP_CARBINE:
-						if( found = CG_WeaponSelectable( WP_M7 ) ) {
+						if ((found = CG_WeaponSelectable( WP_M7 ))) {
 							num = WP_M7;
 						}
 						break;
 					case WP_KAR98:
-						if( found = CG_WeaponSelectable( WP_GPG40 ) ) {
+						if ((found = CG_WeaponSelectable( WP_GPG40 ))) {
 							num = WP_GPG40;
 						}
 						break;
@@ -3743,12 +3745,12 @@ void CG_PrevWeap(qboolean switchBanks) {
 					qboolean found = qfalse;
 					switch( num ) {
 						case WP_CARBINE:
-							if( found = CG_WeaponSelectable( WP_M7 ) ) {
+							if ((found = CG_WeaponSelectable( WP_M7 ))) {
 								num = WP_M7;
 							}
 							break;
 						case WP_KAR98:
-							if( found = CG_WeaponSelectable( WP_GPG40 ) ) {
+							if ((found = CG_WeaponSelectable( WP_GPG40 ))) {
 								num = WP_GPG40;
 							}
 							break;
@@ -3779,6 +3781,12 @@ CG_LastWeaponUsed_f
 */
 void CG_LastWeaponUsed_f( void ) {
 	int lastweap;
+
+	//fretn - #447
+	//osp-rtcw & et pause bug
+	if (cg.snap->ps.pm_type == PM_FREEZE ) {
+		return;
+	}
 
 	if(cg.time - cg.weaponSelectTime < cg_weaponCycleDelay.integer)
 		return;	// force pause so holding it down won't go too fast
@@ -3814,6 +3822,12 @@ CG_NextWeaponInBank_f
 */
 void CG_NextWeaponInBank_f ( void ) {
 
+	//fretn - #447
+	//osp-rtcw & et pause bug
+	if (cg.snap->ps.pm_type == PM_FREEZE ) {
+		return;
+	}
+
 	if(cg.time - cg.weaponSelectTime < cg_weaponCycleDelay.integer)
 		return;	// force pause so holding it down won't go too fast
 	
@@ -3840,6 +3854,12 @@ CG_PrevWeaponInBank_f
 ==============
 */
 void CG_PrevWeaponInBank_f ( void ) {
+
+	//fretn - #447
+	//osp-rtcw & et pause bug
+	if (cg.snap->ps.pm_type == PM_FREEZE ) {
+		return;
+	}
 
 	if(cg.time - cg.weaponSelectTime < cg_weaponCycleDelay.integer)
 		return;	// force pause so holding it down won't go too fast
@@ -3876,6 +3896,12 @@ void CG_NextWeapon_f( void ) {
 	// Overload for MV clients
 	if(cg.mvTotalClients > 0) {
 		CG_mvToggleView_f();
+		return;
+	}
+
+	//fretn - #447
+	//osp-rtcw & et pause bug
+	if (cg.snap->ps.pm_type == PM_FREEZE ) {
 		return;
 	}
 
@@ -3931,6 +3957,12 @@ void CG_PrevWeapon_f( void ) {
 		return;
 	}
 
+	//fretn - #447
+	//osp-rtcw & et pause bug
+	if (cg.snap->ps.pm_type == PM_FREEZE ) {
+		return;
+	}
+
 	if ( cg.snap->ps.pm_flags & PMF_FOLLOW ) {
 		return;
 	}
@@ -3973,6 +4005,12 @@ void CG_WeaponBank_f(void) {
 
 	if (!cg.snap)
 		return;
+
+	//fretn - #447
+	//osp-rtcw & et pause bug
+	if (cg.snap->ps.pm_type == PM_FREEZE ) {
+		return;
+	}
 
 	if ( cg.snap->ps.pm_flags & PMF_FOLLOW )
 		return;
@@ -4019,12 +4057,12 @@ void CG_WeaponBank_f(void) {
 			qboolean found = qfalse;
 			switch( num ) {
 				case WP_CARBINE:
-					if( found = CG_WeaponSelectable( WP_M7 ) ) {
+					if ((found = CG_WeaponSelectable( WP_M7 ))) {
 						num = WP_M7;
 					}
 					break;
 				case WP_KAR98:
-					if( found = CG_WeaponSelectable( WP_GPG40 ) ) {
+					if ((found = CG_WeaponSelectable( WP_GPG40 ))) {
 						num = WP_GPG40;
 					}
 					break;
@@ -4061,6 +4099,12 @@ void CG_Weapon_f( void ) {
 //	qboolean banked = qfalse;
 
 	if ( !cg.snap ) {
+		return;
+	}
+
+	//fretn - #447
+	//osp-rtcw & et pause bug
+	if (cg.snap->ps.pm_type == PM_FREEZE ) {
 		return;
 	}
 
@@ -5634,7 +5678,16 @@ qboolean CG_CalcMuzzlePoint( int entityNum, vec3_t muzzle ) {
 				AngleVectors( cg.snap->ps.viewangles, forward, NULL, NULL );
 				VectorMA( muzzle, 14, forward, muzzle );
 			} else {
-				VectorCopy( cg.tankflashorg, muzzle );
+				//bani - fix firstperson tank muzzle origin if drawgun is off
+				if( !cg_drawGun.integer ) {
+					VectorCopy( cg.snap->ps.origin, muzzle );
+					AngleVectors( cg.snap->ps.viewangles, forward, right, up );
+					VectorMA( muzzle, 48, forward, muzzle );
+					muzzle[2] += cg.snap->ps.viewheight;
+					VectorMA( muzzle, 8, right, muzzle );
+				} else {
+					VectorCopy( cg.tankflashorg, muzzle );
+				}
 			}
 		} else {
 			VectorCopy( cg.snap->ps.origin, muzzle );

@@ -117,6 +117,8 @@ extern vmCvar_t	cg_crosshairSize;
 
 extern vmCvar_t cl_bypassMouseInput;
 
+//bani
+extern vmCvar_t ui_autoredirect;
 
 //
 // ui_qmenu.c

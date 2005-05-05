@@ -797,7 +797,8 @@ void UI_LoadCampaigns( void ) {
 	}
 
 	// now use the initial nextCampaignShortName to find the next one, etc etc for single player campaigns
-	while( 1 ) {
+	// rain - don't let i go above the maximum number of campaigns
+	while( i < MAX_CAMPAIGNS ) {
 		j = UI_FindCampaignInCampaignList( uiInfo.campaignList[i].nextCampaignShortName );
 
 		if( j == -1 )

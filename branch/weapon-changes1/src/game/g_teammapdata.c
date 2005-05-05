@@ -496,6 +496,9 @@ void G_UpdateTeamMapData_Player(gentity_t* ent, qboolean forceAllied, qboolean f
 			case TEAM_ALLIES:
 				forceAllied = qtrue;
 				break;
+			
+			default:
+				break;
 		}
 	}
 
@@ -551,6 +554,9 @@ static void G_UpdateTeamMapData_DisguisedPlayer( gentity_t* spotter, gentity_t* 
 
 			case TEAM_ALLIES:
 				forceAllied = qtrue;
+				break;
+			
+			default:
 				break;
 		}
 	}
@@ -971,6 +977,9 @@ void G_UpdateTeamMapData( void ) {
 											}
 										}
 									}
+									break;
+
+								default:
 									break;
 								}
 							}

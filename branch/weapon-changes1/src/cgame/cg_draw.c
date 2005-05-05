@@ -1313,7 +1313,13 @@ static void CG_DrawMortarReticle( void ) {
 
 		if( i % 3 == majorOffset) {
 			printval = min - val * 15 + 180;
-			printval = printval < 0 ? printval += 360 : printval >= 360 ? printval -= 360 : printval;
+			
+			// rain - old tertiary abuse was nasty and had undefined result
+			if (printval < 0)
+				printval += 360;
+			else if (printval >= 360)
+				printval -= 360;
+
 			s = va( "%i", printval );
 			//CG_Text_Paint_Ext( 140 + localOffset - .5f * CG_Text_Width_Ext( s, .15f, 0, &cgs.media.limboFont1 ), 244, .15f, .15f, color, s, 0, 0, 0, &cgs.media.limboFont1 );
 			//CG_FillRect( 140 + localOffset, 248, 1, 16, color);
@@ -1465,7 +1471,13 @@ static void CG_DrawMortarReticle( void ) {
 
 		if( i % 4 == majorOffset ) {
 			printval = min - val * 10;
-			printval = printval <= -180 ? printval += 360 : printval >= 180 ? printval -= 180 : printval;
+			
+			// rain - old tertiary abuse was nasty and had undefined result
+			if (printval <= -180)
+				printval += 360;
+			else if (printval >= 180)
+				printval -= 180;
+
 			s = va( "%i", printval );
 			CG_Text_Paint_Ext( 320 - .5f * CG_Text_Width_Ext( s, .15f, 0, &cgs.media.limboFont1 ), 164 + localOffset + .5f * CG_Text_Height_Ext( s, .15f, 0, &cgs.media.limboFont1 ), .15f, .15f, color, s, 0, 0, 0, &cgs.media.limboFont1 );
 			CG_FillRect( 295 + 1, 164 + localOffset, 12, 1, color);
@@ -1743,7 +1755,6 @@ static float CG_ScanForCrosshairEntity( float * zChange, qboolean * hitClient ) 
 //	gentity_t	*traceEnt;
 	vec3_t		start, end;
 	float		dist;
-	int			content;
 	centity_t*	cent;
 
 	// We haven't hit a client yet
@@ -1754,7 +1765,7 @@ static float CG_ScanForCrosshairEntity( float * zChange, qboolean * hitClient ) 
 
 	cg.crosshairClientNoShoot = qfalse;
 
-	CG_Trace( &trace, start, vec3_origin, vec3_origin, end, cg.snap->ps.clientNum, CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_ITEM );
+	CG_Trace( &trace, start, NULL, NULL, end, cg.snap->ps.clientNum, CONTENTS_SOLID|CONTENTS_BODY|CONTENTS_ITEM );
 
 	// How far from start to end of trace?
 	dist = VectorDistance( start, trace.endpos );
@@ -1784,17 +1795,6 @@ static float CG_ScanForCrosshairEntity( float * zChange, qboolean * hitClient ) 
 	}
 
 //	traceEnt = &g_entities[trace.entityNum];
-
-
-	// if the player is in fog, don't show it
-	content = CG_PointContents( trace.endpos, 0 );
-	if ( content & CONTENTS_FOG ) {
-
-		// Default: We're not looking at a client
-		cg.crosshairNotLookingAtClient = qtrue;
-
-		return dist;
-	}
 
 	// Reset the draw time for the SP crosshair
 	cg.crosshairSPClientTime = cg.time;
@@ -1998,7 +1998,7 @@ static void CG_DrawCrosshairNames( void ) {
 			return;
 		}
 	} else if( cgs.clientinfo[cg.crosshairClientNum].team != cgs.clientinfo[cg.snap->ps.clientNum].team ) {
-		if( cg_entities[cg.crosshairClientNum].currentState.powerups & (1 << PW_OPS_DISGUISED) ) {
+		if( (cg_entities[cg.crosshairClientNum].currentState.powerups & (1 << PW_OPS_DISGUISED)) && cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR) {
 			if( cgs.clientinfo[cg.snap->ps.clientNum].team != TEAM_SPECTATOR &&
 				cgs.clientinfo[cg.snap->ps.clientNum].skill[SK_SIGNALS] >= 4 && cgs.clientinfo[cg.snap->ps.clientNum].cls == PC_FIELDOPS ) {
 				s = CG_TranslateString( "Disguised Enemy!" );
@@ -2025,9 +2025,20 @@ static void CG_DrawCrosshairNames( void ) {
 				CG_DrawSmallStringColor( 320 - w / 2, 170, s, color );
 
 				// set the health
-				playerHealth = cg.snap->ps.identifyClientHealth;
+				// rain - #480 - make sure it's the health for the right entity;
+				// if it's not, use the clientinfo health (which is updated
+				// by tinfo)
+				if( cg.crosshairClientNum == cg.snap->ps.identifyClient ) {
+					playerHealth = cg.snap->ps.identifyClientHealth;
+				} else {
+					playerHealth = cgs.clientinfo[ cg.crosshairClientNum ].health;
+				}
+
 				maxHealth = 100;
 			} else {
+				// rain - #480 - don't show the name after you look away, should this be
+				// a disguised covert
+				cg.crosshairClientTime = 0;
 				return;
 			}
 		} else {
@@ -2863,6 +2874,11 @@ static void CG_DrawFlashFade( void ) {
 //		CG_FillRect( -10, -10, 650, 490, col );
 		CG_FillRect( 0, 0, 640, 480, col );	// why do a bunch of these extend outside 640x480?
 
+		//bani - #127 - bail out if we're a speclocked spectator with cg_draw2d = 0
+		if( cgs.clientinfo[ cg.clientNum ].team == TEAM_SPECTATOR && !cg_draw2D.integer ) {
+			return;
+		}
+
 		// OSP - Show who is speclocked
 		if(fBlackout) {
 			int i, nOffset = 90;
@@ -3298,6 +3314,7 @@ static void CG_ScreenFade( void ) {
 	}
 }
 
+#if 0 // rain - unused
 // JPW NERVE
 void CG_Draw2D2(void) {
 	qhandle_t weapon;
@@ -3321,6 +3338,7 @@ void CG_Draw2D2(void) {
 		CG_DrawPic( 220,410, 200,-200,weapon);
 	}
 }
+#endif
 
 /*
 =================
@@ -4061,10 +4079,11 @@ static void CG_DrawPlayerStats( void ) {
 	CG_Text_Paint_Ext( SKILLS_X + 28 + 2, 480 - 4, 0.2f, 0.2f, clr, "XP", 0, 0, ITEM_TEXTSTYLE_SHADOWED, &cgs.media.limboFont1 );
 
 	// draw treasure icon if we have the flag
-	if ( cgs.clientinfo[cg.snap->ps.clientNum].powerups & (1 << PW_REDFLAG) || cgs.clientinfo[cg.snap->ps.clientNum].powerups & (1 << PW_BLUEFLAG)) {
+	// rain - #274 - use the playerstate instead of the clientinfo
+	if( ps->powerups[PW_REDFLAG] || ps->powerups[PW_BLUEFLAG] ) {
 		trap_R_SetColor( NULL );
 		CG_DrawPic( 640 - 40, 480 - 140 - value, 36, 36, cgs.media.objectiveShader );
-	} else if ( ci->powerups & (1 << PW_OPS_DISGUISED) ) { // Disguised?
+	} else if ( ps->powerups[PW_OPS_DISGUISED] ) { // Disguised?
 		CG_DrawPic( 640 - 40, 480 - 140 - value, 36, 36, ps->persistant[PERS_TEAM] == TEAM_AXIS ? cgs.media.alliedUniformShader : cgs.media.axisUniformShader );
 	}
 }
@@ -4148,6 +4167,37 @@ static void CG_DrawStatsDebug( void )
 	} while( i != statsDebugPos );
 }
 
+//bani
+void CG_DrawDemoRecording( void ) {
+	char status[1024];
+	char demostatus[128];
+	char wavestatus[128];
+
+	if( !cl_demorecording.integer && !cl_waverecording.integer ) {
+		return;
+	}
+
+	if( !cg_recording_statusline.integer ) {
+		return;
+	}
+
+	if( cl_demorecording.integer ) {
+		Com_sprintf( demostatus, sizeof( demostatus ), " demo %s: %ik ", cl_demofilename.string, cl_demooffset.integer / 1024 );
+	} else {
+		strncpy( demostatus, "", sizeof( demostatus ) );
+	}
+
+	if( cl_waverecording.integer ) {
+		Com_sprintf( wavestatus, sizeof( demostatus ), " audio %s: %ik ", cl_wavefilename.string, cl_waveoffset.integer / 1024 );
+	} else {
+		strncpy( wavestatus, "", sizeof( wavestatus ) );
+	}
+
+	Com_sprintf( status, sizeof( status ), "RECORDING%s%s", demostatus, wavestatus );
+
+	CG_Text_Paint_Ext( 5, cg_recording_statusline.integer, 0.2f, 0.2f, colorWhite, status, 0, 0, 0, &cgs.media.limboFont2 );
+}
+
 /*
 =================
 CG_Draw2D
@@ -4177,7 +4227,13 @@ static void CG_Draw2D( void ) {
 		return;
 	}
 
+	//bani - #127 - no longer cheat protected, we draw crosshair/reticle in non demoplayback
 	if ( cg_draw2D.integer == 0 ) {
+		if( cg.demoPlayback ) {
+			return;
+		}
+		CG_DrawCrosshair();
+		CG_DrawFlashFade();
 		return;
 	}
 
@@ -4293,6 +4349,8 @@ static void CG_Draw2D( void ) {
 
 	// Ridah, draw flash blends now
 	CG_DrawFlashBlend();
+
+	CG_DrawDemoRecording();
 }
 
 // NERVE - SMF

@@ -124,7 +124,7 @@ int WM_DrawObjectives( int x, int y, int width, float fade ) {
 			tens = seconds / 10;
 			seconds -= tens * 10;
 		} else {
-			mins = tens = seconds = 0;
+			msec = mins = tens = seconds = 0;
 		}
 
 		if( cgs.gamestate != GS_PLAYING ) {
@@ -316,7 +316,7 @@ static void WM_DrawClientScore( int x, int y, score_t *score, float *color, floa
 		if( score->respawnsLeft >= 0 ) {
 			CG_DrawSmallString( tempx, y, va( "%2i", score->respawnsLeft ), fade );
 		} else {
-			CG_DrawSmallString( tempx, y, va( " -", score->respawnsLeft ), fade );
+			CG_DrawSmallString( tempx, y, " -", fade );
 		}
 		tempx += INFO_LIVES_WIDTH;
 	}
@@ -450,7 +450,7 @@ static void WM_DrawClientScore_Small( int x, int y, score_t *score, float *color
 		if( score->respawnsLeft >= 0 ) {
 			CG_DrawStringExt( tempx, y, va( "%2i", score->respawnsLeft ), hcolor, qfalse, qfalse, MINICHAR_WIDTH, MINICHAR_HEIGHT, 0 );
 		} else {
-			CG_DrawStringExt( tempx, y, va( " -", score->respawnsLeft ), hcolor, qfalse, qfalse, MINICHAR_WIDTH, MINICHAR_HEIGHT, 0 );
+			CG_DrawStringExt( tempx, y, " -", hcolor, qfalse, qfalse, MINICHAR_WIDTH, MINICHAR_HEIGHT, 0 );
 		}
 		tempx += INFO_LIVES_WIDTH;
 	}
@@ -659,10 +659,9 @@ Draw the normal in-game scoreboard
 =================
 */
 qboolean CG_DrawScoreboard( void ) {
-	int		x = 0, y = 0, w, x_right;
+	int		x = 0, y = 0, x_right;
 	float	fade;
 	float	*fadeColor;
-	char	*s;
 
 	x = 20;
 	y = 10;
@@ -697,13 +696,6 @@ qboolean CG_DrawScoreboard( void ) {
 			return qfalse;
 		}
  		fade = fadeColor[3];
-	}
-
-	// fragged by ... line
-	if( *cg.killerName ) {
-		s = va("Killed by %s", cg.killerName );
-		w = CG_DrawStrlen( s ) * BIGCHAR_WIDTH;
-		CG_DrawBigString( ( SCREEN_WIDTH - w ) / 2, 40, s, fade );
 	}
 
 	y = WM_DrawObjectives( x, y, 640 - 2*x + 5, fade );

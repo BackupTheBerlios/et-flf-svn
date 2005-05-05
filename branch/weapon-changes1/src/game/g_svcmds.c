@@ -62,7 +62,9 @@ typedef struct ipFilterList_s {
 
 static ipFilterList_t		ipFilters;
 static ipFilterList_t		ipMaxLivesFilters;
+#ifdef USEXPSTORAGE
 static ipXPStorageList_t	ipXPStorage;
+#endif
 
 static ipGUID_t		guidMaxLivesFilters[MAX_IPFILTERS];
 static int			numMaxLivesFilters = 0;
@@ -245,7 +247,7 @@ qboolean G_FilterPacket( ipFilterList_t *ipFilterList, char *from )
 
 	for( i = 0; i < ipFilterList->numIPFilters; i++ )
 		if( (in & ipFilterList->ipFilters[i].mask) == ipFilterList->ipFilters[i].compare)
-			return g_filterBan.integer != 0;
+ 			return g_filterBan.integer != 0;
 
 	return g_filterBan.integer == 0;
 }
@@ -608,10 +610,25 @@ void	Svcmd_EntityList_f (void) {
 	}
 }
 
+// fretn, note: if a player is called '3' and there are only 2 players
+// on the server (clientnum 0 and 1)
+// this function will say 'client 3 is not connected'
+// solution: first check for usernames, if none is found, check for slotnumbers
 gclient_t	*ClientForString( const char *s ) {
 	gclient_t	*cl;
 	int			i;
 	int			idnum;
+
+	// check for a name match
+	for ( i=0 ; i < level.maxclients ; i++ ) {
+		cl = &level.clients[i];
+		if ( cl->pers.connected == CON_DISCONNECTED ) {
+			continue;
+		}
+		if ( !Q_stricmp( cl->pers.netname, s ) ) {
+			return cl;
+		}
+	}
 
 	// numeric values are just slot numbers
 	if ( s[0] >= '0' && s[0] <= '9' ) {
@@ -629,21 +646,102 @@ gclient_t	*ClientForString( const char *s ) {
 		return cl;
 	}
 
-	// check for a name match
-	for ( i=0 ; i < level.maxclients ; i++ ) {
-		cl = &level.clients[i];
-		if ( cl->pers.connected == CON_DISCONNECTED ) {
-			continue;
-		}
-		if ( !Q_stricmp( cl->pers.netname, s ) ) {
-			return cl;
-		}
-	}
-
 	G_Printf( "User %s is not on the server\n", s );
 
 	return NULL;
 }
+
+// fretn
+
+static qboolean G_Is_SV_Running( void ) {
+
+	char		cvar[MAX_TOKEN_CHARS];
+
+	trap_Cvar_VariableStringBuffer( "sv_running", cvar, sizeof( cvar ) );
+	return (qboolean)atoi( cvar );
+}
+
+/*
+==================
+G_GetPlayerByNum
+==================
+*/
+gclient_t	*G_GetPlayerByNum( int clientNum ) {
+	gclient_t	*cl;
+
+	
+	// make sure server is running
+	if ( !G_Is_SV_Running() ) {
+		return NULL;
+	}
+
+	if ( trap_Argc() < 2 ) {
+		G_Printf( "No player specified.\n" );
+		return NULL;
+	}
+
+	if ( clientNum < 0 || clientNum >= level.maxclients ) {
+		Com_Printf( "Bad client slot: %i\n", clientNum );
+		return NULL;
+	}
+
+	cl = &level.clients[clientNum];
+	if ( cl->pers.connected == CON_DISCONNECTED ) {
+		G_Printf( "Client %i is not connected\n", clientNum );
+		return NULL;
+	}
+
+	if (cl)
+		return cl;
+
+	
+	G_Printf( "User %d is not on the server\n", clientNum );
+
+	return NULL;
+}
+
+/*
+==================
+G_GetPlayerByName
+==================
+*/
+gclient_t *G_GetPlayerByName( char *name ) {
+
+	int			i;
+	gclient_t	*cl;
+	char		cleanName[64];
+
+	// make sure server is running
+	if ( !G_Is_SV_Running() ) {
+		return NULL;
+	}
+
+	if ( trap_Argc() < 2 ) {
+		G_Printf( "No player specified.\n" );
+		return NULL;
+	}
+
+	for (i = 0; i < level.numConnectedClients; i++) {
+		
+		cl = &level.clients[i];
+		
+		if (!Q_stricmp(cl->pers.netname, name)) {
+			return cl;
+		}
+
+		Q_strncpyz( cleanName, cl->pers.netname, sizeof(cleanName) );
+		Q_CleanStr( cleanName );
+		if ( !Q_stricmp( cleanName, name ) ) {
+			return cl;
+		}
+	}
+
+	G_Printf( "Player %s is not on the server\n", name );
+
+	return NULL;
+}
+
+// -fretn
 
 /*
 ===================
@@ -652,6 +750,7 @@ Svcmd_ForceTeam_f
 forceteam <player> <team>
 ===================
 */
+
 void Svcmd_ForceTeam_f( void ) {
 	gclient_t	*cl;
 	char		str[MAX_TOKEN_CHARS];
@@ -862,6 +961,199 @@ void Svcmd_RevivePlayer( char *name )
 }
 
 
+// fretn - kicking
+
+/*
+==================
+Svcmd_Kick_f
+
+Kick a user off of the server
+==================
+*/
+
+// change into qfalse if you want to use the qagame banning system
+// which makes it possible to unban IP addresses
+#define USE_ENGINE_BANLIST qtrue
+
+static void Svcmd_Kick_f( void ) {
+	gclient_t	*cl;
+	int			i;
+	int			timeout = -1;
+	char		sTimeout[MAX_TOKEN_CHARS];
+	char		name[MAX_TOKEN_CHARS];
+
+	// make sure server is running
+	if ( !G_Is_SV_Running() ) {
+		G_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	if ( trap_Argc() < 2 || trap_Argc() > 3 ) {
+		G_Printf ("Usage: kick <player name> [timeout]\n");
+		return;
+	}
+
+	if( trap_Argc() == 3 ) {
+		trap_Argv( 2, sTimeout, sizeof( sTimeout ) );
+		timeout = atoi( sTimeout );
+	} else {
+		timeout = 300;
+	}
+
+	trap_Argv(1, name, sizeof(name));
+	cl = G_GetPlayerByName( name );//ClientForString( name );
+
+	if ( !cl ) {
+		if ( !Q_stricmp(name, "all") ) {
+			for (i = 0, cl = level.clients; i < level.numConnectedClients; i++, cl++) {
+		
+				// dont kick localclients ...
+				if ( cl->pers.localClient ) {
+					continue;
+				}
+
+				if ( timeout != -1 ) {
+					char *ip;
+					char userinfo[MAX_INFO_STRING];
+					
+					trap_GetUserinfo( cl->ps.clientNum, userinfo, sizeof( userinfo ) );
+					ip = Info_ValueForKey (userinfo, "ip");
+					
+					// use engine banning system, mods may choose to use their own banlist
+					if (USE_ENGINE_BANLIST) { 
+						
+						// kick but dont ban bots, they arent that lame
+						if ( (g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT) ) {
+							timeout = 0;
+						}
+
+						trap_DropClient(cl->ps.clientNum, "player kicked", timeout);
+					} else {
+						trap_DropClient(cl->ps.clientNum, "player kicked", 0);
+						
+						// kick but dont ban bots, they arent that lame
+						if ( !(g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT) )
+							AddIPBan( ip );
+					}
+
+				} else {
+					trap_DropClient(cl->ps.clientNum, "player kicked", 0);				
+				}
+			}
+		} else if ( !Q_stricmp(name, "allbots") ) {
+			for (i = 0, cl = level.clients; i < level.numConnectedClients; i++, cl++) {
+				if ( !(g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT) ) {
+					continue;
+				}
+				// kick but dont ban bots, they arent that lame
+				trap_DropClient(cl->ps.clientNum, "player kicked", 0);
+			}
+		}
+		return;
+	} else {
+		// dont kick localclients ...
+		if ( cl->pers.localClient ) {
+			G_Printf("Cannot kick host player\n");
+			return;
+		}
+
+		if ( timeout != -1 ) {
+			char *ip;
+			char userinfo[MAX_INFO_STRING];
+			
+			trap_GetUserinfo( cl->ps.clientNum, userinfo, sizeof( userinfo ) );
+			ip = Info_ValueForKey (userinfo, "ip");
+			
+			// use engine banning system, mods may choose to use their own banlist
+			if (USE_ENGINE_BANLIST) { 
+				
+				// kick but dont ban bots, they arent that lame
+				if ( (g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT) ) {
+					timeout = 0;
+				}
+				trap_DropClient(cl->ps.clientNum, "player kicked", timeout);
+			} else {
+				trap_DropClient(cl->ps.clientNum, "player kicked", 0);
+				
+				// kick but dont ban bots, they arent that lame
+				if ( !(g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT) )
+					AddIPBan( ip );
+			}
+
+		} else {
+			trap_DropClient(cl->ps.clientNum, "player kicked", 0);				
+		}
+	}
+}
+
+/*
+==================
+Svcmd_KickNum_f
+
+Kick a user off of the server
+==================
+*/
+static void Svcmd_KickNum_f( void ) {
+	gclient_t	*cl;
+	int timeout = -1;
+	char	*ip;
+	char	userinfo[MAX_INFO_STRING];
+	char	sTimeout[MAX_TOKEN_CHARS];
+	char	name[MAX_TOKEN_CHARS];
+	int		clientNum;
+
+	// make sure server is running
+	if ( !G_Is_SV_Running() ) {
+		G_Printf( "Server is not running.\n" );
+		return;
+	}
+
+	if ( trap_Argc() < 2 || trap_Argc() > 3 ) {
+		G_Printf ("Usage: kick <client number> [timeout]\n");
+		return;
+	}
+
+	if( trap_Argc() == 3 ) {
+		trap_Argv( 2, sTimeout, sizeof( sTimeout ) );
+		timeout = atoi( sTimeout );
+	} else {
+		timeout = 300;
+	}
+
+	trap_Argv(1, name, sizeof(name));
+	clientNum = atoi(name);
+
+	cl = G_GetPlayerByNum( clientNum );
+	if ( !cl ) {
+		return;
+	}
+	if ( cl->pers.localClient ) {
+		G_Printf("Cannot kick host player\n");
+		return;
+	}
+		
+	trap_GetUserinfo( cl->ps.clientNum, userinfo, sizeof( userinfo ) );
+	ip = Info_ValueForKey (userinfo, "ip");
+	// use engine banning system, mods may choose to use their own banlist
+	if (USE_ENGINE_BANLIST) { 
+
+		// kick but dont ban bots, they arent that lame
+		if ( (g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT) ) {
+			timeout = 0;
+		}
+		trap_DropClient(cl->ps.clientNum, "player kicked", timeout);
+	} else {
+		trap_DropClient(cl->ps.clientNum, "player kicked", 0);
+
+		// kick but dont ban bots, they arent that lame
+		if ( !(g_entities[cl->ps.clientNum].r.svFlags & SVF_BOT) )
+			AddIPBan( ip );
+	}
+}
+
+// -fretn
+
+
 
 char	*ConcatArgs( int start );
 
@@ -927,7 +1219,7 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 
-/*	if (Q_stricmp (cmd, "addbot") == 0) {
+	/*if (Q_stricmp (cmd, "addbot") == 0) {
 		Svcmd_AddBot_f();
 		return qtrue;
 	}
@@ -1027,7 +1319,18 @@ qboolean	ConsoleCommand( void ) {
 		return qtrue;
 	}
 // END - Mad Doc - TDF
+
+	// fretn - moved from engine
+	if (!Q_stricmp(cmd, "kick")) {
+		Svcmd_Kick_f();
+		return qtrue;
+	}
 	
+	if (!Q_stricmp(cmd, "clientkick")) {
+		Svcmd_KickNum_f();
+		return qtrue;
+	}
+	// -fretn
 
 	if( g_dedicated.integer ) {
 		if( !Q_stricmp (cmd, "say")) {

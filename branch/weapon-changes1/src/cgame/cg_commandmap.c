@@ -390,8 +390,8 @@ void CG_DrawMapEntity( mapEntityData_t *mEnt, float x, float y, float w, float h
 	const char* name;
 	vec4_t c_clr = {1.f, 1.f, 1.f, 1.f};
 	vec2_t icon_extends, icon_pos, string_pos;
-	int customimage;
-	oidInfo_t* oidInfo;
+	int customimage = 0;
+	oidInfo_t* oidInfo = NULL;
 
 	switch( mEnt->type ) {
 	case ME_PLAYER_DISGUISED:
@@ -1171,7 +1171,11 @@ int CG_DrawSpawnPointInfo( int px, int py, int pw, int ph, qboolean draw, mapSci
 			}
 		}
 
-		if( ((cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR) && (cg.spawnTeams[i] != team)) || (cg.spawnTeams[i] & 256) && !changetime ) {
+		// rain - added parens around ambiguity
+		if (((cgs.clientinfo[cg.clientNum].team != TEAM_SPECTATOR) &&
+			(cg.spawnTeams[i] != team)) ||
+			((cg.spawnTeams[i] & 256) && !changetime)) {
+
 			continue;
 		}
 
@@ -1290,34 +1294,34 @@ void CG_DrawMortarMarker( int px, int py, int pw, int ph, qboolean draw, mapScis
 				point[1] = py + (((cg.mortarImpactPos[1] - cg.mapcoordsMins[1]) * cg.mapcoordsScale[1]) * ph );
 			}
 
-			if( scissor && CG_ScissorPointIsCulled( point, scissor ) ) {
-				return;
-			}
-
-			if( scissor ) {
-				point[0] += px - scissor->tl[0];
-				point[1] += py - scissor->tl[1];
-			}
-
-			if( cg.mortarImpactOutOfMap ) {
-				if( !scissor ) {
-					// near the edge of the map, fit into it
-					if( point[0] + 8.f > (px + pw) )
-						point[0] -= 8.f;
-					else if( point[0] - 8.f < px )
-						point[0] += 8.f;
-
-					if( point[1] + 8.f > (py + ph) )
-						point[1] -= 8.f;
-					else if( point[1] - 8.f < py )
-						point[1] += 8.f;
+			// rain - don't return if the marker is culled, just don't
+			// draw it.
+			if (!(scissor && CG_ScissorPointIsCulled( point, scissor ))) {
+				if( scissor ) {
+					point[0] += px - scissor->tl[0];
+					point[1] += py - scissor->tl[1];
 				}
-				colour[3] = .5f;
-			}
 
-			trap_R_SetColor( colour );
-			CG_DrawRotatedPic( point[0] - 8.f, point[1] - 8.f, 16, 16, cgs.media.ccMortarHit, .5f - ( cg.mortarFireAngles[YAW] /*- 180.f */+ 45.f ) / 360.f );
-			trap_R_SetColor( NULL );
+				if( cg.mortarImpactOutOfMap ) {
+					if( !scissor ) {
+						// near the edge of the map, fit into it
+						if( point[0] + 8.f > (px + pw) )
+							point[0] -= 8.f;
+						else if( point[0] - 8.f < px )
+							point[0] += 8.f;
+
+						if( point[1] + 8.f > (py + ph) )
+							point[1] -= 8.f;
+						else if( point[1] - 8.f < py )
+							point[1] += 8.f;
+					}
+					colour[3] = .5f;
+				}
+
+				trap_R_SetColor( colour );
+				CG_DrawRotatedPic( point[0] - 8.f, point[1] - 8.f, 16, 16, cgs.media.ccMortarHit, .5f - ( cg.mortarFireAngles[YAW] /*- 180.f */+ 45.f ) / 360.f );
+				trap_R_SetColor( NULL );
+			}
 		}
 	}
 
@@ -1343,8 +1347,10 @@ void CG_DrawMortarMarker( int px, int py, int pw, int ph, qboolean draw, mapScis
 					point[1] = py + (((cg.artilleryRequestPos[i][1] - cg.mapcoordsMins[1]) * cg.mapcoordsScale[1]) * ph );
 				}
 
+				// rain - don't return if the marker is culled, just skip
+				// it (so we draw the rest, if any)
 				if( scissor && CG_ScissorPointIsCulled( point, scissor ) ) {
-					return;
+					continue;
 				}
 
 				if( scissor ) {

@@ -1193,8 +1193,9 @@ void BG_AnimParseAnimScript( animModelInfo_t *animModelInfo, animScriptData_t *s
 
 			}
 
+			default:
+				break;
 		}
-
 	}
 
 	globalFilename = NULL;
@@ -1598,21 +1599,26 @@ BG_UpdateConditionValue
 */
 void BG_UpdateConditionValue( int client, int condition, int value, qboolean checkConversion )
 {
-	if (animConditionsTable[condition].type == ANIM_CONDTYPE_BITFLAGS) {
+	// rain - fixed checkConversion brained-damagedness, which would try
+	// to BitSet an insane value if checkConversion was false but this
+	// anim was ANIM_CONDTYPE_BITFLAGS
+	if (checkConversion == qtrue) {
+		if (animConditionsTable[condition].type == ANIM_CONDTYPE_BITFLAGS) {
 
-		if (checkConversion)
-		{
 			// we may need to convert to bitflags
 		 	// DHM - Nerve :: We want to set the ScriptData to the explicit value passed in.
 			//				COM_BitSet will OR values on top of each other, so clear it first.
 			globalScriptData->clientConditions[client][condition][0] = 0;
 			globalScriptData->clientConditions[client][condition][1] = 0;
 			// dhm - end
+
+			COM_BitSet( globalScriptData->clientConditions[client][condition], value );
+			return;
 		}
-		COM_BitSet( globalScriptData->clientConditions[client][condition], value );
+		// rain - we must fall through here because a bunch of non-bitflag
+		// conditions are set with checkConversion == qtrue
 	}
-	else 
-		globalScriptData->clientConditions[client][condition][0] = value;
+	globalScriptData->clientConditions[client][condition][0] = value;
 }
 
 /*
@@ -1655,7 +1661,7 @@ qboolean BG_GetConditionBitFlag(int client, int condition, int bitNumber)
 		return (COM_BitCheck(globalScriptData->clientConditions[client][condition], bitNumber));
 	}
 	else
-		Com_Error( ERR_DROP, "BG_GetConditionBitFlag: animation condition %i is not a bitflag condition" );
+		Com_Error( ERR_DROP, "BG_GetConditionBitFlag: animation condition %i is not a bitflag condition", animConditionsTable[condition].type );
 	return qfalse;
 }
 

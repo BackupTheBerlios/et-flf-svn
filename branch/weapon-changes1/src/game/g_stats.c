@@ -282,8 +282,15 @@ void G_LoseKillSkillPoints( gentity_t *tker, meansOfDeath_t mod, hitRegion_t hr,
 		case MOD_KAR98:
 		case MOD_SILENCED_COLT:
 		case MOD_K43:
+//bani - akimbo weapons lose score now as well
+		case MOD_AKIMBO_COLT:
+		case MOD_AKIMBO_LUGER:
+		case MOD_AKIMBO_SILENCEDCOLT:
+		case MOD_AKIMBO_SILENCEDLUGER:
 		case MOD_GRENADE_LAUNCHER:
 		case MOD_GRENADE_PINEAPPLE:
+//bani - airstrike marker kills
+		case MOD_SMOKEGRENADE:
 			G_LoseSkillPoints( tker, SK_LIGHT_WEAPONS, 3.f ); 
 //			G_DebugAddSkillPoints( attacker, SK_LIGHT_WEAPONS, 2.f, "kill" );
 			break;
@@ -422,6 +429,8 @@ void G_AddKillSkillPoints( gentity_t *attacker, meansOfDeath_t mod, hitRegion_t 
 			break;
 		case MOD_GRENADE_LAUNCHER:
 		case MOD_GRENADE_PINEAPPLE:
+//bani - airstrike marker kills
+		case MOD_SMOKEGRENADE:
 			G_AddSkillPoints( attacker, SK_LIGHT_WEAPONS, 3.f );
 			G_DebugAddSkillPoints( attacker, SK_LIGHT_WEAPONS, 3.f, "hand grenade kill" );
 			break;

@@ -693,6 +693,8 @@ void player_die( gentity_t *self, gentity_t *inflictor, gentity_t *attacker, int
 			case TEAM_ALLIES:
 				level.alliesMG42Counter = level.time;
 				break;
+			default:
+				break;
 		}
 	}
 
@@ -1236,6 +1238,11 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,  vec3
 		if( G_GetWeaponClassForMOD( mod ) < targ->constructibleStats.weaponclass ) {
 			return;
 		}
+		//bani - fix #238
+		if ( mod == MOD_DYNAMITE ) {
+			if( !( inflictor->etpro_misc_1 & 1 ) )
+				return;
+		}
 	}
 
 	client = targ->client;
@@ -1403,10 +1410,13 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,  vec3
 		if( dflags & DAMAGE_DISTANCEFALLOFF ) {
 			vec_t dist;
 			vec3_t shotvec;
+			float scale;
 
 			VectorSubtract( point, muzzleTrace, shotvec );
 			dist = VectorLength( shotvec );
 
+#if DO_BROKEN_DISTANCEFALLOFF
+			// ~~~___---___
 			if( dist > 1500.f ) {
 				if( dist > 2500.f ) {
 					take *= 0.2f;
@@ -1416,6 +1426,24 @@ void G_Damage( gentity_t *targ, gentity_t *inflictor, gentity_t *attacker,  vec3
 					take *= scale;
 				}
 			}
+#else
+			// ~~~---______
+			// zinx - start at 100% at 1500 units (and before),
+			// and go to 20% at 2500 units (and after)
+
+			// 1500 to 2500 -> 0.0 to 1.0
+			scale = (dist - 1500.f) / (2500.f - 1500.f);
+			// 0.0 to 1.0 -> 0.0 to 0.8
+			scale *= 0.8f;
+			// 0.0 to 0.8 -> 1.0 to 0.2
+			scale = 1.0f - scale;
+
+			// And, finally, cap it.
+			if (scale > 1.0f) scale = 1.0f;
+			else if (scale < 0.2f) scale = 0.2f;
+
+			take *= scale;
+#endif
 		}
 
 		if( !(targ->client->ps.eFlags & EF_HEADSHOT) ) {	// only toss hat on first headshot
@@ -1893,5 +1921,124 @@ qboolean G_RadiusDamage( vec3_t origin, gentity_t *inflictor, gentity_t *attacke
 			}
 		}
 	}
+	return hitClient;
+}
+
+/*
+============
+etpro_RadiusDamage
+mutation of G_RadiusDamage which lets us selectively damage only clients or only non clients
+============
+*/
+qboolean etpro_RadiusDamage( vec3_t origin, gentity_t *inflictor, gentity_t *attacker, float damage, float radius, gentity_t *ignore, int mod, qboolean clientsonly ) {
+	float		points, dist;
+	gentity_t	*ent;
+	int			entityList[MAX_GENTITIES];
+	int			numListedEntities;
+	vec3_t		mins, maxs;
+	vec3_t		v;
+	vec3_t		dir;
+	int			i, e;
+	qboolean	hitClient = qfalse;
+	float		boxradius;
+	vec3_t		dest; 
+	trace_t		tr;
+	vec3_t		midpoint;
+	int			flags = DAMAGE_RADIUS;
+
+	if( mod == MOD_SATCHEL || mod == MOD_LANDMINE ) {
+		flags |= DAMAGE_HALF_KNOCKBACK;
+	}
+
+	if( radius < 1 ) {
+		radius = 1;
+	}
+
+	boxradius = 1.41421356 * radius; // radius * sqrt(2) for bounding box enlargement -- 
+	// bounding box was checking against radius / sqrt(2) if collision is along box plane
+	for( i = 0 ; i < 3 ; i++ ) {
+		mins[i] = origin[i] - boxradius;
+		maxs[i] = origin[i] + boxradius;
+	}
+
+	numListedEntities = trap_EntitiesInBox( mins, maxs, entityList, MAX_GENTITIES );
+
+	for( e = 0 ; e < level.num_entities ; e++ ) {
+		g_entities[e].dmginloop = qfalse;
+	}
+
+	for( e = 0 ; e < numListedEntities ; e++ ) {
+		ent = &g_entities[entityList[ e ]];
+
+		if( ent == ignore ) {
+			continue;
+		}
+		if( !ent->takedamage && ( !ent->dmgparent || !ent->dmgparent->takedamage )) {
+			continue;
+		}
+
+		if( clientsonly && !ent->client ) {
+			continue;
+		}
+		if( !clientsonly && ent->client ) {
+			continue;
+		}
+
+		G_AdjustedDamageVec( ent, origin, v );
+
+		dist = VectorLength( v );
+		if ( dist >= radius ) {
+			continue;
+		}
+
+		points = damage * ( 1.0 - dist / radius );
+
+		if( CanDamage( ent, origin ) ) {
+			if( ent->dmgparent ) {
+				ent = ent->dmgparent;
+			}
+
+			if( ent->dmginloop ) {
+				continue;
+			}
+
+			if( AccuracyHit( ent, attacker ) ) {
+				hitClient = qtrue;
+			}
+			VectorSubtract (ent->r.currentOrigin, origin, dir);
+			// push the center of mass higher than the origin so players
+			// get knocked into the air more
+			dir[2] += 24;
+
+			G_Damage( ent, inflictor, attacker, dir, origin, (int)points, flags, mod );
+		} else {
+			VectorAdd( ent->r.absmin, ent->r.absmax, midpoint );
+			VectorScale( midpoint, 0.5, midpoint );
+			VectorCopy( midpoint, dest );
+		
+			trap_Trace( &tr, origin, vec3_origin, vec3_origin, dest, ENTITYNUM_NONE, MASK_SOLID );
+			if( tr.fraction < 1.0 ) {
+				VectorSubtract( dest, origin, dest );
+				dist = VectorLength( dest );
+				if( dist < radius * 0.2f ) { // closer than 1/4 dist
+					if( ent->dmgparent ) {
+						ent = ent->dmgparent;
+					}
+
+					if( ent->dmginloop ) {
+						continue;
+					}
+
+					if( AccuracyHit( ent, attacker ) ) {
+						hitClient = qtrue;
+					}
+					VectorSubtract (ent->r.currentOrigin, origin, dir);
+					dir[2] += 24;
+					G_Damage( ent, inflictor, attacker, dir, origin, (int)(points*0.1f), flags, mod );
+				}
+			}
+		}
+	}
+
 	return hitClient;
 }

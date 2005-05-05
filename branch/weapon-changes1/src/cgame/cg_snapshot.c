@@ -4,8 +4,15 @@
 
 
 #include "cg_local.h"
+#if __MACOS__
+#ifdef GAMERANGER
+#include "GameRanger SDK/GameRanger.h"
+#endif
+#endif
 
-
+// rain - minor optimization - we only want to reset ents that were valid
+// in the last frame
+static qboolean oldValid[MAX_GENTITIES];
 
 /*
 ==================
@@ -32,6 +39,23 @@ static void CG_ResetEntity( centity_t *cent ) {
 	if ( cent->currentState.eType == ET_PLAYER ) {
 		CG_ResetPlayerEntity( cent );
 	}
+
+	// rain - reset a bunch of extra stuff
+	cent->muzzleFlashTime = 0;
+	cent->overheatTime = 0;
+
+	cent->miscTime = 0;
+	cent->soundTime = 0;
+
+	VectorClear(cent->rawOrigin);
+	VectorClear(cent->rawAngles);
+                
+	cent->lastFuseSparkTime = 0;
+	cent->highlightTime = 0;
+	cent->highlighted = qfalse;
+                
+	cent->moving = qfalse;
+	cent->akimboFire = qfalse;
 }
 
 
@@ -175,6 +199,13 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 		}
 	}
 	// OSP
+
+#if __MACOS__
+#ifdef GAMERANGER
+	// LBO 12/13/04. Add support for GameRanger team voice IDs
+	GRSetMyTeamID(cg.snap->ps.persistant[PERS_TEAM]);
+#endif
+#endif
 }
 
 
@@ -206,10 +237,14 @@ static void CG_TransitionSnapshot( void ) {
 		return;
 	}
 
+	// rain - I hate doing things like this for enums.  Oh well.
+	memset(&oldValid, 0, sizeof(oldValid));
+
 	// clear the currentValid flag for all entities in the existing snapshot
 	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) {
 		cent = &cg_entities[ cg.snap->entities[ i ].number ];
 		cent->currentValid = qfalse;
+		oldValid[cg.snap->entities[i].number] = qtrue;
 	}
 
 	// OSP -- check for MV updates from new snapshot info
@@ -236,6 +271,14 @@ static void CG_TransitionSnapshot( void ) {
 	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) {
 		id = cg.snap->entities[ i ].number;
 		CG_TransitionEntity( &cg_entities[ id ] );
+
+		// rain - #374 - ent doesn't exist in this frame, reset it.
+		// this is to fix the silent landmines bug, which is caused
+		// by a stale miscTime in the cent
+		if (cg_entities[id].currentValid == qfalse && oldValid[id] == qtrue) {
+			CG_ResetEntity(&cg_entities[id]);
+		}
+
 		if(cg.mvTotalClients > 0 && CG_mvMergedClientLocate(id)) {
 			CG_mvUpdateClientInfo(id);
 		}

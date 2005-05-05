@@ -1602,7 +1602,7 @@ int QDECL G_SortPlayersByXP( const void *a, const void *b ) {
 // Shuffle active players onto teams
 void G_shuffleTeams(void)
 {
-	int i, cTeam, cMedian = level.numNonSpectatorClients / 2;
+	int i, cTeam; //, cMedian = level.numNonSpectatorClients / 2;
 	int aTeamCount[TEAM_NUM_TEAMS];
 	int cnt = 0;
 	int	sortClients[MAX_CLIENTS];

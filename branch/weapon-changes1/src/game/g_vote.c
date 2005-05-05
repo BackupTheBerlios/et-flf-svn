@@ -19,8 +19,6 @@
 
 static const char *ACTIVATED = "ACTIVATED";
 static const char *DEACTIVATED = "DEACTIVATED";
-static const char *ENABLE = "ENABLE";
-static const char *DISABLE = "DISABLE";
 static const char *ENABLED = "ENABLED";
 static const char *DISABLED = "DISABLED";
 
@@ -293,7 +291,7 @@ void G_GametypeList(gentity_t *ent)
 		}
 	}
 
-	G_refPrintf(ent, "");
+	G_refPrintf(ent, "\n");
 }
 
 // *** GameType ***
@@ -912,7 +910,7 @@ void G_WarmupDamageTypeList(gentity_t *ent)
 
 	G_refPrintf(ent, "\nAvailable Warmup Damage types:\n------------------------------");
 	for(i=0; i<(sizeof(warmupType) / sizeof(char *)); i++) G_refPrintf(ent, "  %d ^3(%s)", i, warmupType[i]);
-	G_refPrintf(ent, "");
+	G_refPrintf(ent, "\n");
 }
 
 // *** Warmup Weapon Fire ***
